@@ -68,7 +68,8 @@ class ProjectCreate(object):
                 raise falcon.HTTPConflict('This project name is already in use')
             elif createProject[0] is False:
                 print (createProject[1])
-                raise falcon.HTTPBadRequest("There was an error creating your project")
+                raise falcon.HTTPBadRequest("400 Bad Request",
+                                            "There was an error creating your project, please check your name")
         except KeyError:
             raise falcon.HTTPBadRequest('This went really badly wrong')
 
@@ -122,8 +123,12 @@ class AssetUpload(object):
                     raise falcon.HTTPInvalidHeader("No filename specified in header", 'content-disposition')
                 fname = fname[0]
                 fname = (fname.encode('ascii',errors='ignore').decode()).strip('\"')
+                if fname == '.ovemeta':
+                    raise falcon.HTTPForbidden("403 Forbidden",
+                                               "This is a reserved filename and is not allowed as an asset name")
             else:
-                raise falcon.HTTPBadRequest("No filename specified - this should be in the content-disposition header")
+                    raise falcon.HTTPBadRequest("No filename specified -"
+                                                " this should be in the content-disposition header")
             with tempfile.NamedTemporaryFile() as cache:
                 cache.write(req.stream.read())
                 cache.flush()
@@ -159,8 +164,10 @@ class MetaEdit(object):
                 meta.setName(req.media.get('name'))
             if is_empty(req.media.get('description')) is False:
                 meta.setDescription(req.media.get('description'))
-            if is_empty(req.media.get('uploaded')) is False:
-                meta.isUploaded(bool(req.media.get('uploaded')))
+            # There are issues checking whether a boolean is empty, since a False entry is the same as empty
+            # if is_empty(bool(req.media.get('uploaded'))) is True:
+            #     meta.isUploaded(bool(req.media.get('uploaded')))
+            #     print(bool(req.media.get('uploaded')))
             setmeta = fileStoreInterpret.editAssetMeta(store_id,project_id,asset_id,meta)
             if setmeta[0] is False:
                 raise falcon.HTTPBadRequest("Could not access asset - please check your filename")
