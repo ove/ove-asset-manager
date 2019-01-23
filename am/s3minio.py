@@ -25,7 +25,7 @@ def open_connection(store_name: str = None) -> Union[Minio, None]:
 
             for client_config in config.get("stores", []):
                 if store_name == client_config.get("name", ""):
-                    return Minio(endpoint=client_config.get("store", ""),
+                    return Minio(endpoint=client_config.get("endpoint", ""),
                                  access_key=client_config.get("accessKey", ""),
                                  secret_key=client_config.get("secretKey", ""),
                                  secure=False)
