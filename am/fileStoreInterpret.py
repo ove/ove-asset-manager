@@ -1,7 +1,7 @@
 # Module to allow connection to interpret connection to different store types
 # Additonally acts as a transformer for multiple s3 APIs including Minio and AWS implementations
 
-import s3minio
+from am import s3minio
 
 defaultStore = 'DODEVStore'
 assetDescription = 'Place holder for description field'
@@ -64,7 +64,7 @@ def createAsset(storeId,projectId,meta):
         # defmeta['Name'] = newAsset
         # defmeta['Description'] = assetDescription
         if storeType == 's3':
-            result = s3minio.createAsset(projectId,meta)
+            result = s3minio.createAsset(projectId, meta)
             if result[0] is True:
                 return True, result[1]
             else:
@@ -76,10 +76,10 @@ def createAsset(storeId,projectId,meta):
 def uploadAsset(storeId,projectId,assetName,filename,meta,file):
     try:
         if storeType == 's3':
-            result = s3minio.uploadAsset(projectId,assetName,filename,file)
+            result = s3minio.uploadAsset(projectId, assetName, filename, file)
             print("Setting uploaded flag to True")
             meta.isUploaded(True)
-            s3minio.setAssetMeta(projectId,assetName,meta)
+            s3minio.setAssetMeta(projectId, assetName, meta)
             if result[0] is True:
                 return True, result[1]
             else:
@@ -92,7 +92,7 @@ def uploadAsset(storeId,projectId,assetName,filename,meta,file):
 def getAssetMeta(storeId,projectId,assetName,meta):
     try:
         if storeType =='s3':
-            result = s3minio.getAssetMeta(projectId,assetName,meta)
+            result = s3minio.getAssetMeta(projectId, assetName, meta)
             if result[0] is True:
                 return True, result[1]
             else:
@@ -105,7 +105,7 @@ def getAssetMeta(storeId,projectId,assetName,meta):
 def editAssetMeta(storeId,projectId,assetName,meta):
     try:
         if storeType =='s3':
-            result = s3minio.setAssetMeta(projectId,assetName,meta)
+            result = s3minio.setAssetMeta(projectId, assetName, meta)
             if result[0] is True:
                 return True, result[0]
             else:

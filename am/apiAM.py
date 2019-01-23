@@ -4,7 +4,7 @@
 
 
 import falcon
-import fileStoreInterpret
+from am import fileStoreInterpret
 import tempfile
 import re
 
@@ -94,7 +94,7 @@ class AssetCreate(object):
             meta = oveMeta()
             meta.setName(newAssetName)
             meta.setDescription(assetDescription)
-            createAsset = fileStoreInterpret.createAsset(store_id,project_id,meta)
+            createAsset = fileStoreInterpret.createAsset(store_id, project_id, meta)
             if createAsset[0] is False and createAsset[1] == "This asset already exists":
                 raise falcon.HTTPConflict("This asset already exists")
             elif createAsset[0] is False:
@@ -112,7 +112,7 @@ class AssetUpload(object):
         try:
             # retrieve the existing meta data
             meta = oveMeta()
-            getmeta = fileStoreInterpret.getAssetMeta(store_id, project_id, asset_id,meta)
+            getmeta = fileStoreInterpret.getAssetMeta(store_id, project_id, asset_id, meta)
             if getmeta[0] is False:
                 raise falcon.HTTPBadRequest("You have not created this asset yet")
             if getmeta[1].uploaded is True:
@@ -133,7 +133,7 @@ class AssetUpload(object):
                 cache.write(req.stream.read())
                 cache.flush()
                 meta = getmeta[1]
-                fileStoreInterpret.uploadAsset(store_id,project_id,asset_id,fname,meta,cache)
+                fileStoreInterpret.uploadAsset(store_id, project_id, asset_id, fname, meta, cache)
         except KeyError:
             raise falcon.HTTPBadRequest('This went very wrong')
         resp.media = {'Asset': fname}
@@ -144,7 +144,7 @@ class MetaEdit(object):
     def on_get(self,req,resp,store_id,project_id,asset_id):
         try:
             meta = oveMeta()
-            getmeta = fileStoreInterpret.getAssetMeta(store_id,project_id,asset_id,meta)
+            getmeta = fileStoreInterpret.getAssetMeta(store_id, project_id, asset_id, meta)
             if getmeta[0] is False:
                 raise falcon.HTTPBadRequest("Could not access asset - please check your filename")
         except KeyError:
@@ -168,7 +168,7 @@ class MetaEdit(object):
             # if is_empty(bool(req.media.get('uploaded'))) is True:
             #     meta.isUploaded(bool(req.media.get('uploaded')))
             #     print(bool(req.media.get('uploaded')))
-            setmeta = fileStoreInterpret.editAssetMeta(store_id,project_id,asset_id,meta)
+            setmeta = fileStoreInterpret.editAssetMeta(store_id, project_id, asset_id, meta)
             if setmeta[0] is False:
                 raise falcon.HTTPBadRequest("Could not access asset - please check your filename")
         except KeyError:
