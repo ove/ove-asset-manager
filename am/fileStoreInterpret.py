@@ -20,7 +20,7 @@ def listProjects(storeId):
     try:
         if storeType == 's3':
 
-            projectList = s3minio.listProjects()
+            projectList = s3minio.list_projects()
         return projectList
     except Exception as error:
         print(error)
@@ -29,7 +29,7 @@ def listProjects(storeId):
 def listAssets(storeId,projectId):
     try:
         if storeType == 's3':
-            assetList = s3minio.listAssets(projectId)
+            assetList = s3minio.list_assets(projectId)
         return assetList
     except Exception as error:
         print(error)
@@ -38,7 +38,7 @@ def listAssets(storeId,projectId):
 def listAllAssets(storeId, projectId):
     try:
         if storeType == 's3':
-            assetList = s3minio.listAssets(projectId)
+            assetList = s3minio.list_assets(projectId)
         return assetList
 
     except Exception as error:
@@ -57,10 +57,10 @@ def showMeta(storeId, projectId, assetId):
 def createProject(storeId, newProject):
     try:
         if storeType == 's3':
-            if s3minio.checkExists(newProject) == True:
+            if s3minio.check_exists(newProject) == True:
                 return False, "This project name already exists"
             else:
-                s3minio.createProject(newProject)
+                s3minio.create_project(newProject)
         return True, "Successfully created new project"
     except Exception as error:
         print(error)
@@ -72,7 +72,7 @@ def createAsset(storeId,projectId,meta):
         # defmeta['Name'] = newAsset
         # defmeta['Description'] = assetDescription
         if storeType == 's3':
-            result = s3minio.createAsset(projectId, meta)
+            result = s3minio.create_asset(projectId, meta)
             if result[0] is True:
                 return True, result[1]
             else:
@@ -84,10 +84,10 @@ def createAsset(storeId,projectId,meta):
 def uploadAsset(storeId,projectId,assetName,filename,meta,file):
     try:
         if storeType == 's3':
-            result = s3minio.uploadAsset(projectId, assetName, filename, file)
+            result = s3minio.upload_asset(projectId, assetName, filename, file)
             print("Setting uploaded flag to True")
             meta.isUploaded(True)
-            s3minio.setAssetMeta(projectId, assetName, meta)
+            s3minio.set_asset_meta(projectId, assetName, meta)
             if result[0] is True:
                 return True, result[1]
             else:
@@ -100,7 +100,7 @@ def uploadAsset(storeId,projectId,assetName,filename,meta,file):
 def getAssetMeta(storeId,projectId,assetName,meta):
     try:
         if storeType =='s3':
-            result = s3minio.getAssetMeta(projectId, assetName, meta)
+            result = s3minio.get_asset_meta(projectId, assetName, meta)
             if result[0] is True:
                 return True, result[1]
             else:
@@ -113,7 +113,7 @@ def getAssetMeta(storeId,projectId,assetName,meta):
 def editAssetMeta(storeId,projectId,assetName,meta):
     try:
         if storeType =='s3':
-            result = s3minio.setAssetMeta(projectId, assetName, meta)
+            result = s3minio.set_asset_meta(projectId, assetName, meta)
             if result[0] is True:
                 return True, result[0]
             else:
