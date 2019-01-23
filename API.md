@@ -91,7 +91,7 @@
 
 * **/{storeid}/{projectname}/list**
 
-    _Lists available assetss in a file store_
+    _Lists available assets in a file store with meta data_
 
 * **Method:**
 
@@ -107,3 +107,26 @@
   * **Code:** 404 DOES NOT EXIST <br />
     **Content:** `{Project does not exist}`
 
+----
+
+* **/{storeid}/{projectname}/listall**
+
+    _Lists available folders in a file store regardless of whether they are ove assets_
+
+* **Method:**
+
+    `GET`
+
+* **Success Response:**
+  
+  * **Code:** 200 <br />
+    **Content:** `{ "Assets" : ["Asset1"] }`
+ 
+* **Error Response:**
+
+  * **Code:** 404 DOES NOT EXIST <br />
+    **Content:** `{Project does not exist}`
+
+* **Notes**
+    
+    _This can be used to check assets which require importing_

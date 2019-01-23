@@ -26,8 +26,16 @@ def listProjects(storeId):
         print(error)
 
 
+def listAssets(storeId,projectId):
+    try:
+        if storeType == 's3':
+            assetList = s3minio.listAssets(projectId)
+        return assetList
+    except Exception as error:
+        print(error)
+
 # List the assets in an s3 bucket
-def listAssets(storeId, projectId):
+def listAllAssets(storeId, projectId):
     try:
         if storeType == 's3':
             assetList = s3minio.listAssets(projectId)
