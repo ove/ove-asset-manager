@@ -1,4 +1,5 @@
 import logging
+import os
 
 import falcon
 
@@ -19,5 +20,7 @@ def setup_app(logging_level: str = "debug") -> falcon.API:
     app.add_route('/api/{store_id}/{project_id}/create', AssetCreate())
     app.add_route('/api/{store_id}/{project_id}/{asset_id}/meta', MetaEdit())
     app.add_route('/api/{store_id}/{project_id}/{asset_id}/upload', AssetUpload())
+
+    app.add_static_route("/", os.getcwd() + "/static/")
 
     return app
