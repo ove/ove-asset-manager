@@ -8,13 +8,13 @@ import fileStoreInterpret
 import tempfile
 import re
 
-assetDescription = "Placeholder Asset description"
+
 
 
 class oveMeta:
     def __init__(self):
         self.name = ''
-        self.description = ''
+        self.description = 'Default description'
         self.uploaded = False
         self.permissions = ''
 
@@ -77,9 +77,16 @@ class ProjectCreate(object):
         resp.status = falcon.HTTP_200
 
 
-class AssetList(object):
+class AssetListAll(object):
     def on_get(self, req, resp, store_id, project_id):
-        assetList = fileStoreInterpret.listAssets(store_id, project_id)
+        assetList = fileStoreInterpret.listAllAssets(store_id, project_id)
+        resp.media = assetList
+        resp.status = falcon.HTTP_200
+
+
+class AssetList(object):
+    def on_get(self,req,resp,store_id,project_id):
+        assetList = fileStoreInterpret.listAssets(store_id,project_id)
         resp.media = assetList
         resp.status = falcon.HTTP_200
 
@@ -93,7 +100,6 @@ class AssetCreate(object):
         try:
             meta = oveMeta()
             meta.setName(newAssetName)
-            meta.setDescription(assetDescription)
             createAsset = fileStoreInterpret.createAsset(store_id,project_id,meta)
             if createAsset[0] is False and createAsset[1] == "This asset already exists":
                 raise falcon.HTTPConflict("This asset already exists")
@@ -182,7 +188,7 @@ app = falcon.API()
 app.add_route('/api/listworkers',WorkersList())
 app.add_route('/api/liststore', StoreList())
 app.add_route('/api/{store_id}/list', ProjectList())
-app.add_route('/api/{store_id}/{project_id}/list', AssetList())
+app.add_route('/api/{store_id}/{project_id}/listall', AssetList())
 app.add_route('/api/{store_id}/create', ProjectCreate())
 app.add_route('/api/{store_id}/{project_id}/create',AssetCreate())
 app.add_route('/api/{store_id}/{project_id}/{asset_id}/meta',MetaEdit())

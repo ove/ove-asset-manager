@@ -12,16 +12,12 @@ defaultStore = 'DODEVStore'
 def openConnection(store):
     try:
         credentialsFile = 'credentials.conf'
-        separator = ":"
-        fileInput = open(credentialsFile, "r")
-        fileLine = fileInput.readline()
-        while fileLine:
-            sout = fileLine.split(separator)
-            minioServer = sout[0]
-            miniPort = sout[1]
-            minioAccessKey = sout[2]
-            minioSecretKey = sout[3]
-            fileLine = fileInput.readline()
+        with open (credentialsFile) as f:
+            storedetails = json.load(f)
+        minioServer = storedetails['server']
+        miniPort = storedetails['port']
+        minioAccessKey = storedetails['access_key']
+        minioSecretKey = storedetails['secret_key']
 
         minioServerCat = minioServer + ":" + miniPort
         minioClient = Minio(minioServerCat,
