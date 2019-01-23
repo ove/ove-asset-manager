@@ -3,16 +3,9 @@
 
 from am import s3minio
 
-defaultStore = 'DODEVStore'
-assetDescription = 'Place holder for description field'
 # by default we treat everything as s3 storage. This can be extended to filestore, swift etc.
 storeType = 's3'
 
-# We define the default meta data structure
-defmeta = {}
-defmeta['Name'] = ''
-defmeta['Description'] = ''
-defmeta['Uploaded'] = False
 
 
 # List the projects in an storage (returning the names)
@@ -69,8 +62,6 @@ def createProject(storeId, newProject):
 
 def createAsset(storeId,projectId,meta):
     try:
-        # defmeta['Name'] = newAsset
-        # defmeta['Description'] = assetDescription
         if storeType == 's3':
             result = s3minio.createAsset(projectId, meta)
             if result[0] is True:
