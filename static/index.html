@@ -16,11 +16,13 @@
 <script>
     FilePond.setOptions({
         server: {
+            url: 'http://127.0.0.1:8000',
             process: {
-                url: '/api/temp/gdotest/upload2/upload',
+                url: '/api/1/gdotest/upload2/upload',
                 method: 'POST',
                 headers: {
-                    'content-disposition': 'filename=test.png'
+                    'content-type':'application/octet-stream',
+                    'content-disposition':'filename="test.png"'
                 }
             }
         }
