@@ -3,23 +3,26 @@ import os
 
 import falcon
 
-from am.apiAM import WorkersList, StoreList, AssetCreate, AssetList, AssetUpload, MetaEdit, ProjectCreate, ProjectList
+from am.routes import WorkersList, StoreList, AssetCreate, AssetList, AssetUpload, MetaEdit, ProjectCreate, ProjectList
+from am.fileStoreInterpret import FileController
 from am.util import parse_logging_lvl
 
 
 def setup_app(logging_level: str = "debug") -> falcon.API:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
+    controller = FileController()
+
     app = falcon.API()
 
-    app.add_route('/api/listworkers', WorkersList())
-    app.add_route('/api/liststore', StoreList())
-    app.add_route('/api/{store_id}/list', ProjectList())
-    app.add_route('/api/{store_id}/{project_id}/listall', AssetList())
-    app.add_route('/api/{store_id}/create', ProjectCreate())
-    app.add_route('/api/{store_id}/{project_id}/create', AssetCreate())
-    app.add_route('/api/{store_id}/{project_id}/{asset_id}/meta', MetaEdit())
-    app.add_route('/api/{store_id}/{project_id}/{asset_id}/upload', AssetUpload())
+    app.add_route('/api/listworkers', WorkersList(controller))
+    app.add_route('/api/liststore', StoreList(controller))
+    app.add_route('/api/{store_id}/list', ProjectList(controller))
+    app.add_route('/api/{store_id}/{project_id}/listall', AssetList(controller))
+    app.add_route('/api/{store_id}/create', ProjectCreate(controller))
+    app.add_route('/api/{store_id}/{project_id}/create', AssetCreate(controller))
+    app.add_route('/api/{store_id}/{project_id}/{asset_id}/meta', MetaEdit(controller))
+    app.add_route('/api/{store_id}/{project_id}/{asset_id}/upload', AssetUpload(controller))
 
     app.add_static_route("/", os.getcwd() + "/static/")
 

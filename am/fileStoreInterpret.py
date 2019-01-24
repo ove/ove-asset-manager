@@ -1,115 +1,85 @@
 # Module to allow connection to interpret connection to different store types
 # Additonally acts as a transformer for multiple s3 APIs including Minio and AWS implementations
+from typing import Dict, Tuple, Union
 
-from am import s3minio
+import logging
+import sys
 
-# by default we treat everything as s3 storage. This can be extended to filestore, swift etc.
-storeType = 's3'
-
-
-
-# List the projects in an storage (returning the names)
-def listProjects(storeId):
-    try:
-        if storeType == 's3':
-
-            projectList = s3minio.list_projects()
-        return projectList
-    except Exception as error:
-        print(error)
+from am.entities import OveMeta
+from am.s3minio import S3Manager
 
 
-def listAssets(storeId,projectId):
-    try:
-        if storeType == 's3':
-            assetList = s3minio.list_assets(projectId)
-        return assetList
-    except Exception as error:
-        print(error)
+class FileController:
+    def __init__(self, store_type: str = "s3"):
+        if store_type == "s3":
+            self._manager = S3Manager()
+            self._manager.load()
+        else:
+            raise ValueError("Invalid store type provided")
 
-# List the assets in an s3 bucket
-def listAllAssets(storeId, projectId):
-    try:
-        if storeType == 's3':
-            assetList = s3minio.list_assets(projectId)
-        return assetList
+    # List the projects in an storage (returning the names)
+    def list_projects(self, store_name: str = None) -> Dict:
+        return self._manager.list_projects(store_name=store_name)
 
-    except Exception as error:
-        print(error)
+    def list_assets(self, project_name: str, store_name: str = None) -> Dict:
+        return self._manager.list_assets(project_name, store_name=store_name)
 
+    # List the assets in an s3 bucket
+    def list_all_assets(self, project_name: str, store_name: str = None) -> Dict:
+        return self._manager.list_assets(project_name, store_name=store_name)
 
-def showMeta(storeId, projectId, assetId):
-    try:
-        if storeType == 's3':
-            metaData = True;
-        return metaData
-    except Exception as error:
-        print(error)
+    # todo; figure out what this config does
+    def show_meta(self, projectId: str, assetId: str, store_name: str = None) -> bool:
+        return True
 
-
-def createProject(storeId, newProject):
-    try:
-        if storeType == 's3':
-            if s3minio.check_exists(newProject) == True:
+    def create_project(self, project_name: str, store_name: str = None) -> Tuple[bool, str]:
+        try:
+            if self._manager.check_exists(project_name, store_name=store_name):
                 return False, "This project name already exists"
             else:
-                s3minio.create_project(newProject)
-        return True, "Successfully created new project"
-    except Exception as error:
-        print(error)
-        return False, str(error)
+                self._manager.create_project(project_name, store_name=store_name)
+                return True, "Successfully created new project"
+        except Exception as error:
+            logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
+            return False, str(error)
 
+    def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> Tuple[bool, str]:
+        try:
+            return self._manager.create_asset(project_name, meta, store_name=store_name)
+        except Exception as error:
+            logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
+            return False, str(error)
 
-def createAsset(storeId,projectId,meta):
-    try:
-        if storeType == 's3':
-            result = s3minio.create_asset(projectId, meta)
-            if result[0] is True:
-                return True, result[1]
-            else:
-                return False, result[1]
-    except Exception as error:
-        print(error)
-        return False, str(error)
-
-def uploadAsset(storeId,projectId,assetName,filename,meta,file):
-    try:
-        if storeType == 's3':
-            result = s3minio.upload_asset(projectId, assetName, filename, file)
-            print("Setting uploaded flag to True")
+    def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
+                     store_name: str = None) -> Tuple[bool, str]:
+        try:
+            result = self._manager.upload_asset(project_name, asset_name, filename, file, store_name=store_name)
+            logging.debug("Setting uploaded flag to True")
             meta.isUploaded(True)
-            s3minio.set_asset_meta(projectId, assetName, meta)
-            if result[0] is True:
-                return True, result[1]
-            else:
-                return False, result[1]
-    except Exception as error:
-        print(error)
-        return False, str(error)
+            self._manager.set_asset_meta(project_name, asset_name, meta, store_name=store_name)
+            return result
+        except Exception as error:
+            logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
+            return False, str(error)
 
+    def get_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta,
+                       store_name: str = None) -> Tuple[bool, Union[str, OveMeta]]:
+        try:
+            result = self._manager.get_asset_meta(project_name, asset_name, meta, store_name=store_name)
+            if not result[0]:
+                logging.debug(result[1])
+            return result
+        except Exception as error:
+            logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
+            return False, str(error)
 
-def getAssetMeta(storeId,projectId,assetName,meta):
-    try:
-        if storeType =='s3':
-            result = s3minio.get_asset_meta(projectId, assetName, meta)
-            if result[0] is True:
-                return True, result[1]
-            else:
-                print(result[1])
-                return False, result[1]
-    except Exception as error:
-        print(error)
-        return False, error
-
-def editAssetMeta(storeId,projectId,assetName,meta):
-    try:
-        if storeType =='s3':
-            result = s3minio.set_asset_meta(projectId, assetName, meta)
-            if result[0] is True:
-                return True, result[0]
-            else:
-                print(result[1])
-                return False, result[1]
-    except Exception as error:
-        print(error)
-        return False,str(error)
+    def edit_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta,
+                        store_name: str = None) -> Tuple[bool, str]:
+        try:
+            result = self._manager.set_asset_meta(project_name, asset_name, meta, store_name=store_name)
+            if not result[0]:
+                logging.debug(result[1])
+            return result
+        except Exception as error:
+            logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
+            return False, str(error)
