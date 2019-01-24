@@ -54,12 +54,29 @@ class S3Manager:
         except:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
 
+    # List all the folders in an s3 bucket
+    def list_all_assets(self, project_name: str, store_name: str = None) -> Dict:
+        try:
+            client = self._get_connection(store_name)
+            assets = client.list_objects(project_name, prefix=None, recursive=False)
+            return {'Assets': [asset.object_name[0:-1] for asset in assets if asset.is_dir]}
+        except:
+            logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
+
     # List the assets in an s3 bucket
     def list_assets(self, project_name: str, store_name: str = None) -> Dict:
         try:
             client = self._get_connection(store_name)
             assets = client.list_objects(project_name, prefix=None, recursive=False)
-            return {'Assets': [asset.object_name[0:-1] for asset in assets if asset.is_dir]}
+            oveassets = {}
+            tempmeta = OveMeta()
+            for asset in assets:
+                if asset.is_dir:
+                    if self.get_asset_meta(project_name,asset.object_name[0:-1],tempmeta)[0] is True:
+                        oveassets[asset.object_name[0:-1]] = self.get_asset_meta(
+                            project_name,asset.object_name[0:-1], tempmeta)[1].__dict__
+            # return {'Assets': [asset.object_name[0:-1] for asset in assets if asset.is_dir]}
+            return oveassets
         except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
 
@@ -133,3 +150,4 @@ class S3Manager:
         except Exception as err:
             logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
             return ApiResult(success=False, message=str(err))
+
