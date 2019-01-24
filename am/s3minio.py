@@ -7,10 +7,11 @@ import sys
 import io
 import json
 
+import falcon
 from minio import Minio
 from minio.error import ResponseError
 
-from am.entities import OveMeta
+from am.entities import OveMeta, ApiResult
 
 _DEFAULT_CONFIG = "config/credentials.json"
 _DEFAULT_LABEL = "*"
@@ -79,61 +80,56 @@ class S3Manager:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             return False
 
-    def create_asset(self, project_name: str, defmeta, store_name: str = None) -> Tuple[bool, str]:
+    def create_asset(self, project_name: str, meta, store_name: str = None) -> ApiResult:
         try:
             client = self._get_connection(store_name)
             # minio interprets the slash as a directory
-            meta_name = defmeta.name + '/' + '.ovemeta'
+            meta_name = meta.name + '/' + '.ovemeta'
             # We create the meta file at the same time
-            if self.get_asset_meta(project_name, defmeta.name, defmeta)[0] is True:
-                return False, "This asset already exists"
+            if self.get_asset_meta(project_name, meta.name, store_name=store_name).success:
+                return ApiResult(success=False, message="This asset already exists", status=falcon.HTTP_409)
             # We make a file stream and write it to the s3 storage
-            print("Meta class working", defmeta.name)
-            temp_meta = io.BytesIO(json.dumps(defmeta.__dict__).encode())
+            print("Meta class working", meta.name)
+            temp_meta = io.BytesIO(json.dumps(meta.__dict__).encode())
             file_size = temp_meta.getbuffer().nbytes
             print(client.put_object(project_name, meta_name, temp_meta, file_size))
-            return True, "Asset created"
+            return ApiResult(success=True, data=meta, message="Asset created")
         except ResponseError as err:
-            return False, str(err)
+            return ApiResult(success=False, message=str(err), status=falcon.HTTP_400)
 
     def upload_asset(self, project_name: str, asset_name: str, filename: str, upfile,
-                     store_name: str = None) -> Tuple[bool, str]:
+                     store_name: str = None) -> ApiResult:
         try:
             client = self._get_connection(store_name)
             # filesize=os.stat(upfile.name).st_size
             filepath = asset_name + '/' + filename
             print(client.fput_object(project_name, filepath, upfile.name))
-            return True, "Asset uploaded"
+            return ApiResult(success=True, message="Asset uploaded")
         except ResponseError as err:
-            return False, str(err)
+            return ApiResult(success=False, message=str(err))
 
-    def get_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta,
-                       store_name: str = None) -> Tuple[bool, Union[str, OveMeta]]:
+    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> ApiResult:
         try:
             client = self._get_connection(store_name)
             meta_name = asset_name + '/' + '.ovemeta'
             print('Checking if asset exists')
-            getmeta = client.get_object(project_name, meta_name)
-            temp1 = io.BytesIO(getmeta.read())
-            tempmeta = json.loads(temp1.read())
-            meta.name = tempmeta.get('name', "")
-            meta.description = tempmeta.get('description', "")
-            meta.uploaded = tempmeta.get('uploaded', False)
-            meta.permissions = tempmeta.get('permissions', "")
-            return True, meta
+            obj = json.load(client.get_object(project_name, meta_name))
+
+            meta = OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
+                           uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""))
+            return ApiResult(success=True, data=meta)
         except Exception as err:
             logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
-            return False, str(err)
+            return ApiResult(success=False, message=str(err))
 
-    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta,
-                       store_name: str = None) -> Tuple[bool, str]:
+    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None) -> ApiResult:
         try:
             client = self._get_connection(store_name)
             meta_name = asset_name + '/' + '.ovemeta'
             temp_meta = io.BytesIO(json.dumps(meta.__dict__).encode())
             filesize = temp_meta.getbuffer().nbytes
             print(client.put_object(project_name, meta_name, temp_meta, filesize))
-            return True, temp_meta
+            return ApiResult(success=True)
         except Exception as err:
             logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
-            return False, str(err)
+            return ApiResult(success=False, message=str(err))

@@ -1,5 +1,14 @@
-from namedlist import namedlist
+class OveMeta:
+    def __init__(self, name: str = "", description: str = "", uploaded: bool = False, permissions: str = ""):
+        self.name = name
+        self.description = description
+        self.uploaded = uploaded
+        self.permissions = permissions
 
-OveMeta = namedlist("OveMeta",
-                    field_names=[("name", ""), ("description", ""), ("uploaded", False), ("permissions", "")],
-                    default=None)
+
+class ApiResult:
+    def __init__(self, success: bool = True, data=None, message: str = None, status: str = "200"):
+        self.success = success
+        self.data = data
+        self.message = message
+        self.status = status

@@ -1,3 +1,2 @@
-namedlist
 falcon==1.4.1
 minio==4.0.10

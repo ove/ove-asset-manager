@@ -3,7 +3,8 @@ import os
 
 import falcon
 
-from am.routes import WorkersList, StoreList, AssetCreate, AssetList, AssetUpload, MetaEdit, ProjectCreate, ProjectList
+from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList
+from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload
 from am.fileStoreInterpret import FileController
 from am.util import parse_logging_lvl
 
@@ -23,6 +24,7 @@ def setup_app(logging_level: str = "debug") -> falcon.API:
     app.add_route('/api/{store_id}/{project_id}/create', AssetCreate(controller))
     app.add_route('/api/{store_id}/{project_id}/{asset_id}/meta', MetaEdit(controller))
     app.add_route('/api/{store_id}/{project_id}/{asset_id}/upload', AssetUpload(controller))
+    app.add_route('/api/{store_id}/{project_id}/{asset_id}/createUpload', AssetCreateUpload(controller))
 
     app.add_static_route("/", os.getcwd() + "/static/")
 
