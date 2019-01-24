@@ -5,7 +5,7 @@ import falcon
 
 from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList
 from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload
-from am.routes import WorkersList, StoreList, AssetCreate, AssetList, AssetListAll, AssetUpload, MetaEdit, ProjectCreate, ProjectList
+from am.routes import WorkersList, StoreList, AssetCreate, AssetListAll, MetaEdit, ProjectCreate, ProjectList
 from am.fileStoreInterpret import FileController
 from am.util import parse_logging_lvl
 

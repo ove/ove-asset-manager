@@ -1,6 +1,6 @@
 # s3miniomodule for accessing object stores that are compatible with the minio sdk
 # requires pip install minio
-from typing import Union, Dict, Tuple
+from typing import Union, Dict
 
 import logging
 import sys
@@ -68,15 +68,14 @@ class S3Manager:
         try:
             client = self._get_connection(store_name)
             assets = client.list_objects(project_name, prefix=None, recursive=False)
-            oveassets = {}
-            tempmeta = OveMeta()
+            result = {}
             for asset in assets:
                 if asset.is_dir:
-                    if self.get_asset_meta(project_name,asset.object_name[0:-1],tempmeta)[0] is True:
-                        oveassets[asset.object_name[0:-1]] = self.get_asset_meta(
-                            project_name,asset.object_name[0:-1], tempmeta)[1].__dict__
-            # return {'Assets': [asset.object_name[0:-1] for asset in assets if asset.is_dir]}
-            return oveassets
+                    asset_name = asset.object_name[0:-1]
+                    meta = self.get_asset_meta(project_name, asset_name, store_name)
+                    if meta.success:
+                        result[asset_name] = meta.data.__dict__
+            return result
         except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
 
@@ -125,11 +124,22 @@ class S3Manager:
         except ResponseError as err:
             return ApiResult(success=False, message=str(err))
 
+    def has_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> bool:
+        try:
+            client = self._get_connection(store_name)
+            meta_name = asset_name + '/' + '.ovemeta'
+            logging.debug('Checking if asset exists. If we can parse it then it may be valid')
+            json.load(client.get_object(project_name, meta_name))
+            return True
+        except:
+            logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
+            return False
+
     def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> ApiResult:
         try:
             client = self._get_connection(store_name)
             meta_name = asset_name + '/' + '.ovemeta'
-            print('Checking if asset exists')
+            logging.debug('Checking if asset exists')
             obj = json.load(client.get_object(project_name, meta_name))
 
             meta = OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
@@ -150,4 +160,3 @@ class S3Manager:
         except Exception as err:
             logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
             return ApiResult(success=False, message=str(err))
-
