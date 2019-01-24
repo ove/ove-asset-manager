@@ -17,9 +17,10 @@
     FilePond.setOptions({
         server: {
             process: {
-                url: '/api/temp/gdotest/upload2/upload',
+                url: '/api/gdo/gdotest/upload2/upload',
                 method: 'POST',
                 headers: {
+                    'content-type': 'application/octet-stream',
                     'content-disposition': 'filename=test.png'
                 }
             }

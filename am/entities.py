@@ -1,3 +1,5 @@
 from namedlist import namedlist
 
-OveMeta = namedlist("OveMeta", ["name", "description", "uploaded", "permissions"])
+OveMeta = namedlist("OveMeta",
+                    field_names=[("name", ""), ("description", ""), ("uploaded", False), ("permissions", "")],
+                    default=None)
