@@ -26,7 +26,7 @@ class FileController:
 
     # List the assets in an s3 bucket
     def list_all_assets(self, project_name: str, store_name: str = None) -> Dict:
-        return self._manager.list_assets(project_name, store_name=store_name)
+        return self._manager.list_all_assets(project_name, store_name=store_name)
 
     # todo; figure out what this config does
     def show_meta(self, projectId: str, assetId: str, store_name: str = None) -> bool:
