@@ -3,6 +3,7 @@ import os
 
 import falcon
 
+from am.consts import DEFAULT_CONFIG
 from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList
 from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload
 from am.routes import WorkersList, StoreList, AssetCreate, AssetListAll, MetaEdit, ProjectCreate, ProjectList
@@ -10,10 +11,10 @@ from am.fileStoreInterpret import FileController
 from am.util import parse_logging_lvl
 
 
-def setup_app(logging_level: str = "debug") -> falcon.API:
+def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -> falcon.API:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
-    controller = FileController()
+    controller = FileController(config_file=config_file)
 
     app = falcon.API()
 

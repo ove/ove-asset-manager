@@ -1,0 +1,10 @@
+version: '3'
+services:
+  ovehub-ove-asset-manager-service:
+    image: ovehub/ove-asset-manager-service:latest-unstable
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      GUNICORN_THREADS: "8"
+      SERVICE_LOG_LEVEL: "debug"

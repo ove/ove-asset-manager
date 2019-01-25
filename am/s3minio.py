@@ -11,9 +11,9 @@ import falcon
 from minio import Minio
 from minio.error import ResponseError
 
+from am.consts import DEFAULT_CONFIG
 from am.entities import OveMeta, ApiResult
 
-_DEFAULT_CONFIG = "config/credentials.json"
 _DEFAULT_LABEL = "*"
 
 
@@ -21,7 +21,7 @@ class S3Manager:
     def __init__(self):
         self._clients = {}
 
-    def load(self, config_file: str = _DEFAULT_CONFIG):
+    def load(self, config_file: str = DEFAULT_CONFIG):
         try:
             with open(config_file, mode="r") as fin:
                 config = json.load(fin)
@@ -36,7 +36,7 @@ class S3Manager:
                     self._clients[store_name] = client
                     if default_store == store_name:
                         self._clients[_DEFAULT_LABEL] = client
-                logging.info("Loaded %s from s3 client config", len(self._clients))
+                logging.info("Loaded %s connection configs from s3 client config file", len(self._clients))
         except Exception as error:
             logging.error("Error while trying to load store config. Error: %s", sys.exc_info()[1])
 

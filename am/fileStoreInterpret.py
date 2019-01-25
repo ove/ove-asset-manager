@@ -7,15 +7,16 @@ import sys
 
 import falcon
 
+from am.consts import DEFAULT_CONFIG
 from am.entities import OveMeta, ApiResult
 from am.s3minio import S3Manager
 
 
 class FileController:
-    def __init__(self, store_type: str = "s3"):
+    def __init__(self, store_type: str = "s3", config_file: str = DEFAULT_CONFIG):
         if store_type == "s3":
             self._manager = S3Manager()
-            self._manager.load()
+            self._manager.load(config_file=config_file)
         else:
             raise ValueError("Invalid store type provided")
 
