@@ -50,16 +50,22 @@ class S3Manager:
             raise InvalidStoreError(store_name)
 
     # List the projects in an s3 storage (returning the names)
-    def list_projects(self, store_name: str = None) -> Dict:
+    def list_projects(self, store_name: str = None, with_object: str = None) -> Dict:
+        def _filter(name: str) -> bool:
+            return self.has_object(store_name=store_name, project_name=name, object_name=with_object) if with_object else True
+
         client = self._get_connection(store_name)
         try:
-            return {'Projects': [bucket.name for bucket in client.list_buckets()]}
+            return {'Projects': [bucket.name for bucket in client.list_buckets() if _filter(bucket.name)]}
         except Exception:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
             return {'Projects': []}
 
     # List the assets in an s3 bucket
     def list_assets(self, project_name: str, store_name: str = None, include_empty: bool = False) -> Dict:
+        def _filter(meta: OveMeta) -> bool:
+            return True if include_empty else meta is not None
+
         def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
             return meta.__dict__ if meta else name
 
@@ -67,9 +73,7 @@ class S3Manager:
         try:
             assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
             metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
-            result = {name: _format(name, meta) for name, meta in metas.items()} if include_empty \
-                else {name: _format(name, meta) for name, meta in metas.items() if meta}
-            return {'Assets': result}
+            return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if _filter(meta)}}
         except Exception:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
             return {'Assets': {}}

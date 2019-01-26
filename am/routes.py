@@ -12,7 +12,7 @@ import re
 from am.entities import OveMeta
 from am.errors import InvalidAssetError
 from am.fileStoreInterpret import FileController
-from am.util import is_empty
+from am.util import is_empty, to_bool
 from am.validation import validate_not_null
 
 
@@ -38,8 +38,9 @@ class ProjectList:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str):
-        resp.media = self._controller.list_projects(store_id)
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
+        with_object = req.params.get("hasObject", None)
+        resp.media = self._controller.list_projects(store_name=store_id, with_object=with_object)
         resp.status = falcon.HTTP_200
 
 
@@ -62,7 +63,7 @@ class AssetList:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        include_empty = req.params.get("includeEmpty", False)
+        include_empty = to_bool(req.params.get("includeEmpty", False))
         resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, include_empty=include_empty)
         resp.status = falcon.HTTP_200
 
