@@ -1,12 +1,12 @@
 # Module to allow connection to interpret connection to different store types
 # Additonally acts as a transformer for multiple s3 APIs including Minio and AWS implementations
-from typing import Dict
+from typing import Dict, Union
 
 import logging
 
 from am.consts import DEFAULT_CONFIG
 from am.entities import OveMeta
-from am.errors import DuplicateResourceError
+from am.errors import AssetExistsError, ObjectExistsError
 from am.s3minio import S3Manager
 
 
@@ -22,22 +22,18 @@ class FileController:
     def list_projects(self, store_name: str = None) -> Dict:
         return self._manager.list_projects(store_name=store_name)
 
-    def list_assets(self, project_name: str, store_name: str = None) -> Dict:
-        return self._manager.list_assets(project_name, store_name=store_name)
-
-    # List the assets in an s3 bucket
-    def list_all_assets(self, project_name: str, store_name: str = None) -> Dict:
-        return self._manager.list_all_assets(project_name, store_name=store_name)
+    def list_assets(self, project_name: str, store_name: str = None, include_empty: bool = False) -> Dict:
+        return self._manager.list_assets(project_name, store_name=store_name, include_empty=include_empty)
 
     def create_project(self, project_name: str, store_name: str = None) -> None:
         if self._manager.check_exists(project_name, store_name=store_name):
-            raise DuplicateResourceError(store_name=store_name, project_name=project_name)
+            raise AssetExistsError(store_name=store_name, project_name=project_name)
 
         self._manager.create_project(project_name, store_name=store_name)
 
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
         if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):
-            raise DuplicateResourceError(store_name=store_name, project_name=project_name, asset_name=meta.name)
+            raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
 
         return self._manager.create_asset(project_name, meta, store_name=store_name)
 
@@ -53,3 +49,12 @@ class FileController:
 
     def edit_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None) -> None:
         self._manager.set_asset_meta(project_name=project_name, asset_name=asset_name, meta=meta, store_name=store_name)
+
+    def get_object(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
+        return self._manager.get_object(store_name=store_name, project_name=project_name, object_name=object_name)
+
+    def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None, update: bool = False) -> None:
+        if not update and self._manager.has_object(store_name=store_name, project_name=project_name, object_name=object_name):
+            raise ObjectExistsError(store_name=store_name, project_name=project_name, object_name=object_name)
+
+        return self._manager.set_object(store_name=store_name, project_name=project_name, object_name=object_name, object_data=object_data)

@@ -5,9 +5,9 @@ import falcon
 
 from am.consts import DEFAULT_CONFIG
 from am.errors import handle_exceptions
-from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList
+from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList, ObjectEdit
 from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload
-from am.routes import WorkersList, StoreList, AssetCreate, AssetListAll, MetaEdit, ProjectCreate, ProjectList
+from am.routes import WorkersList, StoreList, AssetCreate, MetaEdit, ProjectCreate, ProjectList
 from am.fileStoreInterpret import FileController
 from am.util import parse_logging_lvl
 
@@ -24,11 +24,12 @@ def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -
     app.add_route('/api/{store_id}/list', ProjectList(controller))
     app.add_route('/api/{store_id}/create', ProjectCreate(controller))
     app.add_route('/api/{store_id}/{project_id}/list', AssetList(controller))
-    app.add_route('/api/{store_id}/{project_id}/listall', AssetListAll(controller))
     app.add_route('/api/{store_id}/{project_id}/create', AssetCreate(controller))
-    app.add_route('/api/{store_id}/{project_id}/{asset_id}/meta', MetaEdit(controller))
-    app.add_route('/api/{store_id}/{project_id}/{asset_id}/upload', AssetUpload(controller))
-    app.add_route('/api/{store_id}/{project_id}/{asset_id}/createUpload', AssetCreateUpload(controller))
+    # had to redo the routes because the falcon parser cannot parse routes with the same prefix
+    app.add_route('/api/{store_id}/{project_id}/object/{object_id}', ObjectEdit(controller))
+    app.add_route('/api/{store_id}/{project_id}/meta/{asset_id}', MetaEdit(controller))
+    app.add_route('/api/{store_id}/{project_id}/upload/{asset_id}', AssetUpload(controller))
+    app.add_route('/api/{store_id}/{project_id}/createUpload/{asset_id}', AssetCreateUpload(controller))
 
     app.add_static_route("/", os.getcwd() + "/static/")
 

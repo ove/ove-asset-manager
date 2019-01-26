@@ -10,9 +10,9 @@ import json
 from minio import Minio
 from minio.error import ResponseError
 
-from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META
+from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
 from am.entities import OveMeta
-from am.errors import ValidationError, InvalidStoreError, InvalidAssetError
+from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
 
 _DEFAULT_LABEL = "*"
 
@@ -51,59 +51,48 @@ class S3Manager:
 
     # List the projects in an s3 storage (returning the names)
     def list_projects(self, store_name: str = None) -> Dict:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
-            buckets = client.list_buckets()
-            return {'Projects': [bucket.name for bucket in buckets]}
+            return {'Projects': [bucket.name for bucket in client.list_buckets()]}
         except Exception:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
             return {'Projects': []}
 
-    # List all the folders in an s3 bucket
-    def list_all_assets(self, project_name: str, store_name: str = None) -> Dict:
-        try:
-            client = self._get_connection(store_name)
-            assets = client.list_objects(project_name, prefix=None, recursive=False)
-            return {'Assets': [asset.object_name[0:-1] for asset in assets if asset.is_dir]}
-        except Exception:
-            logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
-            return {'Assets': []}
-
     # List the assets in an s3 bucket
-    def list_assets(self, project_name: str, store_name: str = None) -> Dict:
+    def list_assets(self, project_name: str, store_name: str = None, include_empty: bool = False) -> Dict:
+        def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
+            return meta.__dict__ if meta else name
+
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
-            assets = client.list_objects(project_name, prefix=None, recursive=False)
-            result = {}
-            for asset in assets:
-                if asset.is_dir:
-                    asset_name = asset.object_name[0:-1]
-                    meta = self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True)
-                    if meta:
-                        result[asset_name] = meta.__dict__
-            return result
+            assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
+            metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
+            result = {name: _format(name, meta) for name, meta in metas.items()} if include_empty \
+                else {name: _format(name, meta) for name, meta in metas.items() if meta}
+            return {'Assets': result}
         except Exception:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
+            return {'Assets': {}}
 
     def check_exists(self, project_name: str, store_name: str = None) -> bool:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             return client.bucket_exists(project_name)
         except ResponseError:
             logging.error("Error while trying to check exists. Error: %s", sys.exc_info()[1])
             return False
 
     def create_project(self, name: str, store_name: str = None) -> None:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             client.make_bucket(name, location='us-east-1')
         except ResponseError:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
 
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             # minio interprets the slash as a directory
             meta_name = meta.name + S3_SEPARATOR + OVE_META
             temp_meta = io.BytesIO(json.dumps(meta.__dict__).encode())
@@ -115,8 +104,8 @@ class S3Manager:
             raise ValidationError("Unable to create asset on remote storage. Please check the asset name.")
 
     def upload_asset(self, project_name: str, asset_name: str, filename: str, upfile, store_name: str = None) -> None:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             # filesize=os.stat(upfile.name).st_size
             filepath = asset_name + S3_SEPARATOR + filename
             client.fput_object(project_name, filepath, upfile.name)
@@ -125,8 +114,8 @@ class S3Manager:
             raise ValidationError("Unable to upload asset to remote storage.")
 
     def has_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> bool:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists. If we can parse it then it may be valid')
             json.load(client.get_object(project_name, meta_name))
@@ -135,14 +124,12 @@ class S3Manager:
             logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
             return False
 
-    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None,
-                       ignore_errors: bool = False) -> Union[None, OveMeta]:
+    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveMeta]:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
             obj = json.load(client.get_object(project_name, meta_name))
-
             return OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
                            uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""))
         except Exception:
@@ -152,10 +139,9 @@ class S3Manager:
                 logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
                 raise InvalidAssetError(store_name=store_name, project_name=project_name, asset_name=asset_name)
 
-    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None,
-                       ignore_errors: bool = False) -> None:
+    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None, ignore_errors: bool = False) -> None:
+        client = self._get_connection(store_name)
         try:
-            client = self._get_connection(store_name)
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             temp_meta = io.BytesIO(json.dumps(meta.__dict__).encode())
             file_size = temp_meta.getbuffer().nbytes
@@ -164,3 +150,46 @@ class S3Manager:
             if not ignore_errors:
                 logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
                 raise InvalidAssetError(store_name=store_name, project_name=project_name, asset_name=asset_name)
+
+    def has_object(self, project_name: str, object_name: str, store_name: str = None) -> bool:
+        _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)
+
+        client = self._get_connection(store_name)
+        try:
+            logging.debug('Checking if object exists. If we can parse it then it may be valid')
+            json.load(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
+            return True
+        except Exception:
+            logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
+            return False
+
+    def get_object(self, project_name: str, object_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, Dict]:
+        _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)
+
+        client = self._get_connection(store_name)
+        try:
+            return json.load(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
+        except Exception:
+            if ignore_errors:
+                return None
+            else:
+                logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
+                raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+
+    def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None) -> None:
+        _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)
+
+        client = self._get_connection(store_name)
+        try:
+            temp = io.BytesIO(json.dumps(object_data).encode())
+            file_size = temp.getbuffer().nbytes
+            client.put_object(project_name, object_name + S3_OBJECT_EXTENSION, temp, file_size)
+        except Exception:
+            logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
+            raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+
+
+# Helpers
+def _validate_object_name(store_name: str, project_name: str, object_name: str) -> None:
+    if not object_name or not object_name.isalnum():
+        raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)

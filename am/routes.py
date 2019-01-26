@@ -1,6 +1,7 @@
 # RESTful API providing asset management capability
 # Written using Falcon
 # Author: David Akroyd
+# Contributor: Ovidiu Serban
 from functools import partial
 from typing import Callable
 
@@ -19,7 +20,7 @@ class StoreList:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, req, resp):
+    def on_get(self, _: falcon.Request, resp: falcon.Response):
         resp.body = 'Listing of available file stores is not yet implemented'
         resp.status = falcon.HTTP_200
 
@@ -28,7 +29,7 @@ class WorkersList:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, req, resp):
+    def on_get(self, _: falcon.Request, resp: falcon.Response):
         resp.body = 'Listing of available file workers is not yet implemented'
         resp.status = falcon.HTTP_200
 
@@ -37,7 +38,7 @@ class ProjectList:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, req, resp, store_id):
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str):
         resp.media = self._controller.list_projects(store_id)
         resp.status = falcon.HTTP_200
 
@@ -46,7 +47,7 @@ class ProjectCreate:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_post(self, req, resp, store_id):
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
         validate_not_null(req, 'name')
         project_name = req.media.get('name')
 
@@ -56,21 +57,13 @@ class ProjectCreate:
         resp.status = falcon.HTTP_200
 
 
-class AssetListAll:
-    def __init__(self, controller: FileController):
-        self._controller = controller
-
-    def on_get(self, req, resp, store_id, project_id):
-        resp.media = self._controller.list_all_assets(store_name=store_id, project_name=project_id)
-        resp.status = falcon.HTTP_200
-
-
 class AssetList:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, req, resp, store_id, project_id):
-        resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id)
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        include_empty = req.params.get("includeEmpty", False)
+        resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, include_empty=include_empty)
         resp.status = falcon.HTTP_200
 
 
@@ -78,7 +71,7 @@ class AssetCreate:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_post(self, req, resp, store_id, project_id):
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         validate_not_null(req, 'name')
         asset_name = req.media.get('name')
 
@@ -92,7 +85,7 @@ class AssetUpload:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_post(self, req, resp, store_id, project_id, asset_id):
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         # retrieve the existing meta data
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
@@ -134,12 +127,12 @@ class MetaEdit:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, _, resp, store_id, project_id, asset_id):
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
         resp.media = meta.__dict__
         resp.status = falcon.HTTP_200
 
-    def on_post(self, req, resp, store_id, project_id, asset_id):
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
         if is_empty(req.media.get('name')) is False:
             meta.name = req.media.get('name')
@@ -152,6 +145,25 @@ class MetaEdit:
         self._controller.edit_asset_meta(store_name=store_id, project_name=project_id,
                                          asset_name=asset_id, meta=meta)
         resp.media = meta.__dict__
+        resp.status = falcon.HTTP_200
+
+
+class ObjectEdit:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        resp.media = self._controller.get_object(store_name=store_id, project_name=project_id, object_name=object_id)
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        self._controller.set_object(store_name=store_id, project_name=project_id, object_name=object_id, object_data=req.media, update=False)
+        resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+    def on_put(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        self._controller.set_object(store_name=store_id, project_name=project_id, object_name=object_id, object_data=req.media, update=True)
+        resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
 

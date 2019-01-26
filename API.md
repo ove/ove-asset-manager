@@ -96,37 +96,17 @@
 * **Method:**
 
     `GET`
-
-* **Success Response:**
-  
-  * **Code:** 200 <br />
-    **Content:** `{ "Assets" : ["Asset1"] }`
- 
-* **Error Response:**
-
-  * **Code:** 404 DOES NOT EXIST <br />
-    **Content:** `{Project does not exist}`
-
-----
-
-* **/{storeid}/{projectname}/listall**
-
-    _Lists available folders in a file store regardless of whether they are ove assets_
-
-* **Method:**
-
-    `GET`
-
-* **Success Response:**
-  
-  * **Code:** 200 <br />
-    **Content:** `{ "Assets" : ["Asset1"] }`
- 
-* **Error Response:**
-
-  * **Code:** 404 DOES NOT EXIST <br />
-    **Content:** `{Project does not exist}`
-
-* **Notes**
     
-    _This can be used to check assets which require importing_
+* **Params:**
+
+    `(Optional) includeEmpty - True | False, if true all folders are included regardless of whether they are ove assets`
+
+* **Success Response:**
+  
+  * **Code:** 200 <br />
+    **Content:** `{ "Assets" : ["Asset1"] }`
+ 
+* **Error Response:**
+
+  * **Code:** 404 DOES NOT EXIST <br />
+    **Content:** `{Project does not exist}`

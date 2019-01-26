@@ -9,7 +9,7 @@ def handle_exceptions(ex: Exception, _req: falcon.Request, _resp: falcon.Respons
     if isinstance(ex, falcon.HTTPError):
         raise ex
 
-    if isinstance(ex, DuplicateResourceError):
+    if isinstance(ex, (AssetExistsError, ObjectExistsError)):
         raise falcon.HTTPConflict(title=ex.title, description=ex.description)
 
     if isinstance(ex, ValidationError):
@@ -30,10 +30,10 @@ class MissingParameterError(ValidationError):
                                                     description="The {} is required".format(name))
 
 
-class DuplicateResourceError(ValidationError):
+class AssetExistsError(ValidationError):
     def __init__(self, store_name: str, project_name: str = None, asset_name: str = None):
         description = "store = '{}' project = '{}' asset = '{}'".format(store_name, project_name, asset_name)
-        super(DuplicateResourceError, self).__init__(title="Resource already in use", description=description)
+        super(AssetExistsError, self).__init__(title="Asset already in use", description=description)
 
 
 class InvalidStoreError(ValidationError):
@@ -47,3 +47,16 @@ class InvalidAssetError(ValidationError):
         description = "store = '{}' project = '{}' asset = '{}'".format(store_name, project_name, asset_name)
         super(InvalidAssetError, self).__init__(title="The provided asset '{}' is invalid".format(asset_name),
                                                 description=description)
+
+
+class InvalidObjectError(ValidationError):
+    def __init__(self, store_name: str, project_name: str, object_name: str):
+        description = "store = '{}' project = '{}' object = '{}'".format(store_name, project_name, object_name)
+        super(InvalidObjectError, self).__init__(title="The provided object name '{}' is invalid".format(object_name),
+                                                 description=description)
+
+
+class ObjectExistsError(ValidationError):
+    def __init__(self, store_name: str, project_name: str = None, object_name: str = None):
+        description = "store = '{}' project = '{}' object = '{}'".format(store_name, project_name, object_name)
+        super(ObjectExistsError, self).__init__(title="Object already in use", description=description)
