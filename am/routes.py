@@ -82,6 +82,9 @@ class AssetCreate:
 
 
 class AssetUpload:
+    # this will be validated by the RequireJSON middleware as a custom content-type, otherwise is json
+    content_type = 'application/octet-stream'
+
     def __init__(self, controller: FileController):
         self._controller = controller
 
