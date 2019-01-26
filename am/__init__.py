@@ -19,6 +19,8 @@ def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -
 
     app = falcon.API()
 
+    # todo; implement a content type validator middleware to reject non-json for all routes except upload
+
     app.add_route('/api/listworkers', WorkersList(controller))
     app.add_route('/api/liststore', StoreList(controller))
     app.add_route('/api/{store_id}/list', ProjectList(controller))
