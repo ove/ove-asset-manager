@@ -86,10 +86,10 @@ class S3Manager:
             logging.error("Error while trying to check exists. Error: %s", sys.exc_info()[1])
             return False
 
-    def create_project(self, name: str, store_name: str = None) -> None:
+    def create_project(self, project_name: str, store_name: str = None) -> None:
         client = self._get_connection(store_name)
         try:
-            client.make_bucket(name, location='us-east-1')
+            client.make_bucket(project_name, location='us-east-1')
         except ResponseError:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
@@ -164,7 +164,7 @@ class S3Manager:
             json.load(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
             return True
         except Exception:
-            logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
+            logging.error("Error while trying to check if object exists. Error: %s", sys.exc_info()[1])
             return False
 
     def get_object(self, project_name: str, object_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, Dict]:
@@ -177,7 +177,7 @@ class S3Manager:
             if ignore_errors:
                 return None
             else:
-                logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
+                logging.error("Error while trying to get object. Error: %s", sys.exc_info()[1])
                 raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
 
     def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None) -> None:
@@ -189,7 +189,7 @@ class S3Manager:
             file_size = temp.getbuffer().nbytes
             client.put_object(project_name, object_name + S3_OBJECT_EXTENSION, temp, file_size)
         except Exception:
-            logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
+            logging.error("Error while trying to set object. Error: %s", sys.exc_info()[1])
             raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
 
 

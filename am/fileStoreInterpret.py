@@ -6,7 +6,7 @@ import logging
 
 from am.consts import DEFAULT_CONFIG
 from am.entities import OveMeta
-from am.errors import AssetExistsError, ObjectExistsError
+from am.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
 from am.s3minio import S3Manager
 
 
@@ -23,13 +23,16 @@ class FileController:
         return self._manager.list_projects(store_name=store_name, with_object=with_object)
 
     def list_assets(self, project_name: str, store_name: str = None, include_empty: bool = False) -> Dict:
-        return self._manager.list_assets(project_name, store_name=store_name, include_empty=include_empty)
+        return self._manager.list_assets(store_name=store_name, project_name=project_name, include_empty=include_empty)
 
     def create_project(self, project_name: str, store_name: str = None) -> None:
-        if self._manager.check_exists(project_name, store_name=store_name):
-            raise AssetExistsError(store_name=store_name, project_name=project_name)
+        if self._manager.check_exists(store_name=store_name, project_name=project_name):
+            raise ProjectExistsError(store_name=store_name, project_name=project_name)
 
-        self._manager.create_project(project_name, store_name=store_name)
+        self._manager.create_project(store_name=store_name, project_name=project_name)
+
+    def check_exists_project(self, project_name: str, store_name: str = None) -> bool:
+        return self._manager.check_exists(store_name=store_name, project_name=project_name)
 
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
         if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):

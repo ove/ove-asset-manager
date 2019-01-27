@@ -10,7 +10,7 @@ import tempfile
 import re
 
 from am.entities import OveMeta
-from am.errors import InvalidAssetError
+from am.errors import InvalidAssetError, ProjectExistsError
 from am.fileStoreInterpret import FileController
 from am.util import is_empty, to_bool
 from am.validation import validate_not_null
@@ -56,6 +56,21 @@ class ProjectCreate:
 
         resp.media = {'Project': project_name}
         resp.status = falcon.HTTP_200
+
+
+class ProjectValidateName:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
+        validate_not_null(req, 'name')
+        project_name = req.media.get('name')
+
+        if self._controller.check_exists_project(store_name=store_id, project_name=project_name):
+            raise ProjectExistsError(store_name=store_id, project_name=project_name)
+        else:
+            resp.media = {'Status': 'OK'}
+            resp.status = falcon.HTTP_200
 
 
 class AssetList:

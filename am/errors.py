@@ -30,6 +30,12 @@ class MissingParameterError(ValidationError):
                                                     description="The {} is required".format(name))
 
 
+class ProjectExistsError(ValidationError):
+    def __init__(self, store_name: str, project_name: str):
+        description = "store = '{}' project = '{}'".format(store_name, project_name)
+        super(ProjectExistsError, self).__init__(title="Project already in use", description=description)
+
+
 class AssetExistsError(ValidationError):
     def __init__(self, store_name: str, project_name: str = None, asset_name: str = None):
         description = "store = '{}' project = '{}' asset = '{}'".format(store_name, project_name, asset_name)

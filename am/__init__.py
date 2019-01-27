@@ -6,7 +6,7 @@ import falcon
 from am.consts import DEFAULT_CONFIG
 from am.errors import handle_exceptions
 from am.middleware import RequireJSON, CORSComponent
-from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList, ObjectEdit
+from am.routes import WorkersList, StoreList, MetaEdit, ProjectCreate, ProjectList, ObjectEdit, ProjectValidateName
 from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload
 from am.routes import WorkersList, StoreList, AssetCreate, MetaEdit, ProjectCreate, ProjectList
 from am.fileStoreInterpret import FileController
@@ -23,6 +23,7 @@ def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -
     app.add_route('/api/listworkers', WorkersList(controller))
     app.add_route('/api/liststore', StoreList(controller))
     app.add_route('/api/{store_id}/list', ProjectList(controller))
+    app.add_route('/api/{store_id}/validate', ProjectValidateName(controller))
     app.add_route('/api/{store_id}/create', ProjectCreate(controller))
     app.add_route('/api/{store_id}/{project_id}/list', AssetList(controller))
     app.add_route('/api/{store_id}/{project_id}/create', AssetCreate(controller))
