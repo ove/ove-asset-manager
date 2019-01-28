@@ -117,11 +117,14 @@ class AssetUpload:
         _save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
                                asset_name=asset_id, filename=filename, meta=meta), req)
 
-        resp.media = {'Asset': filename}
+        resp.media = {'Asset': asset_id, 'Filename': filename}
         resp.status = falcon.HTTP_200
 
 
 class AssetCreateUpload:
+    # this will be validated by the RequireJSON middleware as a custom content-type, otherwise is json
+    content_type = 'application/octet-stream'
+
     def __init__(self, controller: FileController):
         self._controller = controller
 
@@ -138,7 +141,7 @@ class AssetCreateUpload:
         _save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
                                asset_name=asset_id, filename=filename, meta=meta), req)
 
-        resp.media = {'Asset': filename}
+        resp.media = {'Asset': asset_id, 'Filename': filename}
         resp.status = falcon.HTTP_200
 
 
