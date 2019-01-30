@@ -8,6 +8,7 @@ from typing import Callable
 import falcon
 import tempfile
 import re
+import datetime,time
 
 from am.entities import OveMeta
 from am.errors import InvalidAssetError, ProjectExistsError
@@ -90,7 +91,6 @@ class AssetCreate:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         validate_not_null(req, 'name')
         asset_name = req.media.get('name')
-
         self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_name))
 
         resp.media = {'Asset': asset_name}

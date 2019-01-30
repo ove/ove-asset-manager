@@ -5,7 +5,7 @@ from typing import Dict, Union
 import logging
 
 from am.consts import DEFAULT_CONFIG
-from am.entities import OveMeta
+from am.entities import OveMeta,OvePublicMeta
 from am.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
 from am.s3minio import S3Manager
 
@@ -26,6 +26,9 @@ class FileController:
         return self._manager.list_assets(store_name=store_name, project_name=project_name, include_empty=include_empty)
 
     def create_project(self, project_name: str, store_name: str = None) -> None:
+        # To avoid confusion, we reserve certain names for projects
+        if project_name == "list" or project_name == "validate" or project_name == "create":
+            raise ProjectExistsError(store_name=store_name, project_name=project_name)
         if self._manager.check_exists(store_name=store_name, project_name=project_name):
             raise ProjectExistsError(store_name=store_name, project_name=project_name)
 
@@ -37,7 +40,7 @@ class FileController:
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
         if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):
             raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
-
+        meta.created()
         return self._manager.create_asset(project_name, meta, store_name=store_name)
 
     def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
@@ -47,7 +50,7 @@ class FileController:
         meta.uploaded = True
         self._manager.set_asset_meta(project_name, asset_name, meta, store_name=store_name)
 
-    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> OveMeta:
+    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> OvePublicMeta:
         return self._manager.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
 
     def edit_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None) -> None:
