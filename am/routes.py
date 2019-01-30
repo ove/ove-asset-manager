@@ -10,11 +10,11 @@ import tempfile
 import re
 import datetime,time
 
-from am.entities import OveMeta
+from am.entities import OveMeta,OvePublicMeta
 from am.errors import InvalidAssetError, ProjectExistsError
 from am.fileStoreInterpret import FileController
 from am.util import is_empty, to_bool
-from am.validation import validate_not_null
+from am.validation import validate_not_null,validate_no_slashes
 
 
 class StoreList:
@@ -90,6 +90,7 @@ class AssetCreate:
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         validate_not_null(req, 'name')
+        validate_no_slashes(req,'name')
         asset_name = req.media.get('name')
         self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_name))
 
@@ -151,7 +152,8 @@ class MetaEdit:
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-        resp.media = meta.__dict__
+        newmeta = OvePublicMeta(meta)
+        resp.media = newmeta.__dict__
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
@@ -166,7 +168,8 @@ class MetaEdit:
         #     print(bool(req.media.get('uploaded')))
         self._controller.edit_asset_meta(store_name=store_id, project_name=project_id,
                                          asset_name=asset_id, meta=meta)
-        resp.media = meta.__dict__
+        newmeta = OvePublicMeta(meta)
+        resp.media = newmeta.__dict__
         resp.status = falcon.HTTP_200
 
 

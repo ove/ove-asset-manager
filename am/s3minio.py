@@ -72,7 +72,8 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
-            metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
+            # For the asset list, we switch to a public meta object
+            metas = {asset_name: OvePublicMeta(self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True)) for asset_name in assets}
             return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if _filter(meta)}}
         except Exception:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
@@ -134,9 +135,10 @@ class S3Manager:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
             obj = json.load(client.get_object(project_name, meta_name))
-            assignmeta= OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
-                           uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""),history=obj.get('history',[]))
-            return OvePublicMeta(assignmeta)
+            assignmeta = OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
+                                uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""),
+                                history=obj.get('history',[]), indexfile=obj.get('indexfile', ""))
+            return assignmeta
         except Exception:
             if ignore_errors:
                 return None
