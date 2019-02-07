@@ -29,10 +29,11 @@ class MissingParameterError(ValidationError):
         super(MissingParameterError, self).__init__(title="Missing {}".format(name),
                                                     description="The {} is required".format(name))
 
+
 class InvalidNameError(ValidationError):
     def __init__(self, name: str):
-        super(InvalidNameError, self).__init__(title="Invalid name".format(name),
-                                              description="Please check you have no invalid characters")
+        super(InvalidNameError, self).__init__(title="Invalid name {}".format(name),
+                                               description="Please check you have no invalid characters")
 
 
 class ProjectExistsError(ValidationError):

@@ -11,7 +11,7 @@ from minio import Minio
 from minio.error import ResponseError
 
 from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
-from am.entities import OveMeta,OvePublicMeta
+from am.entities import OveMeta, OvePublicMeta
 from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
 
 _DEFAULT_LABEL = "*"
@@ -135,10 +135,9 @@ class S3Manager:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
             obj = json.load(client.get_object(project_name, meta_name))
-            assignmeta = OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
-                                uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""),
-                                history=obj.get('history',[]), indexfile=obj.get('indexfile', ""))
-            return assignmeta
+            return OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
+                           uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""),
+                           history=obj.get('history', []), index_file=obj.get('indexfile', ""))
         except Exception:
             if ignore_errors:
                 return None

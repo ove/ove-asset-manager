@@ -2,14 +2,17 @@ import datetime
 
 
 class OveMeta:
-    def __init__(self, name: str = "", description: str = "", uploaded: bool = False, permissions: str = "", history: list = [], indexfile: str = ""):
+    def __init__(self, name: str = "", description: str = "", uploaded: bool = False, permissions: str = "", history=None, index_file: str = ""):
+        if history is None:
+            history = []
+
         self.name = name
         self.description = description
-        self.indexfile = indexfile
+        self.index_file = index_file
         self.uploaded = uploaded
         self.permissions = permissions
         self.history = history
-        self.filelocation = self.filelocation()
+        self.file_location = self.file_location()
 
     def update(self):
         self.history.append({
@@ -30,28 +33,27 @@ class OveMeta:
                 "Time": str(datetime.datetime.today()),
                 "Version": 1})
 
-    def filelocation(self):
+    def file_location(self):
         if len(self.history) is 0:
             return "None"
         else:
-            return str(self.history[-1]["Version"]) + '/' + self.indexfile
+            return str(self.history[-1]["Version"]) + '/' + self.index_file
 
 
 # Sanitizes meta files
-class OvePublicMeta():
-    def __init__(self, OveMeta):
-        self.name = OveMeta.name
-        self.description = OveMeta.description
-        self.indexfile = OveMeta.indexfile
-        self.history = OveMeta.history
-        self.filelocation = self.filelocation()
+class OvePublicMeta:
+    def __init__(self, meta: OveMeta):
+        self.name = meta.name
+        self.description = meta.description
+        self.index_file = meta.index_file
+        self.history = meta.history
+        self.file_location = self.file_location()
 
-    def filelocation(self):
+    def file_location(self):
         if len(self.history) is 0:
             return "None"
         else:
-            return str(self.history[-1]["Version"]) + '/' + self.indexfile
-
+            return str(self.history[-1]["Version"]) + '/' + self.index_file
 
 # potential to create an OveHistory class instead
 # class OveHistory():
