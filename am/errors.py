@@ -72,3 +72,8 @@ class ObjectExistsError(ValidationError):
     def __init__(self, store_name: str, project_name: str = None, object_name: str = None):
         description = "store = '{}' project = '{}' object = '{}'".format(store_name, project_name, object_name)
         super(ObjectExistsError, self).__init__(title="Object already in use", description=description)
+
+
+class InvalidDataError(ValidationError):
+    def __init__(self):
+        super(InvalidDataError, self).__init__(title="Invalid data", description="The data provided has an invalid format")

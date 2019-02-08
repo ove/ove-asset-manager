@@ -46,11 +46,10 @@ class FileController:
     def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
                      store_name: str = None) -> None:
         meta.index_file = filename
-        folder_filename = meta.file_location + filename
-        self._manager.upload_asset(project_name, asset_name, folder_filename, file, store_name=store_name)
+        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)
         logging.debug("Setting uploaded flag to True")
         meta.uploaded = True
-        self._manager.set_asset_meta(project_name, asset_name, meta, store_name=store_name)
+        self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
 
     def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> OveMeta:
         return self._manager.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)

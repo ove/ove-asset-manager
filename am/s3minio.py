@@ -11,7 +11,7 @@ from minio import Minio
 from minio.error import ResponseError
 
 from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
-from am.entities import OveMeta, OvePublicMeta
+from am.entities import OveMeta
 from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
 
 _DEFAULT_LABEL = "*"
@@ -67,13 +67,13 @@ class S3Manager:
             return True if include_empty else meta is not None
 
         def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
-            return meta.__dict__ if meta else name
+            return meta.to_public_json() if meta else name
 
         client = self._get_connection(store_name)
         try:
             assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
             # For the asset list, we switch to a public meta object
-            metas = {asset_name: OvePublicMeta(self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True)) for asset_name in assets}
+            metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True).to_public_json() for asset_name in assets}
             return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if _filter(meta)}}
         except Exception:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
@@ -100,7 +100,7 @@ class S3Manager:
         try:
             # minio interprets the slash as a directory
             meta_name = meta.name + S3_SEPARATOR + OVE_META
-            temp_meta = io.BytesIO(json.dumps(meta.__dict__).encode())
+            temp_meta = io.BytesIO(json.dumps(meta.to_json()).encode())
             file_size = temp_meta.getbuffer().nbytes
             client.put_object(project_name, meta_name, temp_meta, file_size)
             return meta
@@ -135,9 +135,7 @@ class S3Manager:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
             obj = json.load(client.get_object(project_name, meta_name))
-            return OveMeta(name=obj.get('name', ""), description=obj.get('description', ""),
-                           uploaded=obj.get('uploaded', False), permissions=obj.get('permissions', ""),
-                           history=obj.get('history', []), index_file=obj.get('indexfile', ""))
+            return OveMeta(**obj)
         except Exception:
             if ignore_errors:
                 return None
@@ -149,7 +147,7 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
-            temp_meta = io.BytesIO(json.dumps(meta.__dict__).encode())
+            temp_meta = io.BytesIO(json.dumps(meta.to_json()).encode())
             file_size = temp_meta.getbuffer().nbytes
             client.put_object(project_name, meta_name, temp_meta, file_size)
         except Exception:

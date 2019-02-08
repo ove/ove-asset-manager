@@ -2,18 +2,18 @@
 # Written using Falcon
 # Author: David Akroyd
 # Contributor: Ovidiu Serban
+import re
+import tempfile
 from functools import partial
 from typing import Callable
 
 import falcon
-import tempfile
-import re
 
-from am.entities import OveMeta, OvePublicMeta
-from am.errors import InvalidAssetError, ProjectExistsError
+from am.entities import OveMeta
+from am.errors import InvalidAssetError, ProjectExistsError, ValidationError
 from am.fileStoreInterpret import FileController
 from am.util import is_empty, to_bool
-from am.validation import validate_not_null, validate_no_slashes
+from am.validation import validate_not_null, validate_no_slashes, validate_list
 
 
 class StoreList:
@@ -151,8 +151,7 @@ class MetaEdit:
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-        new_meta = OvePublicMeta(meta)
-        resp.media = new_meta.__dict__
+        resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
@@ -167,8 +166,61 @@ class MetaEdit:
         #     print(bool(req.media.get('uploaded')))
         self._controller.edit_asset_meta(store_name=store_id, project_name=project_id,
                                          asset_name=asset_id, meta=meta)
-        newmeta = OvePublicMeta(meta)
-        resp.media = newmeta.__dict__
+
+        resp.media = meta.to_public_json()
+        resp.status = falcon.HTTP_200
+
+
+class TagEdit:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        resp.media = meta.tags
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        validate_list(req.media)
+
+        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta.tags = req.media
+        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id, meta=meta)
+
+        resp.media = meta.tags
+        resp.status = falcon.HTTP_200
+
+    def on_patch(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        validate_not_null(req, 'action')
+        validate_not_null(req, 'data')
+        validate_list(req.media.get('data'))
+
+        action = req.media.get('action')
+        data = req.media.get('data')
+
+        if action not in ['add', 'remove']:
+            raise ValidationError(title="Invalid action provided", description="The action should be either add or remove")
+
+        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+
+        new_tags = set(meta.tags)
+        if action == 'add':
+            new_tags.update(data)
+        elif action == 'remove':
+            new_tags.difference_update(data)
+        meta.tags = list(new_tags)
+
+        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id, meta=meta)
+
+        resp.media = meta.tags
+        resp.status = falcon.HTTP_200
+
+    def on_delete(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta.tags = []
+        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id, meta=meta)
+
+        resp.media = meta.tags
         resp.status = falcon.HTTP_200
 
 

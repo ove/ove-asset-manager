@@ -1,18 +1,16 @@
 import datetime
+from typing import Dict
 
 
 class OveMeta:
-    def __init__(self, name: str = "", description: str = "", uploaded: bool = False, permissions: str = "", history=None, index_file: str = ""):
-        if history is None:
-            history = []
-
-        self.name = name
-        self.description = description
-        self.index_file = index_file
-        self.uploaded = uploaded
-        self.permissions = permissions
-        self.history = history
-        self.file_location = self.file_location()
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "")
+        self.description = kwargs.get("description", "")
+        self.index_file = kwargs.get("index_file", "")
+        self.uploaded = kwargs.get("uploaded", False)
+        self.permissions = kwargs.get("permissions", "")
+        self.history = kwargs.get("history", [])
+        self.tags = kwargs.get("tags", [])
 
     def update(self):
         self.history.append({
@@ -33,37 +31,23 @@ class OveMeta:
                 "Time": str(datetime.datetime.today()),
                 "Version": 1})
 
+    @property
     def file_location(self):
         if len(self.history) is 0:
             return "None"
         else:
-            return str(self.history[-1]["Version"]) + '/' + self.index_file
+            return str(self.history[-1]["Version"]) + "/" + self.index_file
 
+    def to_json(self) -> Dict:
+        result = dict(self.__dict__)
+        result["file_location"] = self.file_location
+        return result
 
-# Sanitizes meta files
-class OvePublicMeta:
-    def __init__(self, meta: OveMeta):
-        self.name = meta.name
-        self.description = meta.description
-        self.index_file = meta.index_file
-        self.history = meta.history
-        self.file_location = self.file_location()
-
-    def file_location(self):
-        if len(self.history) is 0:
-            return "None"
-        else:
-            return str(self.history[-1]["Version"]) + '/' + self.index_file
-
-# potential to create an OveHistory class instead
-# class OveHistory():
-#     def __init__(self, detail: str = "", version: int = 0):
-#         self.detail = detail
-#         self.time = str(datetime.datetime.today())
-#         self.version = version
-#
-#     def __str__(self):
-#         return "Version number: " + self.version + " was " + self.detail + " at: " + self.time
-#
-#     def jsonify(self):
-#         return self.__dict__
+    def to_public_json(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "index_file": self.index_file,
+            "history": self.history,
+            "tags": self.tags
+        }
