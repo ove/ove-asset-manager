@@ -12,7 +12,8 @@ import falcon
 from am.entities import OveMeta
 from am.errors import InvalidAssetError, ProjectExistsError, ValidationError
 from am.fileStoreInterpret import FileController
-from am.util import is_empty, to_bool
+from am.filters import build_meta_filter
+from am.util import is_empty
 from am.validation import validate_not_null, validate_no_slashes, validate_list
 
 
@@ -78,8 +79,8 @@ class AssetList:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        include_empty = to_bool(req.params.get("includeEmpty", False))
-        resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, include_empty=include_empty)
+        results_filter = build_meta_filter(req.params)
+        resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, result_filter=results_filter)
         resp.status = falcon.HTTP_200
 
 

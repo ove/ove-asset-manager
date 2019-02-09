@@ -1,11 +1,10 @@
 # s3miniomodule for accessing object stores that are compatible with the minio sdk
 # requires pip install minio
-from typing import Union, Dict
-
-import logging
-import sys
 import io
 import json
+import logging
+import sys
+from typing import Union, Dict, Callable
 
 from minio import Minio
 from minio.error import ResponseError
@@ -13,6 +12,7 @@ from minio.error import ResponseError
 from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
 from am.entities import OveMeta
 from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
+from am.filters import DEFAULT_FILTER
 
 _DEFAULT_LABEL = "*"
 
@@ -62,19 +62,17 @@ class S3Manager:
             return {'Projects': []}
 
     # List the assets in an s3 bucket
-    def list_assets(self, project_name: str, store_name: str = None, include_empty: bool = False) -> Dict:
-        def _filter(meta: OveMeta) -> bool:
-            return True if include_empty else meta is not None
-
+    def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> Dict:
         def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
             return meta.to_public_json() if meta else name
 
+        result_filter = result_filter if result_filter is not None else DEFAULT_FILTER
         client = self._get_connection(store_name)
         try:
             assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
             # For the asset list, we switch to a public meta object
-            metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True).to_public_json() for asset_name in assets}
-            return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if _filter(meta)}}
+            metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
+            return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if result_filter(meta)}}
         except Exception:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
             return {'Assets': {}}

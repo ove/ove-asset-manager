@@ -1,8 +1,7 @@
 # Module to allow connection to interpret connection to different store types
 # Additonally acts as a transformer for multiple s3 APIs including Minio and AWS implementations
-from typing import Dict, Union
-
 import logging
+from typing import Dict, Union, Callable
 
 from am.consts import DEFAULT_CONFIG
 from am.entities import OveMeta
@@ -22,8 +21,8 @@ class FileController:
     def list_projects(self, store_name: str = None, with_object: str = None) -> Dict:
         return self._manager.list_projects(store_name=store_name, with_object=with_object)
 
-    def list_assets(self, project_name: str, store_name: str = None, include_empty: bool = False) -> Dict:
-        return self._manager.list_assets(store_name=store_name, project_name=project_name, include_empty=include_empty)
+    def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> Dict:
+        return self._manager.list_assets(store_name=store_name, project_name=project_name, result_filter=result_filter)
 
     def create_project(self, project_name: str, store_name: str = None) -> None:
         # To avoid confusion, we reserve certain names for projects
