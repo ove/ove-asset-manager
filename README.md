@@ -1,8 +1,8 @@
-# Open Visualisation Environment - Asset Manager and Prxoy
+# Open Visualisation Environment - Asset Manager and Proxy
 
-This repository contains an Asset Manager to manage data sets for access to an OVE installation [Open Visualisation Environment (OVE)](https://github.com/ove/ove) as well as a high speed proxy to provide authenticated access to data from a range of sources.
+This repository contains an Asset Manager to manage data sets for access to an installation of [Open Visualisation Environment (OVE)](https://github.com/ove/ove), as well as a high speed proxy to provide authenticated access to data from a range of sources.
 
-These are then authenticated through the Authentication manager in order to ensure no direct access to unauthenticated users to a data set
+These are then authenticated through the Authentication manager in order to ensure no direct access to a data set by unauthenticated users.
 
 The model for file storage consists of the following:
 
@@ -10,7 +10,7 @@ The model for file storage consists of the following:
  	- This lists the available projects, and permissions for each project
  	- This will be generated on a new file store or can be generated if one does not already exist
  + Project folders
- 	- These are handeled as buckets on object stores
+ 	- These are handled as buckets on object stores
  	- Each contains a config file listing the meta data and asset data for each project
  + Asset folder
  	- These are sub folders within a project
@@ -19,6 +19,6 @@ The model for file storage consists of the following:
 
 The RESTful API takes the format:
 
-/api/store_name/project_name/asset_name/operation
+`api/store_name/project_name/asset_name/operation`
 
-For more details see the API documentation
+For more details see the [API documentation](API.md).
