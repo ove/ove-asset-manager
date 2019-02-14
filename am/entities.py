@@ -1,16 +1,23 @@
 import datetime
 from typing import Dict
 
+proxyurl = "http://***REMOVED***/gdotest/"
+
 
 class OveMeta:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
         self.description = kwargs.get("description", "")
+        self.file_name = kwargs.get("index_file", "")
         self.index_file = kwargs.get("index_file", "")
         self.uploaded = kwargs.get("uploaded", False)
         self.permissions = kwargs.get("permissions", "")
-        self.history = kwargs.get("history", [])
+        self.history = kwargs.get("history", [{
+                "Type": "Placeholder",
+                "Time": str(datetime.datetime.today()),
+                "Version": 1}])
         self.tags = kwargs.get("tags", [])
+        self.version = kwargs.get("version", 1)
 
     def update(self):
         self.history.append({
@@ -18,25 +25,27 @@ class OveMeta:
             "Time": str(datetime.datetime.today()),
             "Version": len(self.history)
         })
+        self.version = int(self.history[-1]["Version"])
+        self.index_file = proxyurl + self.name + "/" + str(self.version) + "/" + self.file_name
+
+    def upload(self):
+        self.history.append({
+            "Type": "Updated",
+            "Time": str(datetime.datetime.today()),
+            "Version": len(self.history)
+        })
+        self.index_file = proxyurl + self.name + "/" + str(self.version) + "/" + self.file_name
 
     def created(self):
-        if len(self.history) is 0:
-            self.history.append({
-                "Type": "Created",
-                "Time": str(datetime.datetime.today()),
-                "Version": 1})
-        else:
-            self.history.insert(0, {
-                "Type": "Created",
-                "Time": str(datetime.datetime.today()),
-                "Version": 1})
+        self.history = [{
+            "Type": "Created",
+            "Time": str(datetime.datetime.today()),
+            "Version": 1}]
+        self.index_file = proxyurl + self.name + "/" + str(self.version) + "/" + self.file_name
 
     @property
     def file_location(self):
-        if len(self.history) is 0:
-            return "None"
-        else:
-            return str(self.history[-1]["Version"]) + "/" + self.index_file
+        return str(self.history[-1]["Version"]) + "/" + self.file_name
 
     def to_json(self) -> Dict:
         result = dict(self.__dict__)
@@ -48,6 +57,7 @@ class OveMeta:
             "name": self.name,
             "description": self.description,
             "index_file": self.index_file,
+            "version": str(self.version),
             "history": self.history,
             "tags": self.tags
         }
