@@ -122,6 +122,30 @@ class AssetUpload:
         resp.status = falcon.HTTP_200
 
 
+class AssetUpdate:
+    # this will be validated by the RequireJSON middleware as a custom content-type, otherwise is json
+    content_type = 'application/octet-stream'
+
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        # retrieve the existing meta data
+        try:
+            meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+            if meta.uploaded is False:
+                raise falcon.HTTPConflict("This asset has not been uploaded yet")
+
+        except InvalidAssetError:
+            raise falcon.HTTPBadRequest("You have not created this asset yet")
+        filename = _parse_filename(req)
+        _save_filename(partial(self._controller.update_asset, store_name=store_id, project_name=project_id,
+                               asset_name=asset_id, filename=filename, meta=meta), req)
+
+        resp.media = {'Asset': asset_id, 'Filename': filename}
+        resp.status = falcon.HTTP_200
+
+
 class AssetCreateUpload:
     # this will be validated by the RequireJSON middleware as a custom content-type, otherwise is json
     content_type = 'application/octet-stream'
@@ -135,8 +159,7 @@ class AssetCreateUpload:
             if meta.uploaded:
                 raise falcon.HTTPConflict("This asset already has a file. If you wish to change this file, use update")
         except InvalidAssetError:
-            meta = self._controller.create_asset(store_name=store_id, project_name=project_id,
-                                                 meta=OveMeta(name=asset_id))
+            meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_id))
 
         filename = _parse_filename(req)
         _save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,

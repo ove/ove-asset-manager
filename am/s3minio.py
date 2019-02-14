@@ -104,6 +104,8 @@ class S3Manager:
             temp_meta = io.BytesIO(json.dumps(meta.to_json()).encode())
             file_size = temp_meta.getbuffer().nbytes
             client.put_object(project_name, meta_name, temp_meta, file_size)
+            meta.created()
+            self.set_asset_meta(project_name, meta.name, meta, store_name)
             return meta
         except ResponseError:
             logging.error("Error while trying to create asset. Error: %s", sys.exc_info()[1])
@@ -114,6 +116,7 @@ class S3Manager:
         try:
             # filesize=os.stat(upfile.name).st_size
             filepath = asset_name + S3_SEPARATOR + filename
+            print("s3 filepath", filepath)
             client.fput_object(project_name, filepath, upfile.name)
         except ResponseError:
             logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])

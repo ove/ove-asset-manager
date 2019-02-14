@@ -10,7 +10,8 @@ from am.s3minio import S3Manager
 
 
 class FileController:
-    def __init__(self, store_type: str = "s3", config_file: str = DEFAULT_CONFIG):
+    def __init__(self, proxy_url: str, store_type: str = "s3", config_file: str = DEFAULT_CONFIG):
+        self.proxy_url = proxy_url
         if store_type == "s3":
             self._manager = S3Manager()
             self._manager.load(config_file=config_file)
@@ -42,16 +43,25 @@ class FileController:
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
         if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):
             raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
-        meta.created()
-        return self._manager.create_asset(project_name, meta, store_name=store_name)
+
+        meta.proxy_url = self.proxy_url
+        return self._manager.create_asset(store_name=store_name, project_name=project_name, meta=meta)
 
     def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
                      store_name: str = None) -> None:
-        meta.index_file = filename
+        meta.file_name = filename
         self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)
         logging.debug("Setting uploaded flag to True")
         meta.uploaded = True
+        meta.upload()
         self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
+
+    def update_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
+                     store_name: str = None) -> None:
+        meta.file_name = filename
+        meta.update()
+        self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
+        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)
 
     def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> OveMeta:
         return self._manager.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
