@@ -4,7 +4,7 @@
 
 ----
 
-* **/liststore**
+* **/list**
 
     _Lists available file stores_
 
@@ -110,3 +110,33 @@
 
   * **Code:** 404 DOES NOT EXIST <br />
     **Content:** `{Project does not exist}`
+    
+----
+
+* **/{storeid}/{projectname}/create**
+
+    _Creates an asset in the store_
+
+* **Method:**
+
+    `POST`
+    
+* **Params:**
+    
+    JSON with asset name
+    
+    `{
+	"name":"assetname"
+}   }`
+
+* **Success Response:**
+  
+  * **Code:** 200 <br />
+    **Content:** `{
+  "Asset": "assetname"
+    }`
+ 
+* **Error Response:**
+
+  * **Code:** 409 DUPLICATE <br />
+    **Content:** `{Asset already exists}`
