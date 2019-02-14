@@ -7,6 +7,7 @@ cd ${scriptPath}/
 [[ ! -z "${GUNICORN_HOST}" ]] || GUNICORN_HOST="0.0.0.0"
 [[ ! -z "${GUNICORN_WORKERS}" ]] || GUNICORN_WORKERS="1"
 [[ ! -z "${GUNICORN_THREADS}" ]] || GUNICORN_THREADS="4"
+[[ ! -z "${GUNICORN_TIMEOUT}" ]] || GUNICORN_TIMEOUT="240" # this needs to be tuned based on the network bandwidth
 
 [[ ! -z "${SERVICE_LOG_LEVEL}" ]] || SERVICE_LOG_LEVEL="debug"
 [[ ! -z "${SERVICE_CONFIG}" ]] || SERVICE_CONFIG="config/credentials.json"
@@ -23,5 +24,6 @@ echo "  SERVICE_CONFIG=${SERVICE_CONFIG}"
 echo ""
 
 ## did you activate the virtual environment and install the requirements?
-gunicorn -b "${GUNICORN_HOST}:${GUNICORN_PORT}" -w ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
+gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
+        --timeout ${GUNICORN_TIMEOUT} \
         "am:setup_app(config_file='${SERVICE_CONFIG}', logging_level='${SERVICE_LOG_LEVEL}')"
