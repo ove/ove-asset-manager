@@ -22,11 +22,11 @@ class StoreList:
         self._controller = controller
 
     def on_get(self, _: falcon.Request, resp: falcon.Response):
-        resp.body = 'Listing of available file stores is not yet implemented'
+        resp.media = self._controller.list_stores()
         resp.status = falcon.HTTP_200
 
 
-class WorkersList:
+class WorkersEdit:
     def __init__(self, controller: FileController):
         self._controller = controller
 

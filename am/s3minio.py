@@ -4,7 +4,7 @@ import io
 import json
 import logging
 import sys
-from typing import Union, Dict, Callable
+from typing import Union, Dict, Callable, List
 
 from minio import Minio
 from minio.error import ResponseError
@@ -48,6 +48,9 @@ class S3Manager:
             return connection
         else:
             raise InvalidStoreError(store_name)
+
+    def list_stores(self) -> List[str]:
+        return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
 
     # List the projects in an s3 storage (returning the names)
     def list_projects(self, store_name: str = None, with_object: str = None) -> Dict:

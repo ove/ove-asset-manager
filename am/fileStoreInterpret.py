@@ -17,6 +17,9 @@ class FileController:
         else:
             raise ValueError("Invalid store type provided")
 
+    def list_stores(self):
+        return self._manager.list_stores()
+
     # List the projects in an storage (returning the names)
     def list_projects(self, store_name: str = None, with_object: str = None) -> Dict:
         return self._manager.list_projects(store_name=store_name, with_object=with_object)
