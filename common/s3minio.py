@@ -10,9 +10,9 @@ from minio import Minio
 from minio.error import ResponseError
 
 from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
-from common.entities import OveMeta
 from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
 from am.filters import DEFAULT_FILTER
+from common.entities import OveMeta
 
 _DEFAULT_LABEL = "*"
 
@@ -20,6 +20,7 @@ _DEFAULT_LABEL = "*"
 class S3Manager:
     def __init__(self):
         self._clients = {}
+        self._proxy_urls = {}
 
     def load(self, config_file: str = DEFAULT_CONFIG):
         try:
@@ -29,13 +30,16 @@ class S3Manager:
 
                 for client_config in config.get("stores", []):
                     store_name = client_config.get("name", "")
+                    proxy_url = client_config.get("proxyUrl", "")
                     client = Minio(endpoint=client_config.get("endpoint", ""),
                                    access_key=client_config.get("accessKey", ""),
                                    secret_key=client_config.get("secretKey", ""),
                                    secure=False)
                     self._clients[store_name] = client
+                    self._proxy_urls[store_name] = proxy_url
                     if default_store == store_name:
                         self._clients[_DEFAULT_LABEL] = client
+                        self._proxy_urls[_DEFAULT_LABEL] = proxy_url
                 logging.info("Loaded %s connection configs from s3 client config file", len(self._clients))
         except Exception:
             logging.error("Error while trying to load store config. Error: %s", sys.exc_info()[1])
@@ -48,6 +52,10 @@ class S3Manager:
             return connection
         else:
             raise InvalidStoreError(store_name)
+
+    def _get_proxy_url(self, store_name: str = None) -> str:
+        store_name = store_name if store_name else _DEFAULT_LABEL
+        return self._proxy_urls.get(store_name, "")
 
     def list_stores(self) -> List[str]:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
@@ -98,6 +106,7 @@ class S3Manager:
 
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
         client = self._get_connection(store_name)
+        meta.proxy_url = self._get_proxy_url(store_name)
         try:
             # minio interprets the slash as a directory
             meta_name = meta.name + S3_SEPARATOR + OVE_META

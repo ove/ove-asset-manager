@@ -4,14 +4,13 @@ import logging
 from typing import Dict, Union, Callable
 
 from am.consts import DEFAULT_CONFIG
-from common.entities import OveMeta
 from am.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
+from common.entities import OveMeta
 from common.s3minio import S3Manager
 
 
 class FileController:
-    def __init__(self, proxy_url: str, store_type: str = "s3", config_file: str = DEFAULT_CONFIG):
-        self.proxy_url = proxy_url
+    def __init__(self, store_type: str = "s3", config_file: str = DEFAULT_CONFIG):
         if store_type == "s3":
             self._manager = S3Manager()
             self._manager.load(config_file=config_file)
@@ -43,8 +42,6 @@ class FileController:
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
         if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):
             raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
-
-        meta.proxy_url = self.proxy_url
         return self._manager.create_asset(store_name=store_name, project_name=project_name, meta=meta)
 
     def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
