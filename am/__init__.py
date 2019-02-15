@@ -14,7 +14,7 @@ from common.util import parse_logging_lvl
 
 
 def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG,
-              proxy_url: str = "http://***REMOVED***/gdotest/") -> falcon.API:
+              proxy_url: str = "***REMOVED***") -> falcon.API:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
     controller = FileController(config_file=config_file, proxy_url=proxy_url)
