@@ -10,7 +10,7 @@ from minio import Minio
 from minio.error import ResponseError
 
 from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
-from am.entities import OveMeta
+from common.entities import OveMeta
 from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
 from am.filters import DEFAULT_FILTER
 

@@ -10,7 +10,7 @@ from am.fileStoreInterpret import FileController
 from am.middleware import RequireJSON, CORSComponent
 from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload, AssetUpdate
 from am.routes import WorkersEdit, StoreList, MetaEdit, ProjectCreate, ProjectList, ObjectEdit, ProjectValidateName, TagEdit
-from am.util import parse_logging_lvl
+from common.util import parse_logging_lvl
 
 
 def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG,

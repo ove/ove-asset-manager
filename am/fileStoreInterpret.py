@@ -4,9 +4,9 @@ import logging
 from typing import Dict, Union, Callable
 
 from am.consts import DEFAULT_CONFIG
-from am.entities import OveMeta
+from common.entities import OveMeta
 from am.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
-from am.s3minio import S3Manager
+from common.s3minio import S3Manager
 
 
 class FileController:

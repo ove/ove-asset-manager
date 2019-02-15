@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Callable, List, Dict
 
-from am.entities import OveMeta
+from common.entities import OveMeta
 
 
 def build_meta_filter(params: Dict) -> Callable:
