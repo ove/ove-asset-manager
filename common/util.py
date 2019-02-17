@@ -1,6 +1,6 @@
 import logging
 
-from am.errors import ValidationError
+from common.errors import ValidationError
 
 
 def parse_logging_lvl(lvl_name: str) -> int:
@@ -34,3 +34,7 @@ def to_bool(value):
             return False
         raise ValidationError(description='Invalid value for boolean conversion: ' + value)
     return bool(value)
+
+
+def is_empty_str(data: str) -> bool:
+    return data is None or len(data.strip()) == 0

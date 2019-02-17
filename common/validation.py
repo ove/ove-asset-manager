@@ -2,8 +2,8 @@ from typing import Any
 
 import falcon
 
-from am.errors import MissingParameterError, InvalidDataError
-from am.errors import InvalidNameError
+from common.errors import InvalidNameError
+from common.errors import MissingParameterError, InvalidDataError
 
 
 def validate_not_null(req: falcon.Request, field: str):

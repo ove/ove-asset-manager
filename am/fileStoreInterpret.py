@@ -3,10 +3,12 @@
 import logging
 from typing import Dict, Union, Callable
 
-from am.consts import DEFAULT_CONFIG
-from am.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
+from common.consts import DEFAULT_CONFIG
 from common.entities import OveMeta
+from common.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
 from common.s3minio import S3Manager
+
+_RESERVED_NAMES = {"list", "validate", "create"}
 
 
 class FileController:
@@ -16,6 +18,9 @@ class FileController:
             self._manager.load(config_file=config_file)
         else:
             raise ValueError("Invalid store type provided")
+
+    def get_store_config(self, store_name: str):
+        return self._manager.get_store_config(store_name=store_name)
 
     def list_stores(self):
         return self._manager.list_stores()
@@ -29,7 +34,7 @@ class FileController:
 
     def create_project(self, project_name: str, store_name: str = None) -> None:
         # To avoid confusion, we reserve certain names for projects
-        if project_name == "list" or project_name == "validate" or project_name == "create":
+        if project_name in _RESERVED_NAMES:
             raise ProjectExistsError(store_name=store_name, project_name=project_name)
         if self._manager.check_exists(store_name=store_name, project_name=project_name):
             raise ProjectExistsError(store_name=store_name, project_name=project_name)
@@ -46,7 +51,7 @@ class FileController:
 
     def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
                      store_name: str = None) -> None:
-        meta.file_name = filename
+        meta.filename = filename
         self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)
         logging.debug("Setting uploaded flag to True")
         meta.uploaded = True
@@ -55,7 +60,7 @@ class FileController:
 
     def update_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
                      store_name: str = None) -> None:
-        meta.file_name = filename
+        meta.filename = filename
         meta.update()
         self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
         self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)

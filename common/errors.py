@@ -27,7 +27,7 @@ class ValidationError(Exception):
 class MissingParameterError(ValidationError):
     def __init__(self, name: str):
         super(MissingParameterError, self).__init__(title="Missing {}".format(name),
-                                                    description="The {} is required".format(name))
+                                                    description="The {} parameter is required".format(name))
 
 
 class InvalidNameError(ValidationError):
@@ -77,3 +77,24 @@ class ObjectExistsError(ValidationError):
 class InvalidDataError(ValidationError):
     def __init__(self):
         super(InvalidDataError, self).__init__(title="Invalid data", description="The data provided has an invalid format")
+
+
+class WorkerExistsError(ValidationError):
+    def __init__(self):
+        super(WorkerExistsError, self).__init__(title="Worker already in use", description="Please use the patch method to update workers")
+
+
+class WorkerNotFoundError(ValidationError):
+    def __init__(self):
+        super(WorkerNotFoundError, self).__init__(title="Worker not found", description="Please add the worker first")
+
+
+class WorkerCallbackError(ValidationError):
+    def __init__(self, url: str):
+        super(WorkerCallbackError, self).__init__(title="Worker callback not reachable", description="'{}' is not reachable".format(url))
+
+
+class WorkerUnavailableError(ValidationError):
+    def __init__(self, filename: str):
+        super(WorkerUnavailableError, self).__init__(title="No worker available for task",
+                                                     description="'{}' cannot be processed by any worker".format(filename))

@@ -9,10 +9,11 @@ from typing import Union, Dict, Callable, List
 from minio import Minio
 from minio.error import ResponseError
 
-from am.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
-from am.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
-from am.filters import DEFAULT_FILTER
+from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
+from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
 from common.entities import OveMeta
+from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
+from common.filters import DEFAULT_FILTER
 
 _DEFAULT_LABEL = "*"
 
@@ -20,26 +21,25 @@ _DEFAULT_LABEL = "*"
 class S3Manager:
     def __init__(self):
         self._clients = {}
-        self._proxy_urls = {}
+        self._store_config = {}
 
     def load(self, config_file: str = DEFAULT_CONFIG):
         try:
             with open(config_file, mode="r") as fin:
                 config = json.load(fin)
-                default_store = config.get("default", None)
+                default_store = config.get(CONFIG_STORE_DEFAULT, None)
 
-                for client_config in config.get("stores", []):
-                    store_name = client_config.get("name", "")
-                    proxy_url = client_config.get("proxyUrl", "")
-                    client = Minio(endpoint=client_config.get("endpoint", ""),
-                                   access_key=client_config.get("accessKey", ""),
-                                   secret_key=client_config.get("secretKey", ""),
+                for client_config in config.get(CONFIG_STORES, []):
+                    store_name = client_config.get(CONFIG_STORE_NAME, "")
+                    client = Minio(endpoint=client_config.get(CONFIG_ENDPOINT, ""),
+                                   access_key=client_config.get(CONFIG_ACCESS_KEY, ""),
+                                   secret_key=client_config.get(CONFIG_SECRET_KEY, ""),
                                    secure=False)
                     self._clients[store_name] = client
-                    self._proxy_urls[store_name] = proxy_url
+                    self._store_config[store_name] = client_config
                     if default_store == store_name:
                         self._clients[_DEFAULT_LABEL] = client
-                        self._proxy_urls[_DEFAULT_LABEL] = proxy_url
+                        self._store_config[_DEFAULT_LABEL] = client_config
                 logging.info("Loaded %s connection configs from s3 client config file", len(self._clients))
         except Exception:
             logging.error("Error while trying to load store config. Error: %s", sys.exc_info()[1])
@@ -54,8 +54,12 @@ class S3Manager:
             raise InvalidStoreError(store_name)
 
     def _get_proxy_url(self, store_name: str = None) -> str:
+        client_config = self.get_store_config(store_name)
+        return client_config.get(CONFIG_PROXY_URL, "") if client_config is not None else ""
+
+    def get_store_config(self, store_name: str = None) -> Dict:
         store_name = store_name if store_name else _DEFAULT_LABEL
-        return self._proxy_urls.get(store_name, "")
+        return self._store_config.get(store_name, None)
 
     def list_stores(self) -> List[str]:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]

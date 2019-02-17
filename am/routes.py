@@ -9,10 +9,12 @@ from typing import Callable
 
 import falcon
 
-from common.entities import OveMeta
-from am.errors import InvalidAssetError, ProjectExistsError, ValidationError
 from am.fileStoreInterpret import FileController
-from am.filters import build_meta_filter
+from am.managers import WorkerManager
+from common.entities import OveMeta, WorkerStatus
+from common.entities import WorkerData
+from common.errors import InvalidAssetError, ProjectExistsError, ValidationError
+from common.filters import build_meta_filter
 from common.util import is_empty
 from common.validation import validate_not_null, validate_no_slashes, validate_list
 
@@ -27,11 +29,47 @@ class StoreList:
 
 
 class WorkersEdit:
-    def __init__(self, controller: FileController):
+    def __init__(self, controller: FileController, worker_manager: WorkerManager):
         self._controller = controller
+        self._worker_manager = worker_manager
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response):
-        resp.body = 'Listing of available file workers is not yet implemented'
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        resp.media = self._worker_manager.worker_info(name=req.params.get("name", None))
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        worker = WorkerData(**req.media)
+        self._worker_manager.add_worker(worker)
+
+        resp.media = worker.to_public_json()
+        resp.status = falcon.HTTP_200
+
+    def on_delete(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req, 'name')
+        self._worker_manager.remove_worker(name=req.media.get('name'))
+
+        resp.media = {"status": "OK"}
+        resp.status = falcon.HTTP_200
+
+    def on_patch(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req, 'name')
+        validate_not_null(req, 'status')
+        self._worker_manager.update(name=req.media.get("name"), status=WorkerStatus(req.media.get("status")))
+
+        resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class WorkerSchedule:
+    def __init__(self, controller: FileController, worker_manager: WorkerManager):
+        self._controller = controller
+        self._worker_manager = worker_manager
+
+    def on_post(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        self._worker_manager.schedule_process(meta=meta, store_config=self._controller.get_store_config(store_name=store_id))
+
+        resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
 
