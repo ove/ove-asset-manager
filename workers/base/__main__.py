@@ -1,6 +1,6 @@
 from wsgiref import simple_server
 
-from workers import setup_worker
+from workers.base import setup_worker
 
 
 # do not use this in production

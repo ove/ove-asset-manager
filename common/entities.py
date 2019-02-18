@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import Dict
+from typing import Dict, List
 
 
 class OveMeta:
@@ -18,6 +18,7 @@ class OveMeta:
             "Version": 1}])
         self.tags = kwargs.get("tags", [])
         self.version = kwargs.get("version", 1)
+        self.worker = kwargs.get("worker", "")
 
     def update(self):
         self.history.append({
@@ -102,16 +103,17 @@ class WorkerStatus(Enum):
 
 
 class WorkerType(Enum):
-    IMAGE = "image", "DZI image processor"
-    ZIP = "zip", "Unzip processor"
+    IMAGE = "image", "DZI image processor", [".png", ".jpeg", ".jpg"]
+    ZIP = "zip", "Unzip processor", [".zip"]
 
     def __new__(cls, *args, **kwds):
         obj = object.__new__(cls)
         obj._value_ = args[0]
         return obj
 
-    def __init__(self, _: str, description: str = None):
+    def __init__(self, _: str, description: str = None, extensions: List = None):
         self._description_ = description
+        self._extensions_ = extensions if extensions is not None else []
 
     def __str__(self):
         return self.value
@@ -119,3 +121,7 @@ class WorkerType(Enum):
     @property
     def description(self):
         return self._description_
+
+    @property
+    def extensions(self):
+        return self._extensions_

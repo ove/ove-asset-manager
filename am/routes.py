@@ -9,7 +9,7 @@ from typing import Callable
 
 import falcon
 
-from am.fileStoreInterpret import FileController
+from am.controller import FileController
 from am.managers import WorkerManager
 from common.entities import OveMeta, WorkerStatus
 from common.entities import WorkerData
@@ -67,7 +67,7 @@ class WorkerSchedule:
 
     def on_post(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-        self._worker_manager.schedule_process(meta=meta, store_config=self._controller.get_store_config(store_name=store_id))
+        self._worker_manager.schedule_process(project_name=project_id, meta=meta, store_config=self._controller.get_store_config(store_name=store_id))
 
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200

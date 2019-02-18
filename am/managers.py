@@ -40,12 +40,12 @@ class WorkerManager:
             if w.name == name:
                 w.status = status
 
-    def schedule_process(self, meta: OveMeta, store_config: Dict):
+    def schedule_process(self, project_name: str, meta: OveMeta, store_config: Dict):
         available = _find_workers(meta.filename, self._workers)
         if len(available) > 0:
             # load balancing ^_^
             random.shuffle(available)
-            data = {"store": store_config, "meta": meta.name}
+            data = {"store_config": store_config, "project_name": project_name, "asset_name": meta.name}
 
             success = False
             for w in available:

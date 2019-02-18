@@ -23,6 +23,12 @@ class ValidationError(Exception):
         self.title = title
         self.description = description
 
+    def __str__(self) -> str:
+        return "{}(title='{}', description='{}')".format(self.__class__.__name__, self.title, self.description)
+
+    def __repr__(self) -> str:
+        return "{}(title='{}', description='{}')".format(self.__class__.__name__, self.title, self.description)
+
 
 class MissingParameterError(ValidationError):
     def __init__(self, name: str):

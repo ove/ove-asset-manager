@@ -44,6 +44,18 @@ class S3Manager:
         except Exception:
             logging.error("Error while trying to load store config. Error: %s", sys.exc_info()[1])
 
+    def setup(self, store_config: Dict):
+        client = Minio(endpoint=store_config.get(CONFIG_ENDPOINT, ""),
+                       access_key=store_config.get(CONFIG_ACCESS_KEY, ""),
+                       secret_key=store_config.get(CONFIG_SECRET_KEY, ""),
+                       secure=False)
+        self._clients[_DEFAULT_LABEL] = client
+        self._store_config[_DEFAULT_LABEL] = store_config
+
+    def clear(self):
+        self._clients.clear()
+        self._store_config.clear()
+
     # Open a connection to the S3 storage
     def _get_connection(self, store_name: str = None) -> Union[Minio, None]:
         store_name = store_name if store_name else _DEFAULT_LABEL
