@@ -29,8 +29,7 @@ class StoreList:
 
 
 class WorkersEdit:
-    def __init__(self, controller: FileController, worker_manager: WorkerManager):
-        self._controller = controller
+    def __init__(self, worker_manager: WorkerManager):
         self._worker_manager = worker_manager
 
     def on_get(self, req: falcon.Request, resp: falcon.Response):
@@ -57,6 +56,21 @@ class WorkersEdit:
         self._worker_manager.update(name=req.media.get("name"), status=WorkerStatus(req.media.get("status")))
 
         resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class WorkersStatusRoute:
+    def __init__(self, worker_manager: WorkerManager):
+        self._worker_manager = worker_manager
+
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        resp.media = self._worker_manager.worker_status(name=req.params.get("name", None))
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        self._worker_manager.reset_worker_status(name=req.params.get("name", None))
+
+        resp.media = self._worker_manager.worker_status(name=req.params.get("name", None))
         resp.status = falcon.HTTP_200
 
 
@@ -133,7 +147,7 @@ class AssetCreate:
         validate_not_null(req, 'name')
         validate_no_slashes(req, 'name')
         asset_name = req.media.get('name')
-        self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_name))
+        self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_name, project=project_id))
 
         resp.media = {'Asset': asset_name}
         resp.status = falcon.HTTP_200
@@ -200,7 +214,7 @@ class AssetCreateUpload:
             if meta.uploaded:
                 raise falcon.HTTPConflict("This asset already has a file. If you wish to change this file, use update")
         except InvalidAssetError:
-            meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_id))
+            meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_id, project=project_id))
 
         filename = _parse_filename(req)
         _save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,

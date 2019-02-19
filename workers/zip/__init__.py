@@ -1,4 +1,3 @@
-import glob
 import logging
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 from typing import Dict, List
@@ -24,7 +23,7 @@ class ZipWorker(BaseWorker):
         with TemporaryDirectory() as folder:
             with NamedTemporaryFile() as zip_file:
                 self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=meta.file_location, down_filename=zip_file.name)
-                ZipFile(zip_file.name).extractall(path=folder.name)
-                for filename in glob.iglob(folder.name + '**/*', recursive=True):
-                    new_file = str(meta.version) + "/"
-                    # self._file_controller.upload_asset(project_name=project_name, asset_name=meta.name, filename=meta.version, upload_filename=filename)
+                ZipFile(zip_file.name).extractall(path=folder)
+                self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=folder, worker_name=self.name)
+
+        logging.info("Finished unzipping %s/%s into the a storage ...", project_name, meta.name)

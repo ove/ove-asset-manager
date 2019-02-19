@@ -1,8 +1,11 @@
+import glob
+import os
 from typing import Dict
 
 from common.entities import OveMeta
 from common.errors import WorkerLockError
 from common.s3minio import S3Manager
+from common.util import append_slash
 
 
 class FileController:
@@ -30,13 +33,22 @@ class FileController:
     def upload_asset(self, project_name: str, asset_name: str, filename: str, upload_filename: str) -> None:
         return self._manager.upload_asset(project_name=project_name, asset_name=asset_name, filename=filename, upload_filename=upload_filename)
 
-    def lock_asset(self, project_name: str, asset_name: str, meta: OveMeta, worker_name: str) -> None:
+    def upload_asset_folder(self, project_name: str, meta: OveMeta, worker_name: str, upload_folder: str) -> None:
+        meta_filename_name = os.path.splitext(os.path.basename(meta.filename))[0]
+        prefix = str(meta.version) + "/" + worker_name + "/" + meta_filename_name
+        for filename in glob.iglob(append_slash(upload_folder) + '**/*', recursive=True):
+            if not os.path.islink(filename) and not os.path.ismount(filename) and os.path.isfile(filename):
+                # note: filename[len(upload_folder):] always starts with /
+                self._manager.upload_asset(project_name=project_name, asset_name=meta.name, upload_filename=filename,
+                                           filename=prefix + filename[len(upload_folder):])
+
+    def lock_asset(self, project_name: str, meta: OveMeta, worker_name: str) -> None:
         if meta.worker is None or len(meta.worker) == 0 or meta.worker == worker_name:
             meta.worker = worker_name
-            return self._manager.set_asset_meta(project_name=project_name, asset_name=asset_name, meta=meta)
+            return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)
         else:
             raise WorkerLockError()
 
-    def unlock_asset(self, project_name: str, asset_name: str, meta: OveMeta) -> None:
+    def unlock_asset(self, project_name: str, meta: OveMeta) -> None:
         meta.worker = ""
-        return self._manager.set_asset_meta(project_name=project_name, asset_name=asset_name, meta=meta)
+        return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)

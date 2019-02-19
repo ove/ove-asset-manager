@@ -17,12 +17,16 @@ class WorkerManager:
     def add_worker(self, worker: WorkerData):
         _validate_field(worker, "name")
         _validate_field(worker, "callback")
+        _validate_field(worker, "status_callback")
 
         if worker.name in self._workers:
             raise WorkerExistsError()
 
         if not _validate_callback(worker.callback):
             raise WorkerCallbackError(url=worker.callback)
+
+        if not _validate_callback(worker.status_callback):
+            raise WorkerCallbackError(url=worker.status_callback)
 
         self._workers.append(worker)
 
@@ -34,6 +38,9 @@ class WorkerManager:
 
     def worker_info(self, name: str = None):
         return [w.to_public_json() for w in self._workers if name is None or name == w.name]
+
+    def worker_status(self, name: str = None):
+        return {w.name: str(w.status) for w in self._workers if name is None or name == w.name}
 
     def update(self, name: str, status: WorkerStatus):
         for w in self._workers:
@@ -58,6 +65,11 @@ class WorkerManager:
                 raise WorkerUnavailableError(filename=meta.filename)
         else:
             raise WorkerUnavailableError(filename=meta.filename)
+
+    def reset_worker_status(self, name: str = None):
+        for worker in self._workers:
+            if name is None or worker.name == name:
+                _schedule_callback(worker.status_callback, {})
 
 
 def _find_workers(filename: str, worker_type: str, workers: List[WorkerData]) -> List[WorkerData]:

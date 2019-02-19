@@ -2,9 +2,25 @@ version: '3'
 services:
   ovehub-ove-asset-manager-service:
     image: ovehub/ove-asset-manager-service:latest-unstable
-    build: .
+    build:
+      context: .
+      dockerfile: docker/am/Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - ./config/:/code/config/:ro
     environment:
       GUNICORN_THREADS: "8"
       SERVICE_LOG_LEVEL: "debug"
+
+  ovehub-ove-asset-manager-worker-zip:
+    image: ovehub/ove-asset-manager-worker-zip:latest-unstable
+    build:
+      context: .
+      dockerfile: docker/worker-zip/Dockerfile
+    ports:
+      - "9080:9080"
+    environment:
+      SERVICE_LOG_LEVEL: "debug"
+      SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
+      SERVICE_AM_PORT: "8080"

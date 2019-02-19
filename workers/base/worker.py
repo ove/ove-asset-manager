@@ -12,19 +12,29 @@ from workers.base.controller import FileController
 
 
 class BaseWorker(ABC):
-    def __init__(self, name: str, callback: str, service_url: str, file_controller: FileController):
+    def __init__(self, name: str, callback: str, status_callback: str, service_url: str, file_controller: FileController):
         self._name = name
         self._callback = callback
+        self._status_callback = status_callback
         self._service_url = service_url
         self._file_controller = file_controller
         self._status = WorkerStatus.READY
 
     @property
+    def name(self) -> str:
+        return self._name
+
+    @property
     def status(self) -> WorkerStatus:
         return self._status
 
+    def reset_status(self) -> WorkerStatus:
+        if self.status is WorkerStatus.ERROR:
+            self.update_status(WorkerStatus.READY)
+        return self.status
+
     def update_status(self, status: WorkerStatus):
-        r = requests.patch(self._service_url, json={"name": self._name, "status": str(status)})
+        r = requests.patch(self._service_url, json={"name": self.name, "status": str(status)})
         if 200 <= r.status_code < 300:
             logging.info("%s status updated on server '%s'", status, self._service_url)
             self._status = status
@@ -32,7 +42,7 @@ class BaseWorker(ABC):
             logging.error("Failed to update status on server '%s'. Requested status: %s. Server error: %s", self._service_url, status, r.text)
 
     def report_error(self, error: str):
-        r = requests.patch(self._service_url, json={"name": self._name, "status": str(WorkerStatus.ERROR), "error": error})
+        r = requests.patch(self._service_url, json={"name": self.name, "status": str(WorkerStatus.ERROR), "error": error})
         if 200 <= r.status_code < 300:
             logging.error("Error status updated on server '%s'. Error: %s", self._service_url, error)
             self._status = WorkerStatus.ERROR
@@ -40,8 +50,8 @@ class BaseWorker(ABC):
             logging.error("Failed to update status on server '%s'. Reported error: %s. Server error: %s", self._service_url, error, r.text)
 
     def register_callback(self, attempts: int, timeout: int):
-        data = WorkerData(name=self._name, callback=self._callback, type=self.worker_type(), description=self.description(), status=self.status,
-                          extensions=self.extensions())
+        data = WorkerData(name=self.name, callback=self._callback, status_callback=self._status_callback,
+                          type=self.worker_type(), description=self.description(), status=self.status, extensions=self.extensions())
 
         for i in range(attempts):
             logging.info("Register callback timeout %s ms", timeout)
@@ -66,11 +76,11 @@ class BaseWorker(ABC):
 
             meta = self._file_controller.get_asset_meta(project_name=project_name, asset_name=asset_name)
             self.update_status(WorkerStatus.PROCESSING)
-            self._file_controller.lock_asset(project_name=project_name, asset_name=asset_name, meta=meta, worker_name=self._name)
+            self._file_controller.lock_asset(project_name=project_name, meta=meta, worker_name=self._name)
 
             self.process(project_name=project_name, meta=meta, options=task_options)
 
-            self._file_controller.unlock_asset(project_name=project_name, asset_name=asset_name, meta=meta)
+            self._file_controller.unlock_asset(project_name=project_name, meta=meta)
             self.update_status(WorkerStatus.READY)
             self._file_controller.clean()
         except:

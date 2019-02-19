@@ -2,13 +2,16 @@ import datetime
 from enum import Enum
 from typing import Dict
 
+from common.util import append_slash
+
 
 class OveMeta:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
+        self.project = kwargs.get("project", "")
         self.description = kwargs.get("description", "")
         self.filename = kwargs.get("filename", "")
-        self.proxy_url = kwargs.get("proxy_url", "")
+        self.proxy_url = append_slash(kwargs.get("proxy_url", ""))
         self.index_file = kwargs.get("index_file", "")
         self.uploaded = kwargs.get("uploaded", False)
         self.permissions = kwargs.get("permissions", "")
@@ -27,7 +30,7 @@ class OveMeta:
             "Version": len(self.history)
         })
         self.version = int(self.history[-1]["Version"])
-        self.index_file = self.proxy_url + self.name + "/" + str(self.version) + "/" + self.filename
+        self.index_file = self.proxy_file_path
 
     def upload(self):
         self.history.append({
@@ -35,18 +38,26 @@ class OveMeta:
             "Time": str(datetime.datetime.today()),
             "Version": len(self.history)
         })
-        self.index_file = self.proxy_url + self.name + "/" + str(self.version) + "/" + self.filename
+        self.index_file = self.proxy_file_path
 
     def created(self):
         self.history = [{
             "Type": "Created",
             "Time": str(datetime.datetime.today()),
             "Version": 1}]
-        self.index_file = self.proxy_url + self.name + "/" + str(self.version) + "/" + self.filename
+        self.index_file = self.proxy_file_path
 
     @property
     def file_location(self):
-        return str(self.history[-1]["Version"]) + "/" + self.filename
+        return str(self.version) + "/" + self.filename
+
+    @property
+    def relative_file_path(self):
+        return self.project + "/" + self.name + "/" + self.file_location
+
+    @property
+    def proxy_file_path(self):
+        return self.proxy_url + self.relative_file_path
 
     def to_json(self) -> Dict:
         result = dict(self.__dict__)
@@ -73,6 +84,7 @@ class WorkerData:
         self.description = kwargs.get("description", "")
         self.status = WorkerStatus(kwargs.get("status", None))
         self.callback = kwargs.get("callback", "")
+        self.status_callback = kwargs.get("status_callback", "")
 
     def __eq__(self, other):
         if isinstance(other, WorkerData):
@@ -90,7 +102,8 @@ class WorkerData:
             "description": self.description,
             "extensions": self.extensions,
             "status": str(self.status),
-            "callback": self.callback
+            "callback": self.callback,
+            "status_callback": self.status_callback
         }
 
 

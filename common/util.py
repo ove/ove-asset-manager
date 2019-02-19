@@ -1,4 +1,6 @@
 import logging
+from importlib import import_module
+from typing import Callable
 
 from common.errors import ValidationError
 
@@ -11,7 +13,6 @@ def parse_logging_lvl(lvl_name: str) -> int:
         return logging.INFO
 
 
-# todo; figure out if we need this
 def is_empty(any_structure):
     if any_structure:
         return False
@@ -38,3 +39,17 @@ def to_bool(value):
 
 def is_empty_str(data: str) -> bool:
     return data is None or len(data.strip()) == 0
+
+
+def append_slash(path: str) -> str:
+    return path if path.endswith("/") else path + "/"
+
+
+def dynamic_import(full_class_path: str) -> Callable:
+    if full_class_path is None:
+        raise ValueError("Invalid class provided '{}'".format(full_class_path))
+
+    abs_module_path, class_name = full_class_path.rsplit(".", maxsplit=1)
+    module_object = import_module(abs_module_path)
+    target_class = getattr(module_object, class_name)
+    return target_class

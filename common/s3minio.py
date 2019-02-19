@@ -161,7 +161,9 @@ class S3Manager:
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists. If we can parse it then it may be valid')
-            json.load(client.get_object(project_name, meta_name))
+            response = client.get_object(project_name, meta_name)
+            # todo; refactor this by using the http response code instead of parsing the body
+            json.load(io.TextIOWrapper(response, encoding='utf-8'))
             return True
         except Exception:
             logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
@@ -172,7 +174,8 @@ class S3Manager:
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
-            obj = json.load(client.get_object(project_name, meta_name))
+            response = client.get_object(project_name, meta_name)
+            obj = json.load(io.TextIOWrapper(response, encoding='utf-8'))
             return OveMeta(**obj)
         except Exception:
             if ignore_errors:
@@ -199,7 +202,9 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             logging.debug('Checking if object exists. If we can parse it then it may be valid')
-            json.load(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
+            response = client.get_object(project_name, object_name + S3_OBJECT_EXTENSION)
+            # todo; refactor this by using the http response code instead of parsing the body
+            json.load(io.TextIOWrapper(response, encoding='utf-8'))
             return True
         except Exception:
             logging.error("Error while trying to check if object exists. Error: %s", sys.exc_info()[1])
@@ -210,7 +215,8 @@ class S3Manager:
 
         client = self._get_connection(store_name)
         try:
-            return json.load(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
+            response = client.get_object(project_name, object_name + S3_OBJECT_EXTENSION)
+            return json.load(io.TextIOWrapper(response, encoding='utf-8'))
         except Exception:
             if ignore_errors:
                 return None
