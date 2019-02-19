@@ -49,21 +49,21 @@ class FileController:
             raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
         return self._manager.create_asset(store_name=store_name, project_name=project_name, meta=meta)
 
-    def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
-                     store_name: str = None) -> None:
+    def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, upload_filename: str, store_name: str = None) -> None:
         meta.filename = filename
-        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)
+        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location,
+                                   upload_filename=upload_filename)
         logging.debug("Setting uploaded flag to True")
         meta.uploaded = True
         meta.upload()
         self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
 
-    def update_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, file,
-                     store_name: str = None) -> None:
+    def update_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, upload_filename: str, store_name: str = None) -> None:
         meta.filename = filename
         meta.update()
         self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
-        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location, upfile=file)
+        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location,
+                                   upload_filename=upload_filename)
 
     def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> OveMeta:
         return self._manager.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)

@@ -3,11 +3,11 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from multiprocessing import Process
-from typing import Dict, Union
+from typing import Dict, List
 
 import requests
 
-from common.entities import OveMeta, WorkerStatus, WorkerData, WorkerType
+from common.entities import OveMeta, WorkerStatus, WorkerData
 from workers.base.controller import FileController
 
 
@@ -40,8 +40,8 @@ class BaseWorker(ABC):
             logging.error("Failed to update status on server '%s'. Reported error: %s. Server error: %s", self._service_url, error, r.text)
 
     def register_callback(self, attempts: int, timeout: int):
-        wt = self.worker_type()
-        data = WorkerData(name=self._name, callback=self._callback, type=wt, status=self.status, extensions=wt.extensions)
+        data = WorkerData(name=self._name, callback=self._callback, type=self.worker_type(), description=self.description(), status=self.status,
+                          extensions=self.extensions())
 
         for i in range(attempts):
             logging.info("Register callback timeout %s ms", timeout)
@@ -78,8 +78,25 @@ class BaseWorker(ABC):
             self.report_error("Error while trying to process ({}, {}). Check worker logs for details.".format(project_name, asset_name))
 
     @abstractmethod
-    def worker_type(self) -> Union[WorkerType, None]:
-        return None
+    def worker_type(self) -> str:
+        """
+        :return: the worker type as a string. This value can be a valid WorkerType or anything else
+        """
+        return ""
+
+    @abstractmethod
+    def extensions(self) -> List:
+        """
+        :return: the extensions handled by this worker
+        """
+        return []
+
+    @abstractmethod
+    def description(self) -> str:
+        """
+        :return: description in human-readable format
+        """
+        return ""
 
     @abstractmethod
     def process(self, project_name: str, meta: OveMeta, options: Dict):

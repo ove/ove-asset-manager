@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Dict
 
 
 class OveMeta:
@@ -68,8 +68,9 @@ class WorkerData:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", None)
         self.extensions = kwargs.get("extensions", [])
-        self.type = WorkerType(kwargs.get("type", None))
-        self.description = kwargs.get("description", self.type.description)
+        # workers are not restricted to WorkerTypes
+        self.type = kwargs.get("type", None)
+        self.description = kwargs.get("description", "")
         self.status = WorkerStatus(kwargs.get("status", None))
         self.callback = kwargs.get("callback", "")
 
@@ -102,26 +103,10 @@ class WorkerStatus(Enum):
         return self.value
 
 
+# Provided for convenience
 class WorkerType(Enum):
-    IMAGE = "image", "DZI image processor", [".png", ".jpeg", ".jpg"]
-    ZIP = "zip", "Unzip processor", [".zip"]
-
-    def __new__(cls, *args, **kwds):
-        obj = object.__new__(cls)
-        obj._value_ = args[0]
-        return obj
-
-    def __init__(self, _: str, description: str = None, extensions: List = None):
-        self._description_ = description
-        self._extensions_ = extensions if extensions is not None else []
+    DZ_IMAGE = "dz-image"
+    EXTRACT = "extract"
 
     def __str__(self):
         return self.value
-
-    @property
-    def description(self):
-        return self._description_
-
-    @property
-    def extensions(self):
-        return self._extensions_

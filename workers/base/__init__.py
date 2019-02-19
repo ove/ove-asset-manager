@@ -18,7 +18,7 @@ def setup_worker(**kwargs) -> falcon.API:
     hostname = kwargs.get("hostname", "localhost")
     port = kwargs.get("port", 9080)
     worker_name = kwargs.get("worker_name", "test")
-    worker_type = WorkerType(kwargs.get("worker_type", "zip"))
+    worker_type = WorkerType(kwargs.get("worker_type", "extract"))
     service_url = kwargs.get("service_url", "http://localhost:8080/api/workers")
     registration_attempts = kwargs.get("registration_attempts", 5)
     registration_timeout = kwargs.get("registration_timeout", 5000)

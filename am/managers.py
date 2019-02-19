@@ -40,8 +40,8 @@ class WorkerManager:
             if w.name == name:
                 w.status = status
 
-    def schedule_process(self, project_name: str, meta: OveMeta, store_config: Dict):
-        available = _find_workers(meta.filename, self._workers)
+    def schedule_process(self, project_name: str, meta: OveMeta, worker_type: str, store_config: Dict):
+        available = _find_workers(filename=meta.filename, worker_type=worker_type, workers=self._workers)
         if len(available) > 0:
             # load balancing ^_^
             random.shuffle(available)
@@ -60,9 +60,9 @@ class WorkerManager:
             raise WorkerUnavailableError(filename=meta.filename)
 
 
-def _find_workers(filename: str, workers: List[WorkerData]) -> List[WorkerData]:
+def _find_workers(filename: str, worker_type: str, workers: List[WorkerData]) -> List[WorkerData]:
     def is_valid(w: WorkerData) -> bool:
-        if any([filename.endswith(ext) for ext in w.extensions]):
+        if w.type == worker_type and any([filename.endswith(ext) for ext in w.extensions]):
             return _validate_callback(w.callback)
         return False
 

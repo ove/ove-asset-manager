@@ -104,3 +104,8 @@ class WorkerUnavailableError(ValidationError):
     def __init__(self, filename: str):
         super(WorkerUnavailableError, self).__init__(title="No worker available for task",
                                                      description="'{}' cannot be processed by any worker".format(filename))
+
+
+class WorkerLockError(ValidationError):
+    def __init__(self):
+        super(WorkerLockError, self).__init__(title="Cannot lock worker", description="The asset has already a worker assigned")

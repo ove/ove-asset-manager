@@ -65,9 +65,12 @@ class WorkerSchedule:
         self._controller = controller
         self._worker_manager = worker_manager
 
-    def on_post(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        validate_not_null(req, 'worker_type')
+
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-        self._worker_manager.schedule_process(project_name=project_id, meta=meta, store_config=self._controller.get_store_config(store_name=store_id))
+        self._worker_manager.schedule_process(project_name=project_id, meta=meta, worker_type=req.media.get("worker_type"),
+                                              store_config=self._controller.get_store_config(store_name=store_id))
 
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
@@ -330,4 +333,4 @@ def _save_filename(save_fn: Callable, req: falcon.Request):
     with tempfile.NamedTemporaryFile() as cache:
         cache.write(req.stream.read())
         cache.flush()
-        save_fn(file=cache)
+        save_fn(file=cache.name)

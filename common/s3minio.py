@@ -136,13 +136,22 @@ class S3Manager:
             logging.error("Error while trying to create asset. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create asset on remote storage. Please check the asset name.")
 
-    def upload_asset(self, project_name: str, asset_name: str, filename: str, upfile, store_name: str = None) -> None:
+    def upload_asset(self, project_name: str, asset_name: str, filename: str, upload_filename: str, store_name: str = None) -> None:
         client = self._get_connection(store_name)
         try:
             # filesize=os.stat(upfile.name).st_size
             filepath = asset_name + S3_SEPARATOR + filename
-            print("s3 filepath", filepath)
-            client.fput_object(project_name, filepath, upfile.name)
+            client.fput_object(project_name, filepath, upload_filename)
+        except ResponseError:
+            logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])
+            raise ValidationError("Unable to upload asset to remote storage.")
+
+    def download_asset(self, project_name: str, asset_name: str, filename: str, down_filename: str, store_name: str = None) -> None:
+        client = self._get_connection(store_name)
+        try:
+            # filesize=os.stat(upfile.name).st_size
+            filepath = asset_name + S3_SEPARATOR + filename
+            client.fget_object(project_name, filepath, down_filename)
         except ResponseError:
             logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to upload asset to remote storage.")
