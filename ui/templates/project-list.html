@@ -1,0 +1,32 @@
+{% extends "base/base.html" %}
+{% block title %}Project list{% endblock %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable();
+        });
+    </script>
+
+    <table id="table" class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Project Name</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in Projects -%}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ project }}</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+
+        {%- endfor %}
+        </tbody>
+    </table>
+{% endblock %}

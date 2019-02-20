@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+
+    <link rel="stylesheet" href="css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables-1.10.19.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+          integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="js/jquery-3.3.1.slim.min.js"></script>
+    <script src="js/jquery.dataTables-1.10.19.min.js"></script>
+    <script src="js/popper-1.14.7.min.js"></script>
+    <script src="js/bootstrap-4.3.1.min.js"></script>
+</head>
+
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+
+{% include 'base/alerts.html' %}
+{% include 'base/navbar.html' %}
+<div class="container-fluid">{% block content %}{% endblock %}</div>
+{% include 'base/footer.html' %}
+</body>
+</html>
