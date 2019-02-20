@@ -67,6 +67,7 @@ class OveMeta:
     def to_public_json(self):
         return {
             "name": self.name,
+            "project": self.project,
             "description": self.description,
             "index_file": self.index_file,
             "version": str(self.version),

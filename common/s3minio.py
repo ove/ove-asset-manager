@@ -1,13 +1,12 @@
-# s3miniomodule for accessing object stores that are compatible with the minio sdk
-# requires pip install minio
 import io
 import json
 import logging
 import sys
-from typing import Union, Dict, Callable, List
+from typing import Union, Dict, Callable, List, Any, Tuple
 
 from minio import Minio
 from minio.error import ResponseError
+from urllib3 import HTTPResponse
 
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
 from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
@@ -16,6 +15,8 @@ from common.errors import ValidationError, InvalidStoreError, InvalidAssetError,
 from common.filters import DEFAULT_FILTER
 
 _DEFAULT_LABEL = "*"
+_DEFAULT_OBJECT_ENCODING = "utf-8"
+_DEFAULT_STORE_LOCATION = "us-east-1"
 
 
 class S3Manager:
@@ -41,7 +42,7 @@ class S3Manager:
                         self._clients[_DEFAULT_LABEL] = client
                         self._store_config[_DEFAULT_LABEL] = client_config
                 logging.info("Loaded %s connection configs from s3 client config file", len(self._clients))
-        except Exception:
+        except:
             logging.error("Error while trying to load store config. Error: %s", sys.exc_info()[1])
 
     def setup(self, store_config: Dict):
@@ -84,7 +85,7 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             return {'Projects': [bucket.name for bucket in client.list_buckets() if _filter(bucket.name)]}
-        except Exception:
+        except:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
             return {'Projects': []}
 
@@ -100,7 +101,7 @@ class S3Manager:
             # For the asset list, we switch to a public meta object
             metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
             return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if result_filter(meta)}}
-        except Exception:
+        except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
             return {'Assets': {}}
 
@@ -115,7 +116,7 @@ class S3Manager:
     def create_project(self, project_name: str, store_name: str = None) -> None:
         client = self._get_connection(store_name)
         try:
-            client.make_bucket(project_name, location='us-east-1')
+            client.make_bucket(project_name, location=_DEFAULT_STORE_LOCATION)
         except ResponseError:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
@@ -126,9 +127,8 @@ class S3Manager:
         try:
             # minio interprets the slash as a directory
             meta_name = meta.name + S3_SEPARATOR + OVE_META
-            temp_meta = io.BytesIO(json.dumps(meta.to_json()).encode())
-            file_size = temp_meta.getbuffer().nbytes
-            client.put_object(project_name, meta_name, temp_meta, file_size)
+            data, size = _encode_json(meta.to_json())
+            client.put_object(project_name, meta_name, data, size)
             meta.created()
             self.set_asset_meta(project_name, meta.name, meta, store_name)
             return meta
@@ -160,12 +160,10 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
-            logging.debug('Checking if asset exists. If we can parse it then it may be valid')
+            logging.debug('Checking if asset exists...')
             response = client.get_object(project_name, meta_name)
-            # todo; refactor this by using the http response code instead of parsing the body
-            json.load(io.TextIOWrapper(response, encoding='utf-8'))
-            return True
-        except Exception:
+            return 200 <= response.status < 300
+        except:
             logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
             return False
 
@@ -174,10 +172,9 @@ class S3Manager:
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
-            response = client.get_object(project_name, meta_name)
-            obj = json.load(io.TextIOWrapper(response, encoding='utf-8'))
+            obj = _decode_json(client.get_object(project_name, meta_name))
             return OveMeta(**obj)
-        except Exception:
+        except:
             if ignore_errors:
                 return None
             else:
@@ -188,10 +185,9 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
-            temp_meta = io.BytesIO(json.dumps(meta.to_json()).encode())
-            file_size = temp_meta.getbuffer().nbytes
-            client.put_object(project_name, meta_name, temp_meta, file_size)
-        except Exception:
+            data, size = _encode_json(meta.to_json())
+            client.put_object(project_name, meta_name, data, size)
+        except:
             if not ignore_errors:
                 logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
                 raise InvalidAssetError(store_name=store_name, project_name=project_name, asset_name=asset_name)
@@ -201,12 +197,10 @@ class S3Manager:
 
         client = self._get_connection(store_name)
         try:
-            logging.debug('Checking if object exists. If we can parse it then it may be valid')
+            logging.debug('Checking if object exists ...')
             response = client.get_object(project_name, object_name + S3_OBJECT_EXTENSION)
-            # todo; refactor this by using the http response code instead of parsing the body
-            json.load(io.TextIOWrapper(response, encoding='utf-8'))
-            return True
-        except Exception:
+            return 200 <= response.status < 300
+        except:
             logging.error("Error while trying to check if object exists. Error: %s", sys.exc_info()[1])
             return False
 
@@ -215,8 +209,7 @@ class S3Manager:
 
         client = self._get_connection(store_name)
         try:
-            response = client.get_object(project_name, object_name + S3_OBJECT_EXTENSION)
-            return json.load(io.TextIOWrapper(response, encoding='utf-8'))
+            return _decode_json(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
         except Exception:
             if ignore_errors:
                 return None
@@ -229,9 +222,8 @@ class S3Manager:
 
         client = self._get_connection(store_name)
         try:
-            temp = io.BytesIO(json.dumps(object_data).encode())
-            file_size = temp.getbuffer().nbytes
-            client.put_object(project_name, object_name + S3_OBJECT_EXTENSION, temp, file_size)
+            data, size = _encode_json(object_data)
+            client.put_object(project_name, object_name + S3_OBJECT_EXTENSION, data, size)
         except Exception:
             logging.error("Error while trying to set object. Error: %s", sys.exc_info()[1])
             raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
@@ -241,3 +233,13 @@ class S3Manager:
 def _validate_object_name(store_name: str, project_name: str, object_name: str) -> None:
     if not object_name or not object_name.isalnum():
         raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+
+
+def _encode_json(data: Any) -> Tuple[io.BytesIO, int]:
+    encoded = io.BytesIO(json.dumps(data).encode(encoding=_DEFAULT_OBJECT_ENCODING))
+    size = encoded.getbuffer().nbytes
+    return encoded, size
+
+
+def _decode_json(response: HTTPResponse) -> Dict:
+    return json.load(io.TextIOWrapper(response, encoding=_DEFAULT_OBJECT_ENCODING))
