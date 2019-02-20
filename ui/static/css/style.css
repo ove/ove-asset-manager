@@ -1,3 +1,21 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1 0 auto;
+}
+
+.footer-size {
+    flex-shrink: 0;
+}
+
 .footer-color {
     background-color: #f5f5f5;
 }

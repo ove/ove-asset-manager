@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union, List
 
 import requests
 
@@ -15,24 +15,16 @@ class BackendController:
     # def list_stores(self):
     #     return self._manager.list_stores()
 
-    def list_projects(self, store_name: str = "*", with_object: str = None) -> Dict:
-        response = requests.get(self._backend_url + "api/{}/list".format(store_name))
-        if 200 <= response.status_code < 300:
-            return response.json()
-        else:
-            raise ValidationError(**response.json())
+    def list_projects(self, store_name: str) -> List:
+        projects = _get_data(self._backend_url + "api/{}/list".format(store_name)).get("Projects", [])
+        projects_with_project = set(_get_data(self._backend_url + "api/{}/list?hasObject=project".format(store_name)).get("Projects", []))
+        return [{"name": project, "has_project": project in projects_with_project} for project in projects]
 
     # def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> Dict:
     #     return self._manager.list_assets(store_name=store_name, project_name=project_name, result_filter=result_filter)
     #
-    # def create_project(self, project_name: str, store_name: str = None) -> None:
-    #     # To avoid confusion, we reserve certain names for projects
-    #     if project_name in _RESERVED_NAMES:
-    #         raise ProjectExistsError(store_name=store_name, project_name=project_name)
-    #     if self._manager.check_exists(store_name=store_name, project_name=project_name):
-    #         raise ProjectExistsError(store_name=store_name, project_name=project_name)
-    #
-    #     self._manager.create_project(store_name=store_name, project_name=project_name)
+    def create_project(self, store_name: str, project_name: str) -> None:
+        _post_data(self._backend_url + "api/{}/create".format(store_name), data={"name": project_name})
     #
     # def check_exists_project(self, project_name: str, store_name: str = None) -> bool:
     #     return self._manager.check_exists(store_name=store_name, project_name=project_name)
@@ -72,3 +64,19 @@ class BackendController:
     #         raise ObjectExistsError(store_name=store_name, project_name=project_name, object_name=object_name)
     #
     #     return self._manager.set_object(store_name=store_name, project_name=project_name, object_name=object_name, object_data=object_data)
+
+
+def _get_data(url: str) -> Union[List, Dict]:
+    response = requests.get(url)
+    if 200 <= response.status_code < 300:
+        return response.json()
+    else:
+        raise ValidationError(**response.json())
+
+
+def _post_data(url: str, data: Dict) -> Union[List, Dict]:
+    response = requests.post(url, json=data)
+    if 200 <= response.status_code < 300:
+        return response.json()
+    else:
+        raise ValidationError(**response.json())

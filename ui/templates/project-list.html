@@ -4,28 +4,41 @@
 {% block content %}
     <script>
         $(document).ready(function () {
-            $('#table').DataTable();
+            $('#table').DataTable({
+                "pageLength": 10,
+                "order": [1, 'asc'],
+                "columns": [{"width": 20}, null]
+            });
         });
     </script>
+
+    <form class="form-inline" action="/{{ store_name }}/" method="post">
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="project" class="sr-only">Project</label>
+            <input type="text" class="form-control" id="project" name="project" placeholder="Project name" required>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Create new project</button>
+    </form>
 
     <table id="table" class="table table-striped">
         <thead class="thead-dark">
         <tr>
             <th scope="col">#</th>
             <th scope="col">Project Name</th>
-            <th scope="col">Status</th>
-            <th scope="col">Actions</th>
         </tr>
         </thead>
         <tbody>
-        {% for project in Projects -%}
+        {% for project in projects -%}
             <tr>
-                <th scope="row">{{ loop.index }}</th>
-                <td>{{ project }}</td>
-                <td>-</td>
-                <td>-</td>
+                <td>
+                    {% if project.has_project %}
+                        <span title="This project has a project.json file"><i class="fas fa-heartbeat"></i></span>
+                    {% else %}
+                        <span title="This project does not have a project.json file, yet!"><i class="fas fa-heart-broken"></i></span>
+                    {% endif %}
+                </td>
+                <td><a href="#">{{ project.name }}</a></td>
             </tr>
-
         {%- endfor %}
         </tbody>
     </table>
