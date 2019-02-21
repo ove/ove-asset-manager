@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-2">
-    <a class="navbar-brand" href="#">Asset Manager</a>
+    <a class="navbar-brand" href="/"><i class="fas fa-project-diagram"></i></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
             aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -7,8 +7,23 @@
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="/">Projects</a>
+                <a class="nav-link {{ "active" if not store_name }}" href="/">Home</a>
             </li>
+            {% if store_name %}
+                <li class="nav-item">
+                    <a class="nav-link {{ "active" if not project_name }}" href="/view/{{ store_name }}/">
+                        &gt;&nbsp;&nbsp;&nbsp;Store:
+                        <span class="badge {{ "badge-primary" if not project_name else "badge-secondary" }}">{{ store_name }}</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% if project_name %}
+                <li class="nav-item">
+                    <a class="nav-link active" href="/view/{{ store_name }}/{{ project_name }}/">
+                        &gt;&nbsp;&nbsp;&nbsp;Project: <span class="badge badge-primary">{{ project_name }}</span>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

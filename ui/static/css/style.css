@@ -71,3 +71,7 @@ body {
 .icon-warning {
     color: #ffc107;
 }
+
+.align-text-right {
+    text-align: right;
+}

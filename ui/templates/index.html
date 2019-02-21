@@ -1,0 +1,28 @@
+{% extends "base/base.html" %}
+{% block title %}Store list{% endblock %}
+
+{% block content %}
+    <p></p>
+
+
+    <div class="jumbotron">
+        <h1 class="display-4">Asset Manager</h1>
+        <p class="lead">
+            This platform is used to store project data for the <a href="https://www.imperial.ac.uk/data-science/data-observatory/" target="_blank">
+            Data Observatory</a>.
+        </p>
+        <p class="lead">
+            The Asset Manager is a generic data storage solution, but the design has been made to match the <a href="https://github.com/ove" target="_blank">
+            Open Visualisation Environment (OVE)</a> requirements.
+        </p>
+        <hr class="my-4">
+
+        <div class="list-group list-group-horizontal">
+            <div class="list-group-item disabled" aria-disabled="true">Please select a store:</div>
+            {% for store in stores %}
+                <a href="/view/{{ store }}/" class="list-group-item list-group-item-action list-group-item-primary" style="width: auto;">{{ store }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

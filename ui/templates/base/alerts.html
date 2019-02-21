@@ -9,7 +9,7 @@
         {% for alert in alerts -%}
             <div class="toast toast-{{ alert.type }}" role="alert" aria-live="assertive" aria-atomic="true" data-delay="20000">
                 <div class="toast-header">
-                    <small class="mr-auto">{{ alert.title }}</small>
+                    <strong class="mr-auto">{{ alert.title }}</strong>
                     <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

@@ -7,18 +7,19 @@
             $('#table').DataTable({
                 "pageLength": 10,
                 "order": [1, 'asc'],
-                "columns": [{"width": 20}, null]
+                "columns": [{"width": 20, "orderable": false}, null, {"width": 20, "orderable": false}]
             });
         });
     </script>
 
-    <form id="project-create" class="form-inline" action="/{{ store_name }}/" method="get">
-        <div class="form-group mx-sm-3 mb-2">
+    <form id="project-create" class="form-inline" action="/{{ store_name }}/" method="post">
+        <div class="form-group mb-4 mt-2">
             <label for="project" class="sr-only">Project</label>
             <input type="text" class="form-control" id="project" name="project" placeholder="Project name" required>
             <div class="invalid-feedback">Please provide a valid project name.</div>
         </div>
-        <button type="button" class="btn btn-primary mb-2" onclick="confirm_submission('project-create', 'Are you sure you want to create the project?')">
+        <button type="button" class="btn btn-primary mb-4 mt-2 ml-3"
+                onclick="confirm_submission('project-create', 'Are you sure you want to create the project?')">
             Create new project
         </button>
     </form>
@@ -28,6 +29,7 @@
         <tr>
             <th scope="col">#</th>
             <th scope="col">Project Name</th>
+            <th scope="col"></th>
         </tr>
         </thead>
         <tbody>
@@ -35,12 +37,19 @@
             <tr>
                 <td>
                     {% if project.has_project %}
-                        <span title="This project has a project.json file"><i class="fas fa-heartbeat icon-ok"></i></span>
+                        <span data-toggle="tooltip" data-placement="top" title="This project has a project.json file">
+                            <i class="fas fa-heartbeat icon-ok"></i>
+                        </span>
                     {% else %}
-                        <span title="This project does not have a project.json file, yet!"><i class="fas fa-heart-broken icon-error"></i></span>
+                        <span data-toggle="tooltip" data-placement="top" title="This project does not have a project.json file, yet!">
+                            <i class="fas fa-heart-broken icon-error"></i>
+                        </span>
                     {% endif %}
                 </td>
-                <td><a href="#">{{ project.name }}</a></td>
+                <td><a href="/view/{{ store_name }}/{{ project.name }}">{{ project.name }}</a></td>
+                <td>
+                    <a href="/view/{{ store_name }}/{{ project.name }}" class="btn btn-sm btn-outline-primary">Open</a>
+                </td>
             </tr>
         {%- endfor %}
         </tbody>

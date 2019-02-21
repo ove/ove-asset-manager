@@ -20,9 +20,9 @@ class WorkerRoute:
         if self._worker.status is not WorkerStatus.READY:
             raise ValidationError(title="Worker not ready", description="This worker is doing something useful. Please check the status.")
 
-        validate_not_null(req, 'store_config')
-        validate_not_null(req, 'project_name')
-        validate_not_null(req, 'asset_name')
+        validate_not_null(req.media, 'store_config')
+        validate_not_null(req.media, 'project_name')
+        validate_not_null(req.media, 'asset_name')
 
         process_request(store_config=req.media.get("store_config"), project_name=req.media.get("project_name"),
                         asset_name=req.media.get("asset_name"), worker=self._worker, task_options=req.media.get("task_options", dict()))

@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+{% block title %}Asset list{% endblock %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pageLength": 25,
+                "order": [1, 'asc'],
+                "columns": [
+                    {"width": "10%"}, {"width": "10%"}, {"width": "30%"}, {"width": "10%"}, {"width": "2%"}, {"width": "30%"}, {
+                        "width": "8%",
+                        "orderable": false
+                    }
+                ],
+                "columnDefs": [{"targets": 4, "className": "align-text-right"}]
+            });
+        });
+    </script>
+
+    <table id="table" class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">Project Name</th>
+            <th scope="col">Asset Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Tags</th>
+            <th scope="col">Ver.</th>
+            <th scope="col">Index File</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for asset in assets -%}
+            <tr>
+                <td><a href="/view/{{ store_name }}/{{ project_name }}">{{ asset.project }}</a></td>
+                <td><a href="/view/{{ store_name }}/{{ project_name }}/{{ asset.name }}">{{ asset.name }}</a></td>
+                <td>{{ asset.description }}</td>
+                <td>
+                    {% if asset.tags %}
+                        {% for tag in asset.tags %}
+                            <span class="badge badge-info">{{ tag }}</span>&nbsp;&nbsp;
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>{{ asset.version }}</td>
+                <td><a href="{{ asset.index_file }}" target="_blank">{{ asset.index_file }}</a></td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Edit asset">
+                            <i class="far fa-edit"></i>
+                        </a>
+                        <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload asset">
+                            <i class="fas fa-upload"></i>
+                        </a>
+                        <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Process asset">
+                            <i class="fas fa-paint-roller"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        {%- endfor %}
+        </tbody>
+    </table>
+{% endblock %}

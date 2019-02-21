@@ -12,17 +12,18 @@ class BackendController:
     def __init__(self, backend_url: str):
         self._backend_url = append_slash(backend_url)
 
-    # def list_stores(self):
-    #     return self._manager.list_stores()
+    def list_stores(self) -> List:
+        return _get_data(self._backend_url + "api/list") or []
 
     def list_projects(self, store_name: str) -> List:
         projects = _get_data(self._backend_url + "api/{}/list".format(store_name)).get("Projects", [])
         projects_with_project = set(_get_data(self._backend_url + "api/{}/list?hasObject=project".format(store_name)).get("Projects", []))
         return [{"name": project, "has_project": project in projects_with_project} for project in projects]
 
-    # def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> Dict:
-    #     return self._manager.list_assets(store_name=store_name, project_name=project_name, result_filter=result_filter)
-    #
+    def list_assets(self, store_name: str, project_name: str) -> List:
+        assets = _get_data(self._backend_url + "api/{}/{}/list".format(store_name, project_name)).get("Assets", {})
+        return [v for v in assets.values()]
+
     def create_project(self, store_name: str, project_name: str) -> None:
         _post_data(self._backend_url + "api/{}/create".format(store_name), data={"name": project_name})
     #

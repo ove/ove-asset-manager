@@ -9,7 +9,7 @@ def report_info(resp: Response, title: str = "Info", description: str = ""):
     report_alert(type="info", resp=resp, title=title, description=description)
 
 
-def report_success(resp: Response, title: str = "Done", description: str = ""):
+def report_success(resp: Response, title: str = "Success", description: str = ""):
     report_alert(type="success", resp=resp, title=title, description=description)
 
 
