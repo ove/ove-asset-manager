@@ -24,3 +24,16 @@ services:
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
       SERVICE_AM_PORT: "8080"
+
+
+  ovehub-ove-asset-manager-worker-gigaimage:
+    image: ovehub/ove-asset-manager-worker-gigaimage:latest-unstable
+    build:
+      context: .
+      dockerfile: docker/worker-gigaimage/Dockerfile
+    ports:
+      - "9081:9081"
+    environment:
+      SERVICE_LOG_LEVEL: "debug"
+      SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
+      SERVICE_AM_PORT: "8080"
