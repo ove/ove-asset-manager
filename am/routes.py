@@ -347,4 +347,4 @@ def _save_filename(save_fn: Callable, req: falcon.Request):
     with tempfile.NamedTemporaryFile() as cache:
         cache.write(req.stream.read())
         cache.flush()
-        save_fn(file=cache.name)
+        save_fn(upload_filename=cache.name)
