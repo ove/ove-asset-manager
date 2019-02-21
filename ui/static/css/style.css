@@ -51,3 +51,23 @@ body {
 .toast-warning > .toast-header {
     background-color: #ffeeba;
 }
+
+.icon-error {
+    color: #dc3545;
+}
+
+.icon-success {
+    color: #28a745;
+}
+
+.icon-ok {
+    color: #007bff;
+}
+
+.icon-disabled {
+    color: #6c757d;
+}
+
+.icon-warning {
+    color: #ffc107;
+}

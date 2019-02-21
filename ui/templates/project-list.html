@@ -12,12 +12,15 @@
         });
     </script>
 
-    <form class="form-inline" action="/{{ store_name }}/" method="post">
+    <form id="project-create" class="form-inline" action="/{{ store_name }}/" method="get">
         <div class="form-group mx-sm-3 mb-2">
             <label for="project" class="sr-only">Project</label>
             <input type="text" class="form-control" id="project" name="project" placeholder="Project name" required>
+            <div class="invalid-feedback">Please provide a valid project name.</div>
         </div>
-        <button type="submit" class="btn btn-primary mb-2">Create new project</button>
+        <button type="button" class="btn btn-primary mb-2" onclick="confirm_submission('project-create', 'Are you sure you want to create the project?')">
+            Create new project
+        </button>
     </form>
 
     <table id="table" class="table table-striped">
@@ -32,9 +35,9 @@
             <tr>
                 <td>
                     {% if project.has_project %}
-                        <span title="This project has a project.json file"><i class="fas fa-heartbeat"></i></span>
+                        <span title="This project has a project.json file"><i class="fas fa-heartbeat icon-ok"></i></span>
                     {% else %}
-                        <span title="This project does not have a project.json file, yet!"><i class="fas fa-heart-broken"></i></span>
+                        <span title="This project does not have a project.json file, yet!"><i class="fas fa-heart-broken icon-error"></i></span>
                     {% endif %}
                 </td>
                 <td><a href="#">{{ project.name }}</a></td>

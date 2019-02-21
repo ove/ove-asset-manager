@@ -16,12 +16,12 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app = falcon.API(middleware=[CORSComponent()])
     app.req_options.auto_parse_form_urlencoded = True
 
-    app.add_route('/', IndexView())
-    app.add_route('/{store_name}/', ProjectView(controller=_controller))
-
-    app.add_static_route("/", os.getcwd() + "/ui/static/", downloadable=True)
+    app.add_static_route("/favicon.ico", os.getcwd() + "/ui/static/favicon.ico", downloadable=True)
     app.add_static_route("/css", os.getcwd() + "/ui/static/css/", downloadable=True)
     app.add_static_route("/js", os.getcwd() + "/ui/static/js/", downloadable=True)
     app.add_static_route("/images", os.getcwd() + "/ui/static/images/", downloadable=True)
+
+    app.add_route('/', IndexView())
+    app.add_route('/{store_name}/', ProjectView(controller=_controller))
 
     return app
