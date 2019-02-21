@@ -44,15 +44,15 @@ class WorkersEdit:
         resp.status = falcon.HTTP_200
 
     def on_delete(self, req: falcon.Request, resp: falcon.Response):
-        validate_not_null(req, 'name')
+        validate_not_null(req.media, 'name')
         self._worker_manager.remove_worker(name=req.media.get('name'))
 
         resp.media = {"status": "OK"}
         resp.status = falcon.HTTP_200
 
     def on_patch(self, req: falcon.Request, resp: falcon.Response):
-        validate_not_null(req, 'name')
-        validate_not_null(req, 'status')
+        validate_not_null(req.media, 'name')
+        validate_not_null(req.media, 'status')
         self._worker_manager.update(name=req.media.get("name"), status=WorkerStatus(req.media.get("status")))
 
         resp.media = {'Status': 'OK'}
@@ -80,7 +80,7 @@ class WorkerSchedule:
         self._worker_manager = worker_manager
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        validate_not_null(req, 'worker_type')
+        validate_not_null(req.media, 'worker_type')
 
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
         self._worker_manager.schedule_process(project_name=project_id, meta=meta, worker_type=req.media.get("worker_type"),
@@ -105,7 +105,7 @@ class ProjectCreate:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        validate_not_null(req, 'name')
+        validate_not_null(req.media, 'name')
         project_name = req.media.get('name')
 
         self._controller.create_project(store_name=store_id, project_name=project_name)
@@ -119,7 +119,7 @@ class ProjectValidateName:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        validate_not_null(req, 'name')
+        validate_not_null(req.media, 'name')
         project_name = req.media.get('name')
 
         if self._controller.check_exists_project(store_name=store_id, project_name=project_name):
@@ -144,8 +144,8 @@ class AssetCreate:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        validate_not_null(req, 'name')
-        validate_no_slashes(req, 'name')
+        validate_not_null(req.media, 'name')
+        validate_no_slashes(req.media, 'name')
         asset_name = req.media.get('name')
         self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_name, project=project_id))
 
@@ -270,8 +270,8 @@ class TagEdit:
         resp.status = falcon.HTTP_200
 
     def on_patch(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        validate_not_null(req, 'action')
-        validate_not_null(req, 'data')
+        validate_not_null(req.media, 'action')
+        validate_not_null(req.media, 'data')
         validate_list(req.media.get('data'))
 
         action = req.media.get('action')

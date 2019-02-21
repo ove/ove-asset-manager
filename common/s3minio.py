@@ -92,7 +92,7 @@ class S3Manager:
     # List the assets in an s3 bucket
     def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> Dict:
         def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
-            return meta.to_public_json() if meta else name
+            return meta.to_public_json() if meta else {"name": name, "project": project_name}
 
         result_filter = result_filter if result_filter is not None else DEFAULT_FILTER
         client = self._get_connection(store_name)

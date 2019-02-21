@@ -1,18 +1,16 @@
-from typing import Any
-
-import falcon
+from typing import Any, Dict
 
 from common.errors import InvalidNameError
 from common.errors import MissingParameterError, InvalidDataError
 
 
-def validate_not_null(req: falcon.Request, field: str):
-    if not req.media.get(field, None):
+def validate_not_null(data: Dict, field: str):
+    if not data.get(field, None):
         raise MissingParameterError(name=field)
 
 
-def validate_no_slashes(req: falcon.Request, field: str):
-    if "/" in req.media.get(field):
+def validate_no_slashes(data: Dict, field: str):
+    if "/" in data.get(field):
         raise InvalidNameError(name=field)
 
 
