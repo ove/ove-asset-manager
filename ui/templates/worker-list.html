@@ -1,0 +1,86 @@
+{% extends "base/base.html" %}
+{% block title %}Worker list{% endblock %}
+
+{% set active_page = "workers" %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                "pageLength": 10,
+                "order": [0, 'asc'],
+                "columns": [
+                    {"width": "10%"}, {"width": "30%"}, {"width": "10%"}, {"width": "10%"},
+                    {"width": "2%", "orderable": false}, {"width": "30%"}, {"width": "8%", "orderable": false}
+                ],
+                "columnDefs": [{"targets": 4, "className": "align-text-centre"}]
+            });
+        });
+    </script>
+
+    <table id="table" class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Extensions</th>
+            <th scope="col">Type</th>
+            <th scope="col">Status</th>
+            <th scope="col">Callback</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for worker in workers -%}
+            <tr>
+                <td>{{ worker.name }}</td>
+                <td>{{ worker.description }}</td>
+                <td>
+                    {% if worker.extensions %}
+                        {% for extension in worker.extensions %}
+                            <span class="badge badge-info">{{ extension }}</span>&nbsp;&nbsp;
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>{{ worker.type }}</td>
+                <td>
+                    {% if worker.status == "ready" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Ready">
+                            <i class="fas fa-heart icon-success"></i>
+                        </span>
+                    {% elif worker.status == "processing" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Worker is processing">
+                            <i class="fas fa-heartbeat icon-ok"></i>
+                        </span>
+                    {% elif worker.status == "error" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Error. Check worker logs for details!">
+                            <i class="fas fa-heart-broken icon-error"></i>
+                        </span>
+                    {% endif %}
+                </td>
+                <td><a href="{{ worker.callback }}" target="_blank">{{ worker.callback }}</a></td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Reset error state"
+                                onclick="document.getElementById('refresh-{{ worker.name }}').submit();">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <form id="refresh-{{ worker.name }}" action="" method="post">
+                            <input type="hidden" name="action" value="reset">
+                            <input type="hidden" name="name" value="{{ worker.name }}">
+                        </form>
+                        <form id="delete-{{ worker.name }}" action="" method="post">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="name" value="{{ worker.name }}">
+                        </form>
+                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Unregister worker"
+                                onclick="confirm_submission('delete-{{ worker.name }}', 'Are you sure you want to remove {{ worker.name }}?')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        {%- endfor %}
+        </tbody>
+    </table>
+{% endblock %}

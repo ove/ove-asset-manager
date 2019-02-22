@@ -20,7 +20,7 @@
         <div class="list-group list-group-horizontal">
             <div class="list-group-item disabled" aria-disabled="true">Please select a store:</div>
             {% for store in stores %}
-                <a href="/view/{{ store }}/" class="list-group-item list-group-item-action list-group-item-primary" style="width: auto;">{{ store }}</a>
+                <a href="/view/store/{{ store }}/" class="list-group-item list-group-item-action list-group-item-primary" style="width: auto;">{{ store }}</a>
             {% endfor %}
         </div>
     </div>

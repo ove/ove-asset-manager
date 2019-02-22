@@ -33,8 +33,8 @@
         <tbody>
         {% for asset in assets -%}
             <tr>
-                <td><a href="/view/{{ store_name }}/{{ project_name }}">{{ asset.project }}</a></td>
-                <td><a href="/view/{{ store_name }}/{{ project_name }}/{{ asset.name }}">{{ asset.name }}</a></td>
+                <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}">{{ asset.project }}</a></td>
+                <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}">{{ asset.name }}</a></td>
                 <td>{{ asset.description }}</td>
                 <td>
                     {% if asset.tags %}
@@ -47,7 +47,8 @@
                 <td><a href="{{ asset.index_file }}" target="_blank">{{ asset.index_file }}</a></td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Basic example">
-                        <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Edit asset">
+                        <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/" class="btn btn-outline-primary"
+                           data-toggle="tooltip" data-placement="top" title="Edit asset">
                             <i class="far fa-edit"></i>
                         </a>
                         <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload asset">

@@ -75,3 +75,7 @@ body {
 .align-text-right {
     text-align: right;
 }
+
+.align-text-centre {
+    text-align: center;
+}

@@ -242,10 +242,9 @@ class MetaEdit:
             pass
         if is_empty(req.media.get('description')) is False:
             meta.description = req.media.get('description')
-        # There are issues checking whether a boolean is empty, since a False entry is the same as empty
-        # if is_empty(bool(req.media.get('uploaded'))) is True:
-        #     meta.isUploaded(bool(req.media.get('uploaded')))
-        #     print(bool(req.media.get('uploaded')))
+        if is_empty(req.media.get('tags')) is False:
+            meta.tags = req.media.get('tags')
+
         self._controller.edit_asset_meta(store_name=store_id, project_name=project_id,
                                          asset_name=asset_id, meta=meta)
 
