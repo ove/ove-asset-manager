@@ -16,6 +16,9 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
     if not hasattr(resp, "alerts"):
         resp.alerts = []
 
+    if isinstance(ex, falcon.HTTPPermanentRedirect):
+        raise ex
+
     if isinstance(ex, (falcon.HTTPError, ValidationError)):
         report_error(resp=resp, title=ex.title, description=ex.description)
     else:
@@ -143,6 +146,7 @@ class AssetEdit:
         resp.context = {"store_name": store_name, "project_name": project_name, "asset_name": asset_name, "create": False, "asset": asset}
 
         if asset_name == "new":
+            resp.context["create"] = True
             resp.context["asset"] = self._controller.create_asset(store_name=store_name, project_name=project_name, asset=asset)
             raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_name, project_name, asset.get("name")))
         else:
