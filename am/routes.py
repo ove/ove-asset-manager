@@ -236,7 +236,10 @@ class MetaEdit:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
         if is_empty(req.media.get('name')) is False:
-            meta.name = req.media.get('name')
+            # todo; this needs to move the asset into a new path as well
+            # todo; rebuild the path as well
+            # meta.name = req.media.get('name')
+            pass
         if is_empty(req.media.get('description')) is False:
             meta.description = req.media.get('description')
         # There are issues checking whether a boolean is empty, since a False entry is the same as empty
