@@ -48,6 +48,10 @@ class OveMeta:
         self.index_file = self.proxy_file_path
 
     @property
+    def worker_root(self):
+        return str(self.proxy_url) + self.project + "/" + self.name + "/" + str(self.version) + "/"
+
+    @property
     def file_location(self):
         return str(self.version) + "/" + self.filename
 

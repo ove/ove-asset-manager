@@ -18,9 +18,11 @@ cd ${scriptPath}/
 [[ ! -z "${SERVICE_AM_TIMEOUT}" ]] || SERVICE_AM_TIMEOUT=5000
 
 [[ ! -z "${WORKER_NAME}" ]] || WORKER_NAME=$(strings /dev/urandom | grep -o '[[:alnum:]]' | head -n 21 | tr -d '\n')
+[[ ! -z "${WORKER_NAME}" ]] || WORKER_NAME=$(echo `cat /dev/urandom | base64 | tr -dc "[:alnum:]" | head -c10`)
+
 
 # For testing purpose this can be used, otherwise the next line should be commented
-# [[ ! -z "${WORKER_CLASS}" ]] || WORKER_CLASS="workers.zip.ZipWorker"
+ [[ ! -z "${WORKER_CLASS}" ]] || WORKER_CLASS="workers.gigaimage.ImageWorker"
 
 
 echo "Environment variables:"
