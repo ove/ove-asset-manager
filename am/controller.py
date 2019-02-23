@@ -8,7 +8,7 @@ from common.entities import OveMeta
 from common.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
 from common.s3minio import S3Manager
 
-_RESERVED_NAMES = {"list", "validate", "create"}
+_RESERVED_NAMES = {"list", "validate", "create", "new"}
 
 
 class FileController:
@@ -45,6 +45,8 @@ class FileController:
         return self._manager.check_exists(store_name=store_name, project_name=project_name)
 
     def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
+        if meta.name in _RESERVED_NAMES:
+            raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
         if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):
             raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
         return self._manager.create_asset(store_name=store_name, project_name=project_name, meta=meta)

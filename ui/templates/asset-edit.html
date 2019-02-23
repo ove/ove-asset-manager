@@ -18,7 +18,7 @@
                     <div class="form-group row">
                         <label for="name" class="col-sm-2 col-form-label">Name</label>
                         <div class="col-sm-10">
-                            <input name="name" id="name" value="{{ asset.name if not create }}"
+                            <input name="name" id="name" value="{{ asset.name }}"
                                    type="text" {{ "readonly" if not create }} class="form-control" required>
                             <div class="invalid-feedback">Please provide a valid name.</div>
                         </div>

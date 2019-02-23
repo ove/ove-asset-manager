@@ -45,15 +45,7 @@ class BackendController:
 
     def edit_asset(self, store_name: str, project_name: str, asset: Dict) -> Dict:
         return _post_data(self._backend_url + "/api/{}/{}/meta/{}".format(store_name, project_name, asset.get("name", "")), data=asset)
-    #
-    # def check_exists_project(self, project_name: str, store_name: str = None) -> bool:
-    #     return self._manager.check_exists(store_name=store_name, project_name=project_name)
-    #
-    # def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
-    #     if self._manager.has_asset_meta(store_name=store_name, project_name=project_name, asset_name=meta.name):
-    #         raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
-    #     return self._manager.create_asset(store_name=store_name, project_name=project_name, meta=meta)
-    #
+
     # def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, upload_filename: str, store_name: str = None) -> None:
     #     meta.filename = filename
     #     self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location,
@@ -62,17 +54,6 @@ class BackendController:
     #     meta.uploaded = True
     #     meta.upload()
     #     self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
-    #
-    # def update_asset(self, project_name: str, asset_name: str, filename: str, meta: OveMeta, upload_filename: str, store_name: str = None) -> None:
-    #     meta.filename = filename
-    #     meta.update()
-    #     self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
-    #     self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location,
-    #                                upload_filename=upload_filename)
-    #
-    #
-    # def edit_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None) -> None:
-    #     self._manager.set_asset_meta(project_name=project_name, asset_name=asset_name, meta=meta, store_name=store_name)
     #
     # def get_object(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
     #     return self._manager.get_object(store_name=store_name, project_name=project_name, object_name=object_name)

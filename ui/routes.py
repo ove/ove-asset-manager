@@ -2,12 +2,26 @@ import logging
 import sys
 
 import falcon
+import requests
 
 from common.errors import ValidationError
 from common.validation import validate_not_null
 from ui.alert_utils import report_error, report_success
 from ui.controller import BackendController
 from ui.jinja2_utils import FalconTemplate
+
+
+def handle_api_exceptions(ex: Exception, _req: falcon.Request, _resp: falcon.Response, _params):
+    logging.debug("Handling api exception: %s", repr(ex))
+
+    if isinstance(ex, (falcon.HTTPNotFound, falcon.HTTPNotImplemented)):
+        raise falcon.HTTPPermanentRedirect(location="/404")
+
+    if isinstance(ex, falcon.HTTPPermanentRedirect):
+        raise ex
+
+    # some of these may be safely ignored
+    raise ex
 
 
 def _handle_exceptions(ex: Exception, resp: falcon.Response):
@@ -21,6 +35,8 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
 
     if isinstance(ex, (falcon.HTTPError, ValidationError)):
         report_error(resp=resp, title=ex.title, description=ex.description)
+    elif isinstance(ex, requests.exceptions.RequestException):
+        report_error(resp=resp, title="Server unavailable", description="The data server seems to be unavailable at the moment")
     else:
         report_error(resp=resp, description=sys.exc_info()[1])
 
@@ -35,6 +51,12 @@ class IndexView:
     @falcon_template.render('index.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response):
         resp.context = {"stores": self._controller.list_stores()}
+
+
+class NotFoundView:
+    @falcon_template.render('404.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response):
+        pass
 
 
 class WorkerView:
