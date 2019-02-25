@@ -79,3 +79,14 @@ body {
 .align-text-centre {
     text-align: center;
 }
+
+.file-upload-container {
+    margin-top: 30px;
+    max-height: 400px;
+    height: 120px;
+    overflow-y: scroll;
+}
+
+.filepond--action-revert-item-processing{
+    visibility: hidden;
+}

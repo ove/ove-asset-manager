@@ -2,10 +2,7 @@
 # Written using Falcon
 # Author: David Akroyd
 # Contributor: Ovidiu Serban
-import re
-import tempfile
 from functools import partial
-from typing import Callable
 
 import falcon
 
@@ -14,6 +11,7 @@ from am.managers import WorkerManager
 from common.entities import OveMeta, WorkerStatus
 from common.entities import WorkerData
 from common.errors import InvalidAssetError, ProjectExistsError, ValidationError
+from common.falcon_utils import parse_filename, save_filename
 from common.filters import build_meta_filter
 from common.util import is_empty
 from common.validation import validate_not_null, validate_no_slashes, validate_list
@@ -165,13 +163,13 @@ class AssetUpload:
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
             if meta.uploaded:
-                raise falcon.HTTPConflict("This asset already has a file. If you wish to change this file, use update")
+                raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, use update")
         except InvalidAssetError:
-            raise falcon.HTTPBadRequest("You have not created this asset yet")
+            raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet")
 
-        filename = _parse_filename(req)
-        _save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
-                               asset_name=asset_id, filename=filename, meta=meta), req)
+        filename = parse_filename(req)
+        save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
+                              asset_name=asset_id, filename=filename, meta=meta), req)
 
         resp.media = {'Asset': asset_id, 'Filename': filename}
         resp.status = falcon.HTTP_200
@@ -189,13 +187,13 @@ class AssetUpdate:
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
             if meta.uploaded is False:
-                raise falcon.HTTPConflict("This asset has not been uploaded yet")
+                raise falcon.HTTPConflict(title="Asset not found", description="This asset has not been uploaded yet")
 
         except InvalidAssetError:
-            raise falcon.HTTPBadRequest("You have not created this asset yet")
-        filename = _parse_filename(req)
-        _save_filename(partial(self._controller.update_asset, store_name=store_id, project_name=project_id,
-                               asset_name=asset_id, filename=filename, meta=meta), req)
+            raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet")
+        filename = parse_filename(req)
+        save_filename(partial(self._controller.update_asset, store_name=store_id, project_name=project_id,
+                              asset_name=asset_id, filename=filename, meta=meta), req)
 
         resp.media = {'Asset': asset_id, 'Filename': filename}
         resp.status = falcon.HTTP_200
@@ -212,13 +210,13 @@ class AssetCreateUpload:
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
             if meta.uploaded:
-                raise falcon.HTTPConflict("This asset already has a file. If you wish to change this file, use update")
+                raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, use update")
         except InvalidAssetError:
             meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_id, project=project_id))
 
-        filename = _parse_filename(req)
-        _save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
-                               asset_name=asset_id, filename=filename, meta=meta), req)
+        filename = parse_filename(req)
+        save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
+                              asset_name=asset_id, filename=filename, meta=meta), req)
 
         resp.media = {'Asset': asset_id, 'Filename': filename}
         resp.status = falcon.HTTP_200
@@ -322,31 +320,3 @@ class ObjectEdit:
         self._controller.set_object(store_name=store_id, project_name=project_id, object_name=object_id, object_data=req.media, update=True)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
-
-
-def _parse_filename(req: falcon.Request) -> str:
-    if req.get_header('content-disposition'):
-        filename = re.findall("filename=(.+)", req.get_header('content-disposition'))
-        if is_empty(filename):
-            raise falcon.HTTPInvalidHeader("No filename specified in header", 'content-disposition')
-
-        filename = filename[0]
-        filename = (filename.encode('ascii', errors='ignore').decode()).strip('\"')
-        if is_empty(filename):
-            raise falcon.HTTPInvalidHeader("No valid filename specified in header", 'content-disposition')
-
-        if filename == '.ovemeta':
-            raise falcon.HTTPForbidden("403 Forbidden",
-                                       "This is a reserved filename and is not allowed as an asset name")
-
-        return filename
-    else:
-        raise falcon.HTTPBadRequest("No filename specified -"
-                                    " this should be in the content-disposition header")
-
-
-def _save_filename(save_fn: Callable, req: falcon.Request):
-    with tempfile.NamedTemporaryFile() as cache:
-        cache.write(req.stream.read())
-        cache.flush()
-        save_fn(upload_filename=cache.name)

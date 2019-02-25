@@ -5,6 +5,7 @@ import falcon
 import requests
 
 from common.errors import ValidationError
+from common.falcon_utils import parse_filename
 from common.validation import validate_not_null
 from ui.alert_utils import report_error, report_success
 from ui.controller import BackendController
@@ -20,8 +21,13 @@ def handle_api_exceptions(ex: Exception, _req: falcon.Request, _resp: falcon.Res
     if isinstance(ex, falcon.HTTPPermanentRedirect):
         raise ex
 
-    # some of these may be safely ignored
-    raise ex
+    if isinstance(ex, falcon.HTTPError):
+        raise ex
+
+    if isinstance(ex, ValidationError):
+        raise falcon.HTTPBadRequest(title=ex.title, description=ex.description)
+
+    raise falcon.HTTPBadRequest(title="Internal Server error", description=str(ex))
 
 
 def _handle_exceptions(ex: Exception, resp: falcon.Response):
@@ -173,3 +179,17 @@ class AssetEdit:
             raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_name, project_name, asset.get("name")))
         else:
             resp.context["asset"] = self._controller.edit_asset(store_name=store_name, project_name=project_name, asset=asset)
+
+
+class UploadApi:
+    content_type = 'application/octet-stream'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str = None):
+        filename = parse_filename(req)
+        if asset_name is None:
+            asset_name = filename
+        self._controller.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=filename, stream=req.bounded_stream)
+        resp.status = falcon.HTTP_200

@@ -23,10 +23,10 @@
            data-toggle="tooltip" data-placement="top" title="Create new asset">
             <i class="far fa-plus-square"></i>&nbsp;&nbsp;New asset
         </a>
-        <a href="" class="btn btn-outline-primary"
-           data-toggle="tooltip" data-placement="top" title="Upload & create asset">
+        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload & create asset"
+                onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/upload', true)">
             <i class="fas fa-upload"></i>&nbsp;&nbsp;Upload
-        </a>
+        </button>
     </div>
 
     <table id="table" class="table table-striped">
@@ -62,9 +62,10 @@
                            data-toggle="tooltip" data-placement="top" title="Edit asset">
                             <i class="far fa-edit"></i>
                         </a>
-                        <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
+                                onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                             <i class="fas fa-upload"></i>
-                        </a>
+                        </button>
                         <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Process asset">
                             <i class="fas fa-paint-roller"></i>
                         </a>
