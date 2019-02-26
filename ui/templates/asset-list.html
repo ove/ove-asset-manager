@@ -8,10 +8,8 @@
                 "pageLength": 25,
                 "order": [1, 'asc'],
                 "columns": [
-                    {"width": "10%"}, {"width": "10%"}, {"width": "30%"}, {"width": "10%"}, {"width": "2%"}, {"width": "30%"}, {
-                        "width": "8%",
-                        "orderable": false
-                    }
+                    {"width": "10%"}, {"width": "10%"}, {"width": "30%"}, {"width": "10%"}, {"width": "2%"}, {"width": "25%"},
+                    {"width": "5%"}, {"width": "8%", "orderable": false}
                 ],
                 "columnDefs": [{"targets": 4, "className": "align-text-right"}]
             });
@@ -38,6 +36,7 @@
             <th scope="col">Tags</th>
             <th scope="col">Ver.</th>
             <th scope="col">Index File</th>
+            <th scope="col">Worker</th>
             <th scope="col"></th>
         </tr>
         </thead>
@@ -56,6 +55,7 @@
                 </td>
                 <td>{{ asset.version }}</td>
                 <td><a href="{{ asset.index_file }}" target="_blank">{{ asset.index_file }}</a></td>
+                <td><span data-toggle="tooltip" data-placement="top" title="{{ asset.processing_error }}">{{ asset.processing_status }}</span></td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Basic example">
                         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/" class="btn btn-outline-primary"
@@ -66,9 +66,34 @@
                                 onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                             <i class="fas fa-upload"></i>
                         </button>
-                        <a href="" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Process asset">
-                            <i class="fas fa-paint-roller"></i>
-                        </a>
+                        <div class="btn-group dropleft" role="group">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-paint-roller" data-toggle="tooltip" data-placement="top" title="Process asset"></i>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                {% if workers %}
+                                    {% for worker in workers %}
+                                        <button type="button" class="dropdown-item"
+                                                onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}')">
+                                            <b>{{ worker.type }}</b>
+                                            <br/>
+                                            <small><i>{{ worker.description }}</i></small>
+                                            <br/>
+                                            <small>
+                                                Works with
+                                                <span class="badge badge-info">
+                                                    {{ worker.extensions|join('</span>&nbsp;<span class="badge badge-info">') }}
+                                                </span>
+                                                extensions
+                                            </small>
+                                        </button>
+                                    {% endfor %}
+                                {% else %}
+                                    <a class="dropdown-item disabled" href="#">No workers available</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </td>
             </tr>

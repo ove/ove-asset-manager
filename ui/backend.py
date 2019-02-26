@@ -42,7 +42,7 @@ class BackendClient:
                                                  description=e.get("description", "Error while calling '{}'".format(api_url)))
 
     def upload(self, api_url: str, stream: Any, method: str = "POST", headers: Dict = None) -> Union[Dict, List, None]:
-        response = self._http.request(method=method, url=self.backend_url + api_url, headers=headers, body=stream)
+        response = self._http.request(method=method, url=self.backend_url + api_url, headers=headers, body=stream.read())
         if 200 <= response.status < 300:
             result = response.data
             if result is not None:

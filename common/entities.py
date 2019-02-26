@@ -22,6 +22,8 @@ class OveMeta:
         self.tags = kwargs.get("tags", [])
         self.version = kwargs.get("version", 1)
         self.worker = kwargs.get("worker", "")
+        self.processing_status = kwargs.get("processing_status", "")
+        self.processing_error = kwargs.get("processing_error", "")
 
     def update(self):
         self.history.append({
@@ -76,7 +78,10 @@ class OveMeta:
             "index_file": self.index_file,
             "version": str(self.version),
             "history": self.history,
-            "tags": self.tags
+            "tags": self.tags,
+            "worker": self.worker,
+            "processing_status": self.processing_status,
+            "processing_error": self.processing_error
         }
 
 
@@ -88,6 +93,7 @@ class WorkerData:
         self.type = kwargs.get("type", None)
         self.description = kwargs.get("description", "")
         self.status = WorkerStatus(kwargs.get("status", None))
+        self.error_msg = kwargs.get("error_msg", None)
         self.callback = kwargs.get("callback", "")
         self.status_callback = kwargs.get("status_callback", "")
 
@@ -115,6 +121,7 @@ class WorkerData:
 class WorkerStatus(Enum):
     READY = "ready"
     PROCESSING = "processing"
+    DONE = "done"
     ERROR = "error"
 
     def __str__(self):

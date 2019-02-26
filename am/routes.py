@@ -51,7 +51,7 @@ class WorkersEdit:
     def on_patch(self, req: falcon.Request, resp: falcon.Response):
         validate_not_null(req.media, 'name')
         validate_not_null(req.media, 'status')
-        self._worker_manager.update(name=req.media.get("name"), status=WorkerStatus(req.media.get("status")))
+        self._worker_manager.update(name=req.media.get("name"), status=WorkerStatus(req.media.get("status")), error_msg=req.media.get("error_msg", ""))
 
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200

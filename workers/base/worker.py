@@ -42,7 +42,7 @@ class BaseWorker(ABC):
             logging.error("Failed to update status on server '%s'. Requested status: %s. Server error: %s", self._service_url, status, r.text)
 
     def report_error(self, error: str):
-        r = requests.patch(self._service_url, json={"name": self.name, "status": str(WorkerStatus.ERROR), "error": error})
+        r = requests.patch(self._service_url, json={"name": self.name, "status": str(WorkerStatus.ERROR), "error_msg": error})
         if 200 <= r.status_code < 300:
             logging.error("Error status updated on server '%s'. Error: %s", self._service_url, error)
             self._status = WorkerStatus.ERROR
@@ -70,22 +70,40 @@ class BaseWorker(ABC):
 
         logging.error("Failed to register callback '%s' on server '%s'", self._callback, self._service_url)
 
+    def unregister_callback(self):
+        try:
+            r = requests.delete(self._service_url, json={"name": self.name})
+            if 200 <= r.status_code < 300:
+                logging.info("Unregistered callback '%s' on server '%s'", self._callback, self._service_url)
+                return
+            else:
+                logging.error("Failed to unregister callback '%s' on server '%s'. Error: %s", self._callback, self._service_url, r.text)
+        except:
+            logging.error("Failed to unregister callback '%s' on server '%s'. Error: %s", self._callback, self._service_url, sys.exc_info()[1])
+
     def safe_process(self, store_config: Dict, project_name: str, asset_name: str, task_options: Dict):
+        meta = None
         try:
             self._file_controller.setup(store_config)
 
             meta = self._file_controller.get_asset_meta(project_name=project_name, asset_name=asset_name)
             self.update_status(WorkerStatus.PROCESSING)
             self._file_controller.lock_asset(project_name=project_name, meta=meta, worker_name=self._name)
+            self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.PROCESSING)
 
             self.process(project_name=project_name, meta=meta, options=task_options)
 
-            self._file_controller.unlock_asset(project_name=project_name, meta=meta)
+            self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.DONE)
             self.update_status(WorkerStatus.READY)
-            self._file_controller.clean()
         except:
             logging.error("Error while trying to process (%s, %s). Error: %s", project_name, asset_name, sys.exc_info()[1])
-            self.report_error("Error while trying to process ({}, {}). Check worker logs for details.".format(project_name, asset_name))
+            error_msg = "Error while trying to process ({}, {}). Check worker logs for details.".format(project_name, asset_name)
+            self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.ERROR, error_msg=error_msg)
+            self.report_error(error_msg)
+        finally:
+            if meta is not None:
+                self._file_controller.unlock_asset(project_name=project_name, meta=meta, worker_name=self._name)
+            self._file_controller.clean()
 
     @abstractmethod
     def worker_type(self) -> str:
@@ -124,6 +142,10 @@ class BaseWorker(ABC):
 def register_callback(worker: BaseWorker, attempts: int = 5, timeout: int = 1000):
     p = Process(target=worker.register_callback, name="register_callback", args=(attempts, timeout), daemon=True)
     p.start()
+
+
+def unregister_callback(worker: BaseWorker):
+    worker.unregister_callback()
 
 
 def process_request(worker: BaseWorker, store_config: Dict, project_name: str, asset_name: str, task_options: Dict, ):

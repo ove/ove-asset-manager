@@ -11,7 +11,7 @@ from workers.base import BaseWorker
 
 class ImageWorker(BaseWorker):
     def worker_type(self) -> str:
-        return WorkerType.EXTRACT.value
+        return WorkerType.DZ_IMAGE.value
 
     def extensions(self) -> List:
         return [".jpg", ".png", ".tiff", ".bmp"]

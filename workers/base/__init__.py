@@ -1,3 +1,4 @@
+import atexit
 import logging
 import signal
 
@@ -8,7 +9,7 @@ from common.middleware import RequireJSON, CORSComponent
 from common.util import parse_logging_lvl, dynamic_import
 from workers.base.controller import FileController
 from workers.base.routes import WorkerRoute, WorkerStatusRoute
-from workers.base.worker import BaseWorker, register_callback
+from workers.base.worker import BaseWorker, register_callback, unregister_callback
 
 
 def setup_worker(**kwargs) -> falcon.API:
@@ -34,6 +35,7 @@ def setup_worker(**kwargs) -> falcon.API:
     app.add_route('/api/worker/status', WorkerStatusRoute(worker=_worker))
     app.add_error_handler(Exception, handle_exceptions)
 
+    atexit.register(unregister_callback, worker=_worker)
     register_callback(worker=_worker, attempts=registration_attempts, timeout=registration_timeout)
 
     return app

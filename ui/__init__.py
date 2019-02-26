@@ -7,7 +7,7 @@ from common.middleware import CORSComponent
 from common.util import parse_logging_lvl
 from ui.controller import BackendController
 from ui.middleware import ContentTypeValidator
-from ui.routes import ProjectView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, UploadApi
+from ui.routes import ProjectView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, UploadApi, WorkerApi
 
 
 def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:8080") -> falcon.API:
@@ -32,8 +32,9 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/view/store/{store_name}/project/{project_name}/asset/{asset_name}', AssetEdit(controller=_controller))
 
     # api routes
-    app.add_route('/api/store/{store_name}/project/{project_name}/asset/{asset_name}/upload', UploadApi(controller=_controller))
     app.add_route('/api/store/{store_name}/project/{project_name}/upload', UploadApi(controller=_controller))
+    app.add_route('/api/store/{store_name}/project/{project_name}/asset/{asset_name}/upload', UploadApi(controller=_controller))
+    app.add_route('/api/store/{store_name}/project/{project_name}/asset/{asset_name}/process/{worker_type}', WorkerApi(controller=_controller))
 
     app.add_error_handler(Exception, handle_api_exceptions)
 

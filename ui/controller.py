@@ -12,6 +12,13 @@ class BackendController:
     def list_workers(self) -> List:
         return self._backend.get("api/workers") or []
 
+    def get_worker_types(self) -> List:
+        return list({w['type']: {
+            'type': w['type'],
+            'extensions': w['extensions'],
+            'description': w['description']
+        } for w in self.list_workers()}.values())
+
     def edit_worker(self, action: str, name: str) -> None:
         if action == "reset":
             self._backend.post("api/workers/status", data={"name": name})
@@ -30,8 +37,7 @@ class BackendController:
         self._backend.post("api/{}/create".format(store_name), data={"name": project_name})
 
     def list_assets(self, store_name: str, project_name: str) -> List:
-        assets = self._backend.get("api/{}/{}/list".format(store_name, project_name)).get("Assets", {})
-        return [v for v in assets.values()]
+        return list(self._backend.get("api/{}/{}/list".format(store_name, project_name)).get("Assets", {}).values())
 
     def get_asset(self, store_name: str, project_name: str, asset_name: str) -> Dict:
         return self._backend.get("api/{}/{}/meta/{}".format(store_name, project_name, asset_name))
@@ -47,6 +53,9 @@ class BackendController:
         url = "api/{}/{}/createUpload/{}".format(store_name, project_name, asset_name)
         headers = {"Content-Type": "application/octet-stream", "content-disposition": "filename='{}'".format(filename)}
         self._backend.upload(api_url=url, stream=stream, headers=headers)
+
+    def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str):
+        self._backend.post("api/{}/{}/process/{}".format(store_name, project_name, asset_name), data={"worker_type": worker_type})
 
     # def get_object(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
     #     return self._manager.get_object(store_name=store_name, project_name=project_name, object_name=object_name)

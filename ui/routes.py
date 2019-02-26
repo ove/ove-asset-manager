@@ -3,6 +3,7 @@ import sys
 
 import falcon
 import requests
+import urllib3
 
 from common.errors import ValidationError
 from common.falcon_utils import parse_filename
@@ -41,7 +42,7 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
 
     if isinstance(ex, (falcon.HTTPError, ValidationError)):
         report_error(resp=resp, title=ex.title, description=ex.description)
-    elif isinstance(ex, requests.exceptions.RequestException):
+    elif isinstance(ex, (requests.exceptions.RequestException, urllib3.exceptions.RequestError)):
         report_error(resp=resp, title="Server unavailable", description="The data server seems to be unavailable at the moment")
     else:
         report_error(resp=resp, description=sys.exc_info()[1])
@@ -134,9 +135,10 @@ class AssetView:
 
     @falcon_template.render('asset-list.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str):
-        resp.context = {"store_name": store_name, "project_name": project_name, "assets": []}
+        resp.context = {"store_name": store_name, "project_name": project_name, "assets": [], "workers": {}}
         try:
             resp.context["assets"] = self._controller.list_assets(store_name=store_name, project_name=project_name)
+            resp.context["workers"] = self._controller.get_worker_types()
             report_success(resp=resp, description="Asset list loaded")
         except:
             raise
@@ -192,4 +194,17 @@ class UploadApi:
         if asset_name is None:
             asset_name = filename
         self._controller.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=filename, stream=req.bounded_stream)
+        resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class WorkerApi:
+    content_type = 'application/json'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_post(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str, worker_type: str):
+        self._controller.schedule_worker(store_name=store_name, project_name=project_name, asset_name=asset_name, worker_type=worker_type)
+        resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200

@@ -46,7 +46,7 @@ def append_slash(path: str) -> str:
 
 
 def dynamic_import(full_class_path: str) -> Callable:
-    if full_class_path is None:
+    if not full_class_path:
         raise ValueError("Invalid class provided '{}'".format(full_class_path))
 
     abs_module_path, class_name = full_class_path.rsplit(".", maxsplit=1)

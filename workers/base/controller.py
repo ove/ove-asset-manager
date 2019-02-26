@@ -2,7 +2,7 @@ import glob
 import os
 from typing import Dict
 
-from common.entities import OveMeta
+from common.entities import OveMeta, WorkerStatus
 from common.errors import WorkerLockError
 from common.s3minio import S3Manager
 from common.util import append_slash
@@ -49,6 +49,13 @@ class FileController:
         else:
             raise WorkerLockError()
 
-    def unlock_asset(self, project_name: str, meta: OveMeta) -> None:
-        meta.worker = ""
+    def unlock_asset(self, project_name: str, meta: OveMeta, worker_name: str) -> None:
+        # do not unlock other resources
+        if meta.worker == worker_name:
+            meta.worker = ""
+            return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)
+
+    def update_asset_status(self, project_name: str, meta: OveMeta, status: WorkerStatus, error_msg: str = "") -> None:
+        meta.processing_status = str(status)
+        meta.processing_error = error_msg
         return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)

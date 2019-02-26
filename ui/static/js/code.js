@@ -19,9 +19,8 @@ function confirm_submission(formId, msg) {
 function file_upload(uploadUrl, multiUpload) {
     let dialog = bootbox.dialog({
         message: '<div class="file-upload-container"><input id="file-upload" type="file" ' + (multiUpload ? 'multiple' : '') + '></div>',
-        onEscape: true,
-        callback: function (result) {
-            console.log("callback", result)
+        onEscape: function () {
+            location.reload();
         }
     });
     dialog.init(function () {
@@ -40,6 +39,20 @@ function file_upload(uploadUrl, multiUpload) {
 function reportError(title, description) {
     let id = uuid();
     $("#alert-container").append('<div id="' + id + '" class="toast toast-error" role="alert" aria-live="assertive" aria-atomic="true" data-delay="20000">\n' +
+        '                <div class="toast-header">\n' +
+        '                    <strong class="mr-auto">' + title + '</strong>\n' +
+        '                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">\n' +
+        '                        <span aria-hidden="true">&times;</span>\n' +
+        '                    </button>\n' +
+        '                </div>\n' +
+        '                <div class="toast-body">' + description + '</div>' +
+        '            </div>');
+    $('#' + id).toast('show')
+}
+
+function reportSuccess(title, description) {
+    let id = uuid();
+    $("#alert-container").append('<div id="' + id + '" class="toast toast-success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="20000">\n' +
         '                <div class="toast-header">\n' +
         '                    <strong class="mr-auto">' + title + '</strong>\n' +
         '                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">\n' +
@@ -84,4 +97,20 @@ function processUploadRequest(uploadUrl, _fieldName, file, _metadata, load, erro
 
 function uuid() {
     return '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function schedule_worker(url) {
+    $.ajax({
+        type: "POST", url: url, contentType: "application/json", dataType: "json"
+    }).done(function (msg) {
+        console.info("Worker status", msg);
+        reportSuccess("Worker status", "Worker scheduled successfully");
+    }).catch(function (err) {
+        console.error("Worker error", err.responseText);
+        if (err.responseJSON) {
+            reportError(err.responseJSON['title'], err.responseJSON['description']);
+        } else {
+            reportError("Worker error", "An undefined error occurred while attempting to schedule work");
+        }
+    });
 }

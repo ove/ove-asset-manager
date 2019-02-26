@@ -42,10 +42,11 @@ class WorkerManager:
     def worker_status(self, name: str = None):
         return {w.name: str(w.status) for w in self._workers if name is None or name == w.name}
 
-    def update(self, name: str, status: WorkerStatus):
+    def update(self, name: str, status: WorkerStatus, error_msg: str = ""):
         for w in self._workers:
             if w.name == name:
                 w.status = status
+                w.error_msg = error_msg
 
     def schedule_process(self, project_name: str, meta: OveMeta, worker_type: str, store_config: Dict):
         available = _find_workers(filename=meta.filename, worker_type=worker_type, workers=self._workers)
