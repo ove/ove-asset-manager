@@ -75,7 +75,7 @@ class WorkerManager:
 
 def _find_workers(filename: str, worker_type: str, workers: List[WorkerData]) -> List[WorkerData]:
     def is_valid(w: WorkerData) -> bool:
-        if w.type == worker_type and any([filename.endswith(ext) for ext in w.extensions]):
+        if w.type == worker_type and any([filename.lower().endswith(ext) for ext in w.extensions]):
             return _validate_callback(w.callback)
         return False
 

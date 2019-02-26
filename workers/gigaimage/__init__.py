@@ -1,9 +1,9 @@
 import logging
-import pyvips
 import os
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 from typing import Dict, List
 
+import pyvips
 
 from common.entities import OveMeta, WorkerType
 from workers.base import BaseWorker
@@ -14,7 +14,7 @@ class ImageWorker(BaseWorker):
         return WorkerType.DZ_IMAGE.value
 
     def extensions(self) -> List:
-        return [".jpg", ".png", ".tiff", ".bmp"]
+        return [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".gif"]
 
     def description(self) -> str:
         return "Converts large images into DZI tiled gigaimages"
@@ -24,7 +24,8 @@ class ImageWorker(BaseWorker):
 
         with TemporaryDirectory() as folder:
             with NamedTemporaryFile() as image_file:
-                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=meta.file_location, down_filename=image_file.name)
+                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=meta.file_location,
+                                                     down_filename=image_file.name)
                 pyvips.Image.new_from_file(image_file.name).dzsave(folder + "/image")
                 self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=folder, worker_name=self.name)
         meta.index_file = meta.worker_root + self.name + "/" + os.path.splitext(os.path.basename(meta.filename))[0] + "/" + "image.dzi"
