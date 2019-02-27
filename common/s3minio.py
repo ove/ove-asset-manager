@@ -13,6 +13,7 @@ from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTE
 from common.entities import OveMeta
 from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
 from common.filters import DEFAULT_FILTER
+from common.util import append_slash
 
 _DEFAULT_LABEL = "*"
 _DEFAULT_OBJECT_ENCODING = "utf-8"
@@ -117,6 +118,17 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             client.make_bucket(project_name, location=_DEFAULT_STORE_LOCATION)
+            # todo; remove this once a read proxy has been created
+            client.set_bucket_policy(project_name, policy=json.dumps({
+                "Version": "2012-10-17",
+                "Statement": [{
+                    "Sid": "",
+                    "Effect": "Allow",
+                    "Principal": {"AWS": "*"},
+                    "Action": "s3:GetObject",
+                    "Resource": "arn:aws:s3:::{}/*".format(project_name)
+                }]
+            }))
         except ResponseError:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
@@ -164,7 +176,6 @@ class S3Manager:
             response = client.get_object(project_name, meta_name)
             return 200 <= response.status < 300
         except:
-            logging.error("Error while trying to check if meta exists. Error: %s", sys.exc_info()[1])
             return False
 
     def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveMeta]:
@@ -201,7 +212,6 @@ class S3Manager:
             response = client.get_object(project_name, object_name + S3_OBJECT_EXTENSION)
             return 200 <= response.status < 300
         except:
-            logging.error("Error while trying to check if object exists. Error: %s", sys.exc_info()[1])
             return False
 
     def get_object(self, project_name: str, object_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, Dict]:
@@ -216,6 +226,15 @@ class S3Manager:
             else:
                 logging.error("Error while trying to get object. Error: %s", sys.exc_info()[1])
                 raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+
+    def get_object_info(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
+        if self.has_object(store_name=store_name, project_name=project_name, object_name=object_name):
+            return {
+                "name": object_name,
+                "index_file": append_slash(self._get_proxy_url(store_name=store_name)) + project_name + "/" + object_name + S3_OBJECT_EXTENSION
+            }
+        else:
+            return None
 
     def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None) -> None:
         _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)

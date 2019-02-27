@@ -307,6 +307,10 @@ class ObjectEdit:
     def __init__(self, controller: FileController):
         self._controller = controller
 
+    def on_head(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        has_object = self._controller.has_object(store_name=store_id, project_name=project_id, object_name=object_id)
+        resp.status = falcon.HTTP_200 if has_object else falcon.HTTP_NOT_FOUND
+
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
         resp.media = self._controller.get_object(store_name=store_id, project_name=project_id, object_name=object_id)
         resp.status = falcon.HTTP_200
@@ -319,4 +323,13 @@ class ObjectEdit:
     def on_put(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
         self._controller.set_object(store_name=store_id, project_name=project_id, object_name=object_id, object_data=req.media, update=True)
         resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class ObjectInfo:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        resp.media = self._controller.get_object_info(store_name=store_id, project_name=project_id, object_name=object_id) or {}
         resp.status = falcon.HTTP_200

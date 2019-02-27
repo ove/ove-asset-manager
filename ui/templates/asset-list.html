@@ -19,7 +19,11 @@
     <div class="btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/new" class="btn btn-outline-primary"
            data-toggle="tooltip" data-placement="top" title="Create new asset">
-            <i class="far fa-plus-square"></i>&nbsp;&nbsp;New asset
+            <i class="fas fa-plus-square"></i>&nbsp;&nbsp;New asset
+        </a>
+        <a href="/view/store/{{ store_name }}/project/{{ project_name }}/object/project" class="btn btn-outline-primary"
+           data-toggle="tooltip" data-placement="top" title="Create new project, if it does not exist">
+            <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Edit project
         </a>
         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload & create asset"
                 onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/upload', true)">
@@ -41,6 +45,26 @@
         </tr>
         </thead>
         <tbody>
+        {% for object in objects -%}
+            <tr>
+                <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}">{{ project_name }}</a></td>
+                <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}/object/{{ object.name }}">{{ object.name }}.json</a></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a href="{{ object.index_file }}" target="_blank">{{ object.index_file }}</a></td>
+                <td></td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Toolbox">
+                        <a href="/view/store/{{ store_name }}/project/{{ project_name }}/object/{{ object }}" class="btn btn-outline-primary"
+                           data-toggle="tooltip" data-placement="top" title="Edit asset">
+                            <i class="far fa-edit"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+
         {% for asset in assets -%}
             <tr>
                 <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}">{{ asset.project }}</a></td>
@@ -57,7 +81,7 @@
                 <td><a href="{{ asset.index_file }}" target="_blank">{{ asset.index_file }}</a></td>
                 <td><span data-toggle="tooltip" data-placement="top" title="{{ asset.processing_error }}">{{ asset.processing_status }}</span></td>
                 <td>
-                    <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="btn-group" role="group" aria-label="Toolbox">
                         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/" class="btn btn-outline-primary"
                            data-toggle="tooltip" data-placement="top" title="Edit asset">
                             <i class="far fa-edit"></i>

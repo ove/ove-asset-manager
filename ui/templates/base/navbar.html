@@ -50,6 +50,18 @@
                     </a>
                 </li>
             {% endif %}
+
+            {% if object_name %}
+                <li class="nav-item">
+                    <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/view/store/{{ store_name }}/project/{{ project_name }}/object/{{ object_name }}">
+                        <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Object
+                        <span class="badge badge-primary">{{ object_name }}.json</span>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

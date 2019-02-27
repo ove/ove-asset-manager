@@ -12,22 +12,24 @@ class BackendClient:
         self.backend_url = append_slash(backend_url)
         self._http = urllib3.PoolManager()
 
+    def head(self, api_url: str, headers: Dict = None) -> bool:
+        response = self._http.request(method="HEAD", url=self.backend_url + api_url, headers=_fix_headers(headers))
+        return 200 <= response.status < 300
+
     def get(self, api_url: str, headers: Dict = None) -> Union[Dict, List, None]:
         return self.request(method="GET", api_url=api_url, headers=headers)
 
     def post(self, api_url: str, data: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
         return self.request(method="POST", api_url=api_url, data=data, headers=headers)
 
+    def put(self, api_url: str, data: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
+        return self.request(method="PUT", api_url=api_url, data=data, headers=headers)
+
     def delete(self, api_url: str, data: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
         return self.request(method="DELETE", api_url=api_url, data=data, headers=headers)
 
     def request(self, method: str, api_url: str, data: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
-        if headers is None:
-            headers = {'Content-Type': 'application/json'}
-        else:
-            headers['Content-Type'] = 'application/json'
-
-        response = self._http.request(method=method, url=self.backend_url + api_url, headers=headers,
+        response = self._http.request(method=method, url=self.backend_url + api_url, headers=_fix_headers(headers),
                                       body=json.dumps(data).encode('utf-8') if data is not None else None)
         if 200 <= response.status < 300:
             result = response.data
@@ -54,3 +56,11 @@ class BackendClient:
             e = json.loads(result.decode('utf-8')) if result is not None else {}
             raise falcon.HTTPInternalServerError(title=e.get("title", "Error"),
                                                  description=e.get("description", "Error while calling '{}'".format(api_url)))
+
+
+def _fix_headers(headers: Dict = None) -> Dict:
+    if headers is None:
+        return {'Content-Type': 'application/json'}
+    else:
+        headers['Content-Type'] = 'application/json'
+        return headers

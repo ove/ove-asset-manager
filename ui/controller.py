@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
 
 from ui.backend import BackendClient
 
@@ -49,19 +49,30 @@ class BackendController:
     def edit_asset(self, store_name: str, project_name: str, asset: Dict) -> Dict:
         return self._backend.post("/api/{}/{}/meta/{}".format(store_name, project_name, asset.get("name", "")), data=asset)
 
-    def upload_asset(self, store_name: str, project_name: str, asset_name: str, filename: str, stream: Any) -> None:
-        url = "api/{}/{}/createUpload/{}".format(store_name, project_name, asset_name)
+    def upload_asset(self, store_name: str, project_name: str, asset_name: str, filename: str, stream: Any, update: bool = False) -> None:
+        if update:
+            url = "api/{}/{}/update/{}".format(store_name, project_name, asset_name)
+        else:
+            url = "api/{}/{}/createUpload/{}".format(store_name, project_name, asset_name)
+
         headers = {"Content-Type": "application/octet-stream", "content-disposition": "filename='{}'".format(filename)}
         self._backend.upload(api_url=url, stream=stream, headers=headers)
 
     def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str):
         self._backend.post("api/{}/{}/process/{}".format(store_name, project_name, asset_name), data={"worker_type": worker_type})
 
-    # def get_object(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
-    #     return self._manager.get_object(store_name=store_name, project_name=project_name, object_name=object_name)
-    #
-    # def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None, update: bool = False) -> None:
-    #     if not update and self._manager.has_object(store_name=store_name, project_name=project_name, object_name=object_name):
-    #         raise ObjectExistsError(store_name=store_name, project_name=project_name, object_name=object_name)
-    #
-    #     return self._manager.set_object(store_name=store_name, project_name=project_name, object_name=object_name, object_data=object_data)
+    def check_objects(self, store_name: str, project_name: str, object_names: List[str]) -> List[Dict]:
+        return [self.get_object_info(store_name=store_name, project_name=project_name, object_name=item)
+                for item in object_names if self.has_object(store_name=store_name, project_name=project_name, object_name=item)]
+
+    def has_object(self, store_name: str, project_name: str, object_name: str) -> bool:
+        return self._backend.head("api/{}/{}/object/{}".format(store_name, project_name, object_name))
+
+    def get_object(self, store_name: str, project_name: str, object_name: str) -> Union[None, Dict]:
+        return self._backend.get("api/{}/{}/object/{}".format(store_name, project_name, object_name))
+
+    def get_object_info(self, store_name: str, project_name: str, object_name: str) -> Union[None, Dict]:
+        return self._backend.get("api/{}/{}/object/{}/info".format(store_name, project_name, object_name))
+
+    def set_object(self, store_name: str, project_name: str, object_name: str, object_data: Dict) -> None:
+        return self._backend.put("api/{}/{}/object/{}".format(store_name, project_name, object_name), data=object_data)

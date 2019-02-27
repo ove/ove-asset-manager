@@ -1,4 +1,6 @@
+import json
 import logging
+import re
 import sys
 
 import falcon
@@ -7,6 +9,7 @@ import urllib3
 
 from common.errors import ValidationError
 from common.falcon_utils import parse_filename
+from common.util import to_bool
 from common.validation import validate_not_null
 from ui.alert_utils import report_error, report_success
 from ui.controller import BackendController
@@ -139,6 +142,7 @@ class AssetView:
         try:
             resp.context["assets"] = self._controller.list_assets(store_name=store_name, project_name=project_name)
             resp.context["workers"] = self._controller.get_worker_types()
+            resp.context["objects"] = self._controller.check_objects(store_name=store_name, project_name=project_name, object_names=["project"])
             report_success(resp=resp, description="Asset list loaded")
         except:
             raise
@@ -183,6 +187,30 @@ class AssetEdit:
             resp.context["asset"] = self._controller.edit_asset(store_name=store_name, project_name=project_name, asset=asset)
 
 
+class ObjectEdit:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('object-edit.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):
+        resp.context = {"store_name": store_name, "project_name": project_name, "object_name": object_name, "object": {}, "create": False}
+        try:
+            resp.context["object"] = json.dumps(self._controller.get_object(store_name=store_name, project_name=project_name, object_name=object_name),
+                                                indent=2)
+            resp.context["create"] = False
+        except:
+            resp.context["create"] = True
+            raise
+
+    @falcon_template.render('object-edit.html')
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):
+        resp.context = {"store_name": store_name, "project_name": project_name, "object_name": object_name, "create": False,
+                        "object": req.params.get("object", "")}
+
+        self._controller.set_object(store_name=store_name, project_name=project_name, object_name=object_name,
+                                    object_data=json.loads(req.params.get("object", "")))
+
+
 class UploadApi:
     content_type = 'application/octet-stream'
 
@@ -192,8 +220,10 @@ class UploadApi:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str = None):
         filename = parse_filename(req)
         if asset_name is None:
-            asset_name = filename
-        self._controller.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=filename, stream=req.bounded_stream)
+            asset_name = re.sub("\\W+", '_', filename)
+
+        self._controller.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=filename, stream=req.bounded_stream,
+                                      update=to_bool(req.params.get("update", "True")))
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 

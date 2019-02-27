@@ -18,7 +18,13 @@ function confirm_submission(formId, msg) {
 
 function file_upload(uploadUrl, multiUpload) {
     let dialog = bootbox.dialog({
-        message: '<div class="file-upload-container"><input id="file-upload" type="file" ' + (multiUpload ? 'multiple' : '') + '></div>',
+        message: '<div class="file-upload-container">' +
+            '<div class="form-check" style="margin-bottom: 10px">' +
+            '  <input class="form-check-input" type="checkbox" id="update-content">' +
+            '  <label class="form-check-label" for="update-content">Update content</label>' +
+            '</div>' +
+            '<input id="file-upload" type="file" ' + (multiUpload ? 'multiple' : '') + '>' +
+            '</div>',
         onEscape: function () {
             location.reload();
         }
@@ -30,7 +36,10 @@ function file_upload(uploadUrl, multiUpload) {
             allowReplace: false,
             instantUpload: false,
             server: {
-                process: processUploadRequest.bind(this, uploadUrl)
+                process: function (_fieldName, file, _metadata, load, error, progress, abort) {
+                    const uploadFile = document.getElementById("update-content").checked;
+                    return processUploadRequest(uploadUrl + "?update=" + uploadFile, file, load, error, progress, abort);
+                }
             }
         });
     })
@@ -64,7 +73,7 @@ function reportSuccess(title, description) {
     $('#' + id).toast('show')
 }
 
-function processUploadRequest(uploadUrl, _fieldName, file, _metadata, load, error, progress, abort) {
+function processUploadRequest(uploadUrl, file, load, error, progress, abort) {
     const request = new XMLHttpRequest();
     request.open('POST', uploadUrl);
     request.setRequestHeader('Content-Type', 'application/octet-stream');

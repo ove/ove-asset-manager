@@ -73,8 +73,14 @@ class FileController:
     def edit_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None) -> None:
         self._manager.set_asset_meta(project_name=project_name, asset_name=asset_name, meta=meta, store_name=store_name)
 
+    def has_object(self, project_name: str, object_name: str, store_name: str = None) -> bool:
+        return self._manager.has_object(store_name=store_name, project_name=project_name, object_name=object_name)
+
     def get_object(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
         return self._manager.get_object(store_name=store_name, project_name=project_name, object_name=object_name)
+
+    def get_object_info(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
+        return self._manager.get_object_info(store_name=store_name, project_name=project_name, object_name=object_name)
 
     def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None, update: bool = False) -> None:
         if not update and self._manager.has_object(store_name=store_name, project_name=project_name, object_name=object_name):
