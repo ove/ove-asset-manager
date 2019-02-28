@@ -19,9 +19,12 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
 
     app.add_static_route("/favicon.ico", os.getcwd() + "/ui/static/favicon.ico", downloadable=True)
     app.add_static_route("/css", os.getcwd() + "/ui/static/css/", downloadable=True)
+    app.add_static_route("/vendors/css", os.getcwd() + "/ui/static/vendors/css/", downloadable=True)
+    app.add_static_route("/vendors/css/img", os.getcwd() + "/ui/static/vendors/css/img/", downloadable=True)
     app.add_static_route("/js", os.getcwd() + "/ui/static/js/", downloadable=True)
+    app.add_static_route("/vendors/js", os.getcwd() + "/ui/static/vendors/js/", downloadable=True)
     app.add_static_route("/img", os.getcwd() + "/ui/static/img/", downloadable=True)
-    app.add_static_route("/webfonts", os.getcwd() + "/ui/static/webfonts/", downloadable=True)
+    app.add_static_route("/vendors/webfonts", os.getcwd() + "/ui/static/vendors/webfonts/", downloadable=True)
 
     # view routes
     app.add_route('/', IndexView(controller=_controller))

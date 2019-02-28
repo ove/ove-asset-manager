@@ -30,3 +30,5 @@ Dockerfile
 
 # do not include the config samples
 samples/
+
+ui/static/vendors/

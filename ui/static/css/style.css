@@ -87,6 +87,15 @@ body {
     overflow-y: scroll;
 }
 
-.filepond--action-revert-item-processing{
+.filepond--action-revert-item-processing {
     visibility: hidden;
+}
+
+.select2-selection__choice {
+    background-color: #17a2b8 !important;
+    color: #fff !important;
+}
+
+.select2-selection__choice__remove {
+    color: #fff !important;
 }

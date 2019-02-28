@@ -109,44 +109,36 @@ function uuid() {
 }
 
 function schedule_worker(url, parameters) {
-    let dialog = bootbox.dialog({
-        message: '<h2>Worker Parameters</h2><form id="worker-form"></form>'
-    });
-    dialog.init(function () {
-        $('#worker-form').jsonForm({
-            schema: parameters,
-            form: ["*", {type: "submit", title: "Start worker"}],
-            onSubmitValid: function (values) {
-                $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(values)}).done(function (msg) {
-                    console.info("Worker status", msg);
-                    reportSuccess("Worker status", "Worker scheduled successfully");
-                    dialog.modal('hide');
-                }).catch(function (err) {
-                    console.error("Worker error", err.responseText);
-                    if (err.responseJSON) {
-                        reportError(err.responseJSON['title'], err.responseJSON['description']);
-                    } else {
-                        reportError("Worker error", "An undefined error occurred while attempting to schedule work");
-                    }
-                    dialog.modal('hide');
-                });
-            }
+    if (_.isEmpty(parameters)) {
+        _post_worker_params(url, {});
+    } else {
+        let dialog = bootbox.dialog({
+            message: '<h2>Worker Parameters</h2><form id="worker-form"></form>'
         });
-    });
+        dialog.init(function () {
+            $('#worker-form').jsonForm({
+                schema: parameters,
+                form: ["*", {type: "submit", title: "Start worker"}],
+                onSubmitValid: function (values) {
+                    _post_worker_params(url, values).always(function () {
+                        dialog.modal('hide');
+                    })
+                }
+            });
+        });
+    }
 }
 
-// function schedule_worker(url) {
-//     $.ajax({
-//         type: "POST", url: url, contentType: "application/json", dataType: "json"
-//     }).done(function (msg) {
-//         console.info("Worker status", msg);
-//         reportSuccess("Worker status", "Worker scheduled successfully");
-//     }).catch(function (err) {
-//         console.error("Worker error", err.responseText);
-//         if (err.responseJSON) {
-//             reportError(err.responseJSON['title'], err.responseJSON['description']);
-//         } else {
-//             reportError("Worker error", "An undefined error occurred while attempting to schedule work");
-//         }
-//     });
-// }
+function _post_worker_params(url, values) {
+    return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(values)}).done(function (msg) {
+        console.info("Worker status", msg);
+        reportSuccess("Worker status", "Worker scheduled successfully");
+    }).catch(function (err) {
+        console.error("Worker error", err.responseText);
+        if (err.responseJSON) {
+            reportError(err.responseJSON['title'], err.responseJSON['description']);
+        } else {
+            reportError("Worker error", "An undefined error occurred while attempting to schedule work");
+        }
+    });
+}

@@ -9,3 +9,6 @@ venv/
 .env/
 
 config/credentials.json
+
+ui/static/vendors/
+package-lock.json
