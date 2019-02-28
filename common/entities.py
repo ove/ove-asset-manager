@@ -96,6 +96,8 @@ class WorkerData:
         self.error_msg = kwargs.get("error_msg", None)
         self.callback = kwargs.get("callback", "")
         self.status_callback = kwargs.get("status_callback", "")
+        self.parameters = kwargs.get("parameters", {})
+        self.docs = kwargs.get("docs", "")
 
     def __eq__(self, other):
         if isinstance(other, WorkerData):
@@ -114,7 +116,9 @@ class WorkerData:
             "extensions": self.extensions,
             "status": str(self.status),
             "callback": self.callback,
-            "status_callback": self.status_callback
+            "status_callback": self.status_callback,
+            "parameters": self.parameters,
+            "docs": self.docs
         }
 
 

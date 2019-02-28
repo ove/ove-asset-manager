@@ -82,7 +82,8 @@ class WorkerSchedule:
 
         meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
         self._worker_manager.schedule_process(project_name=project_id, meta=meta, worker_type=req.media.get("worker_type"),
-                                              store_config=self._controller.get_store_config(store_name=store_id))
+                                              store_config=self._controller.get_store_config(store_name=store_id),
+                                              task_options=req.media.get("parameters", dict()))
 
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200

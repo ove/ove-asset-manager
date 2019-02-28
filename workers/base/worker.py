@@ -50,8 +50,8 @@ class BaseWorker(ABC):
             logging.error("Failed to update status on server '%s'. Reported error: %s. Server error: %s", self._service_url, error, r.text)
 
     def register_callback(self, attempts: int, timeout: int):
-        data = WorkerData(name=self.name, callback=self._callback, status_callback=self._status_callback,
-                          type=self.worker_type(), description=self.description(), status=self.status, extensions=self.extensions())
+        data = WorkerData(name=self.name, callback=self._callback, status_callback=self._status_callback, type=self.worker_type(), docs=self.docs(),
+                          description=self.description(), status=self.status, extensions=self.extensions(), parameters=self.parameters())
 
         for i in range(attempts):
             logging.info("Register callback timeout %s ms", timeout)
@@ -125,6 +125,21 @@ class BaseWorker(ABC):
         :return: description in human-readable format
         """
         return ""
+
+    @abstractmethod
+    def docs(self) -> str:
+        """
+        :return: the worker documentation document url, in markdown format
+        """
+        return ""
+
+    @abstractmethod
+    def parameters(self) -> Dict:
+        """
+        :return: the worker parameter description, in json-form format:
+        see https://github.com/jsonform/jsonform for more details
+        """
+        return {}
 
     @abstractmethod
     def process(self, project_name: str, meta: OveMeta, options: Dict):

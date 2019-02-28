@@ -234,7 +234,7 @@ class WorkerApi:
     def __init__(self, controller: BackendController):
         self._controller = controller
 
-    def on_post(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str, worker_type: str):
-        self._controller.schedule_worker(store_name=store_name, project_name=project_name, asset_name=asset_name, worker_type=worker_type)
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str, worker_type: str):
+        self._controller.schedule_worker(store_name=store_name, project_name=project_name, asset_name=asset_name, worker_type=worker_type, parameters=req.media)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200

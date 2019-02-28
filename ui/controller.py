@@ -16,7 +16,8 @@ class BackendController:
         return list({w['type']: {
             'type': w['type'],
             'extensions': w['extensions'],
-            'description': w['description']
+            'description': w['description'],
+            'parameters': w['parameters']
         } for w in self.list_workers()}.values())
 
     def edit_worker(self, action: str, name: str) -> None:
@@ -58,8 +59,8 @@ class BackendController:
         headers = {"Content-Type": "application/octet-stream", "content-disposition": "filename='{}'".format(filename)}
         self._backend.upload(api_url=url, stream=stream, headers=headers)
 
-    def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str):
-        self._backend.post("api/{}/{}/process/{}".format(store_name, project_name, asset_name), data={"worker_type": worker_type})
+    def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str, parameters: Dict):
+        self._backend.post("api/{}/{}/process/{}".format(store_name, project_name, asset_name), data={"worker_type": worker_type, "parameters": parameters})
 
     def check_objects(self, store_name: str, project_name: str, object_names: List[str]) -> List[Dict]:
         return [self.get_object_info(store_name=store_name, project_name=project_name, object_name=item)

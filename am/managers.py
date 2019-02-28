@@ -48,12 +48,12 @@ class WorkerManager:
                 w.status = status
                 w.error_msg = error_msg
 
-    def schedule_process(self, project_name: str, meta: OveMeta, worker_type: str, store_config: Dict):
+    def schedule_process(self, project_name: str, meta: OveMeta, worker_type: str, store_config: Dict, task_options: Dict):
         available = _find_workers(filename=meta.filename, worker_type=worker_type, workers=self._workers)
         if len(available) > 0:
             # load balancing ^_^
             random.shuffle(available)
-            data = {"store_config": store_config, "project_name": project_name, "asset_name": meta.name}
+            data = {"store_config": store_config, "project_name": project_name, "asset_name": meta.name, "task_options": task_options}
 
             success = False
             for w in available:

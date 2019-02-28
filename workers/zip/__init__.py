@@ -20,6 +20,12 @@ class ZipWorker(BaseWorker):
     def description(self) -> str:
         return "Extracts zip archives"
 
+    def docs(self) -> str:
+        return ""
+
+    def parameters(self) -> Dict:
+        return {}
+
     def process(self, project_name: str, meta: OveMeta, options: Dict):
         logging.info("Unzipping %s/%s into the temp place ...", project_name, meta.name)
 
