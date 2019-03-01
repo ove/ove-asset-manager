@@ -3,6 +3,6 @@
     "config:base"
   ],
   "pip_requirements": {
-    "fileMatch": ["\.requirements.ui.txt", "\.requirements$"]
+    "fileMatch": ["requirements.ui.txt", "requirements.txt"]
   }
 }
