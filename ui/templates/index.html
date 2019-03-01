@@ -2,6 +2,15 @@
 {% block title %}Store list{% endblock %}
 
 {% block content %}
+    <script>
+        $(document).ready(function () {
+            $("#store-name").select2({
+                placeholder: "Select a store",
+                allowClear: true
+            });
+        });
+    </script>
+
     <div class="jumbotron">
         <h1 class="display-4">Asset Manager</h1>
         <p class="lead">
@@ -14,11 +23,16 @@
         </p>
         <hr class="my-4">
 
-        <div class="list-group list-group-horizontal">
-            <div class="list-group-item disabled" aria-disabled="true">Please select a store:</div>
-            {% for store in stores %}
-                <a href="/view/store/{{ store }}/" class="list-group-item list-group-item-action list-group-item-primary" style="width: auto;">{{ store }}</a>
-            {% endfor %}
-        </div>
+        <form class="form-inline" method="GET" action="">
+            <div class="form-group form-control-lg mb-2">
+                <label for="store-name" class="mr-2">Please select a store </label>
+                <select id="store-name" name="store-name" class="form-control" style="min-width: 300px">
+                    {% for store in stores %}
+                        <option value="{{ store }}">{{ store }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary mb-2" style="margin-top: 10px">Enter</button>
+        </form>
     </div>
 {% endblock %}

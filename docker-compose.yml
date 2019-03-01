@@ -18,10 +18,7 @@ services:
     build:
       context: .
       dockerfile: docker/worker-zip/Dockerfile
-    ports:
-      - "6070:6070"
     environment:
-      GUNICORN_PORT: "6070"
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
       SERVICE_AM_PORT: "6080"
@@ -32,10 +29,7 @@ services:
     build:
       context: .
       dockerfile: docker/worker-gigaimage/Dockerfile
-    ports:
-      - "6071:6071"
     environment:
-      GUNICORN_PORT: "6071"
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
       SERVICE_AM_PORT: "6080"

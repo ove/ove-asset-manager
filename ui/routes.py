@@ -23,7 +23,7 @@ def handle_api_exceptions(ex: Exception, _req: falcon.Request, _resp: falcon.Res
     if isinstance(ex, (falcon.HTTPNotFound, falcon.HTTPNotImplemented)):
         raise falcon.HTTPPermanentRedirect(location="/404")
 
-    if isinstance(ex, falcon.HTTPPermanentRedirect):
+    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPTemporaryRedirect)):
         raise ex
 
     if isinstance(ex, falcon.HTTPError):
@@ -60,8 +60,11 @@ class IndexView:
         self._controller = controller
 
     @falcon_template.render('index.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response):
-        resp.context = {"stores": self._controller.list_stores()}
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        if req.params.get("store-name", None):
+            raise falcon.HTTPPermanentRedirect("/view/store/" + req.params.get("store-name", None))
+        else:
+            resp.context = {"stores": self._controller.list_stores()}
 
 
 class NotFoundView:

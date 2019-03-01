@@ -18,4 +18,6 @@ RUN apk --no-cache add --virtual build-base && \
     apk del build-base
 
 ENV WORKER_CLASS "workers.zip.ZipWorker"
+ENV GUNICORN_PORT "6090"
+
 CMD "./start-worker.sh"

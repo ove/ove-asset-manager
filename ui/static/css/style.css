@@ -99,3 +99,16 @@ body {
 .select2-selection__choice__remove {
     color: #fff !important;
 }
+
+.select2-selection {
+    min-height: 43px;
+    text-align: left;
+}
+
+.select2-selection__rendered {
+    margin: 5px;
+}
+
+.select2-selection__arrow {
+    margin: 5px;
+}

@@ -51,4 +51,6 @@ RUN pip install -r requirements.txt && pip install pyvips
 RUN apk del build-base autoconf automake
 
 ENV WORKER_CLASS "workers.gigaimage.ImageWorker"
+ENV GUNICORN_PORT "6091"
+
 CMD "./start-worker.sh"
