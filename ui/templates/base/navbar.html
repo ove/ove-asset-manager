@@ -12,7 +12,7 @@
                 <a class="nav-link {{ "active" if active_page == "workers" }}" href="/view/workers"><i class="fas fa-toolbox"></i>&nbsp;&nbsp;Workers</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ "active" if not store_name and active_page != "workers" }}" href="/"><i class="fas fa-home"></i>&nbsp;&nbsp;Home</a>
+                <a class="nav-link {{ "active" if not store_name and active_page not in ["workers", "docs"] }}" href="/"><i class="fas fa-home"></i>&nbsp;&nbsp;Home</a>
             </li>
 
             {% if store_name %}

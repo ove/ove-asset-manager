@@ -130,6 +130,7 @@ class BaseWorker(ABC):
     def docs(self) -> str:
         """
         :return: the worker documentation document url, in markdown format
+        see https://github.com/trentm/python-markdown2 for more details
         """
         return ""
 

@@ -20,7 +20,7 @@ class ImageWorker(BaseWorker):
         return "Converts large images into DZI tiled gigaimages"
 
     def docs(self) -> str:
-        return ""
+        return "GigaImageWorker.md"
 
     def parameters(self) -> Dict:
         return {}

@@ -4,12 +4,13 @@ import re
 import sys
 
 import falcon
+import markdown2
 import requests
 import urllib3
 
 from common.errors import ValidationError
 from common.falcon_utils import parse_filename
-from common.util import to_bool
+from common.util import to_bool, append_slash
 from common.validation import validate_not_null
 from ui.alert_utils import report_error, report_success
 from ui.controller import BackendController
@@ -209,6 +210,20 @@ class ObjectEdit:
 
         self._controller.set_object(store_name=store_name, project_name=project_name, object_name=object_name,
                                     object_data=json.loads(req.params.get("object", "")))
+
+
+class WorkerDocs:
+    def __init__(self, docs_folder: str):
+        self.docs_folder = append_slash(docs_folder)
+
+    @falcon_template.render('worker-docs.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response, worker_doc: str):
+        resp.context = {"worker_doc": worker_doc, "content": ""}
+        try:
+            with open(self.docs_folder + worker_doc) as fin:
+                resp.context["content"] = markdown2.markdown(fin.read())
+        except:
+            raise falcon.HTTPNotFound(title="Docs not found", description="'{}' is not available".format(worker_doc))
 
 
 class UploadApi:

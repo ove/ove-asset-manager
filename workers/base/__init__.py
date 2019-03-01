@@ -15,10 +15,10 @@ from workers.base.worker import BaseWorker, register_callback, unregister_callba
 def setup_worker(**kwargs) -> falcon.API:
     logging_level = parse_logging_lvl(kwargs.get("logging_level", "debug"))
     hostname = kwargs.get("hostname", "localhost")
-    port = kwargs.get("port", 9080)
+    port = kwargs.get("port", 6090)
     worker_name = kwargs.get("worker_name", "test")
     worker_class = kwargs.get("worker_class", None)
-    service_url = kwargs.get("service_url", "http://localhost:8080/api/workers")
+    service_url = kwargs.get("service_url", "http://localhost:6080/api/workers")
     registration_attempts = kwargs.get("registration_attempts", 5)
     registration_timeout = kwargs.get("registration_timeout", 5000)
 

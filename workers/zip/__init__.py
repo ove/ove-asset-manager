@@ -21,7 +21,7 @@ class ZipWorker(BaseWorker):
         return "Extracts zip archives"
 
     def docs(self) -> str:
-        return ""
+        return "ZipWorker.md"
 
     def parameters(self) -> Dict:
         return {}

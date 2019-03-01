@@ -17,6 +17,7 @@ COPY --from=builder /code/ui/ ui/
 
 ADD common/ common/
 ADD ui/ ui/
+ADD docs/ docs/
 ADD start-ui.sh .
 ADD requirements.ui.txt .
 

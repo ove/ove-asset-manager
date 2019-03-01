@@ -7,10 +7,11 @@ from common.middleware import CORSComponent
 from common.util import parse_logging_lvl
 from ui.controller import BackendController
 from ui.middleware import ContentTypeValidator
-from ui.routes import ProjectView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, UploadApi, WorkerApi, ObjectEdit
+from ui.routes import ProjectView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, UploadApi, WorkerApi, ObjectEdit, \
+    WorkerDocs
 
 
-def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:8080") -> falcon.API:
+def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:6080") -> falcon.API:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
     _controller = BackendController(backend_url=backend_url)
@@ -39,6 +40,9 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/api/store/{store_name}/project/{project_name}/upload', UploadApi(controller=_controller))
     app.add_route('/api/store/{store_name}/project/{project_name}/asset/{asset_name}/upload', UploadApi(controller=_controller))
     app.add_route('/api/store/{store_name}/project/{project_name}/asset/{asset_name}/process/{worker_type}', WorkerApi(controller=_controller))
+
+    # worker docs
+    app.add_route('/docs/{worker_doc}', WorkerDocs(docs_folder=os.getcwd() + "/docs/workers/"))
 
     app.add_error_handler(Exception, handle_api_exceptions)
 

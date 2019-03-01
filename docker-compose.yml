@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: docker/am/Dockerfile
     ports:
-      - "8080:8080"
+      - "6080:6080"
     volumes:
       - ./config/:/code/config/:ro
     environment:
@@ -19,11 +19,12 @@ services:
       context: .
       dockerfile: docker/worker-zip/Dockerfile
     ports:
-      - "9080:9080"
+      - "6070:6070"
     environment:
+      GUNICORN_PORT: "6070"
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
-      SERVICE_AM_PORT: "8080"
+      SERVICE_AM_PORT: "6080"
 
 
   ovehub-ove-asset-manager-worker-gigaimage:
@@ -32,11 +33,12 @@ services:
       context: .
       dockerfile: docker/worker-gigaimage/Dockerfile
     ports:
-      - "9081:9081"
+      - "6071:6071"
     environment:
+      GUNICORN_PORT: "6071"
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
-      SERVICE_AM_PORT: "8080"
+      SERVICE_AM_PORT: "6080"
 
   ovehub-ove-asset-manager-ui:
     image: ovehub/ove-asset-manager-ui:latest-unstable
@@ -44,8 +46,8 @@ services:
       context: .
       dockerfile: docker/ui/Dockerfile
     ports:
-      - "3000:3000"
+      - "6060:6060"
     environment:
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
-      SERVICE_AM_PORT: "8080"
+      SERVICE_AM_PORT: "6080"

@@ -3,7 +3,7 @@
 scriptPath=$(dirname "$(readlink -f "$0")")
 cd ${scriptPath}/
 
-[[ ! -z "${GUNICORN_PORT}" ]] || GUNICORN_PORT="8080"
+[[ ! -z "${GUNICORN_PORT}" ]] || GUNICORN_PORT="6080"
 [[ ! -z "${GUNICORN_HOST}" ]] || GUNICORN_HOST="0.0.0.0"
 [[ ! -z "${GUNICORN_WORKERS}" ]] || GUNICORN_WORKERS="1"
 [[ ! -z "${GUNICORN_THREADS}" ]] || GUNICORN_THREADS="4"

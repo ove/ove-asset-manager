@@ -3,7 +3,7 @@
 scriptPath=$(dirname "$(readlink -f "$0")")
 cd ${scriptPath}/
 
-[[ ! -z "${GUNICORN_PORT}" ]] || GUNICORN_PORT="3000"
+[[ ! -z "${GUNICORN_PORT}" ]] || GUNICORN_PORT="6060"
 [[ ! -z "${GUNICORN_HOST}" ]] || GUNICORN_HOST="0.0.0.0"
 [[ ! -z "${GUNICORN_WORKERS}" ]] || GUNICORN_WORKERS="1"
 [[ ! -z "${GUNICORN_THREADS}" ]] || GUNICORN_THREADS="4"
@@ -12,7 +12,7 @@ cd ${scriptPath}/
 [[ ! -z "${SERVICE_LOG_LEVEL}" ]] || SERVICE_LOG_LEVEL="debug"
 
 [[ ! -z "${SERVICE_AM_HOSTNAME}" ]] || SERVICE_AM_HOSTNAME=$(hostname)
-[[ ! -z "${SERVICE_AM_PORT}" ]] || SERVICE_AM_PORT="8080"
+[[ ! -z "${SERVICE_AM_PORT}" ]] || SERVICE_AM_PORT="6080"
 
 echo "Environment variables:"
 echo "  GUNICORN_PORT=${GUNICORN_PORT}"
