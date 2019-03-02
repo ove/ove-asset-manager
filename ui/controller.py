@@ -1,3 +1,4 @@
+from os.path import basename
 from typing import Dict, List, Any, Union
 
 from ui.backend import BackendClient
@@ -38,7 +39,8 @@ class BackendController:
         self._backend.post("api/{}/create".format(store_name), data={"name": project_name})
 
     def list_assets(self, store_name: str, project_name: str) -> List:
-        return list(self._backend.get("api/{}/{}/list".format(store_name, project_name)).get("Assets", {}).values())
+        return [_mutate(d, "short_index", basename(d.get("index_file", "")))
+                for d in self._backend.get("api/{}/{}/list".format(store_name, project_name)).get("Assets", {}).values()]
 
     def get_asset(self, store_name: str, project_name: str, asset_name: str) -> Dict:
         return self._backend.get("api/{}/{}/meta/{}".format(store_name, project_name, asset_name))
@@ -77,3 +79,8 @@ class BackendController:
 
     def set_object(self, store_name: str, project_name: str, object_name: str, object_data: Dict) -> None:
         return self._backend.put("api/{}/{}/object/{}".format(store_name, project_name, object_name), data=object_data)
+
+
+def _mutate(d: Dict, field: str, value: Any) -> Dict:
+    d[field] = value
+    return d

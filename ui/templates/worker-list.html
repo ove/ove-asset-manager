@@ -10,8 +10,8 @@
                 "pageLength": 10,
                 "order": [0, 'asc'],
                 "columns": [
-                    {"width": "10%"}, {"width": "30%"}, {"width": "10%"}, {"width": "10%"},
-                    {"width": "2%", "orderable": false}, {"width": "30%"}, {"width": "8%", "orderable": false}
+                    {"width": "10%"}, {"width": "35%"}, {"width": "20%"}, {"width": "15%"},
+                    {"width": "5%", "orderable": false}, {"width": "15%", "orderable": false}
                 ],
                 "columnDefs": [{"targets": 4, "className": "align-text-centre"}]
             });
@@ -26,7 +26,6 @@
             <th scope="col">Extensions</th>
             <th scope="col">Type</th>
             <th scope="col">Status</th>
-            <th scope="col">Callback</th>
             <th scope="col"></th>
         </tr>
         </thead>
@@ -46,21 +45,20 @@
                 <td>
                     {% if worker.status == "ready" %}
                         <span data-toggle="tooltip" data-placement="top" title="Ready">
-                            <i class="fas fa-heart icon-success"></i>
+                            <i class="fas fa-check-circle icon-success"></i>
                         </span>
                     {% elif worker.status == "processing" %}
                         <span data-toggle="tooltip" data-placement="top" title="Worker is processing">
-                            <i class="fas fa-heartbeat icon-ok"></i>
+                            <i class="fas fa-spinner fa-spin icon-ok"></i>
                         </span>
                     {% elif worker.status == "error" %}
                         <span data-toggle="tooltip" data-placement="top" title="Error. Check worker logs for details!">
-                            <i class="fas fa-heart-broken icon-error"></i>
+                            <i class="fas fa-exclamation-circle icon-error"></i>
                         </span>
                     {% endif %}
                 </td>
-                <td><a href="{{ worker.callback }}" target="_blank">{{ worker.callback }}</a></td>
                 <td>
-                    <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="btn-group" role="group" aria-label="Toolbar" style="float: right;">
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Reset error state"
                                 onclick="document.getElementById('refresh-{{ worker.name }}').submit();">
                             <i class="fas fa-sync"></i>

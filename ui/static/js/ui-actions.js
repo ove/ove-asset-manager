@@ -19,6 +19,11 @@ function confirm_submission(formId, msg) {
 function file_upload(uploadUrl, multiUpload) {
     let dialog = bootbox.dialog({
         message: '<div class="file-upload-container">' +
+            '<span data-toggle="tooltip" data-placement="top" data-html="true" title="Note: The upload is not complete until the upload box ' +
+            'becomes green. If you wait at 100% for a long time it may be because the content is still being uploaded to the object store in the asset ' +
+            'manager.">\n' +
+            '   <i class="fas fa-exclamation-circle icon-error"></i>\n' +
+            '</span>' +
             '<div class="form-check" style="margin-bottom: 10px">' +
             '  <input class="form-check-input" type="checkbox" id="update-content">' +
             '  <label class="form-check-label" for="update-content">Update content</label>' +

@@ -8,7 +8,7 @@
                 "pageLength": 25,
                 "order": [1, 'asc'],
                 "columns": [
-                    {"width": "10%"}, {"width": "10%"}, {"width": "30%"}, {"width": "10%"}, {"width": "2%"}, {"width": "25%"},
+                    {"width": "10%"}, {"width": "10%"}, {"width": "35%"}, {"width": "15%"}, {"width": "2%"}, {"width": "15%"},
                     {"width": "5%"}, {"width": "8%", "orderable": false}
                 ],
                 "columnDefs": [{"targets": 4, "className": "align-text-right"}]
@@ -52,7 +52,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><a href="{{ object.index_file }}" target="_blank">{{ object.index_file }}</a></td>
+                <td><a href="{{ object.index_file }}" target="_blank">//.../{{ object.name }}.json</a></td>
                 <td></td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Toolbox">
@@ -78,8 +78,28 @@
                     {% endif %}
                 </td>
                 <td>{{ asset.version }}</td>
-                <td><a href="{{ asset.index_file }}" target="_blank">{{ asset.index_file }}</a></td>
-                <td><span data-toggle="tooltip" data-placement="top" title="{{ asset.processing_error }}">{{ asset.processing_status }}</span></td>
+                <td>
+                    {% if asset.index_file %}
+                        <a href="{{ asset.index_file }}" target="_blank">//.../{{ asset.short_index }}</a>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if asset.processing_status == "done" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Done">
+                            <i class="fas fa-check-circle icon-success"></i>
+                        </span>
+                    {% elif asset.processing_status == "processing" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Processing">
+                            <i class="fas fa-spinner fa-spin icon-ok"></i>
+                        </span>
+                    {% elif asset.processing_status == "error" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Error: {{ asset.processing_error }}">
+                            <i class="fas fa-exclamation-circle icon-error"></i>
+                        </span>
+                    {% else %}
+                        <span data-toggle="tooltip" data-placement="top" title="{{ asset.processing_error }}">{{ asset.processing_status }}</span>
+                    {% endif %}
+                </td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Toolbox">
                         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/" class="btn btn-outline-primary"
@@ -98,20 +118,32 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 {% if workers %}
                                     {% for worker in workers %}
-                                        <button type="button" class="dropdown-item"
-                                                onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}', {{ worker.parameters }})">
-                                            <b>{{ worker.type }}</b>
-                                            <br/>
-                                            <small><i>{{ worker.description }}</i></small>
-                                            <br/>
-                                            <small>
-                                                Works with
-                                                <span class="badge badge-info">
+                                        <div class="dropdown-item">
+                                            <div class="row">
+                                                <b>{{ worker.type }}</b>
+                                            </div>
+                                            <div class="row">
+                                                <small><i>{{ worker.description }}</i></small>
+                                            </div>
+                                            <div class="row">
+                                                <small>
+                                                    Works with
+                                                    <span class="badge badge-info">
                                                     {{ worker.extensions|join('</span>&nbsp;<span class="badge badge-info">') }}
                                                 </span>
-                                                extensions
-                                            </small>
-                                        </button>
+                                                    extensions
+                                                </small>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-8"></div>
+                                                <div class="col-2">
+                                                    <button type="button" class="btn btn-outline-primary"
+                                                            onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}', {{ worker.parameters }})">
+                                                        Process
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     {% endfor %}
                                 {% else %}
                                     <a class="dropdown-item disabled" href="#">No workers available</a>

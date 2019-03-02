@@ -5,9 +5,9 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
-                "pageLength": 10,
-                "order": [1, 'asc'],
-                "columns": [{"width": 20, "orderable": false}, null, {"width": 20, "orderable": false}]
+                pageLength: 10,
+                order: [1, 'asc'],
+                columns: [{width: 20, orderable: true}, null, {width: 20, orderable: false}]
             });
         });
     </script>
@@ -28,7 +28,7 @@
     <table id="table" class="table table-striped">
         <thead class="thead-dark">
         <tr>
-            <th scope="col">#</th>
+            <th scope="col"></th>
             <th scope="col">Project Name</th>
             <th scope="col"></th>
         </tr>
@@ -40,10 +40,12 @@
                     {% if project.has_project %}
                         <span data-toggle="tooltip" data-placement="top" title="This project has a project.json file">
                             <i class="fas fa-heartbeat icon-ok"></i>
+                            <span style="display: none;">Y</span> <!-- for sorting only -->
                         </span>
                     {% else %}
                         <span data-toggle="tooltip" data-placement="top" title="This project does not have a project.json file, yet!">
                             <i class="fas fa-heart-broken icon-error"></i>
+                            <span style="display: none;">N</span> <!-- for sorting only -->
                         </span>
                     {% endif %}
                 </td>

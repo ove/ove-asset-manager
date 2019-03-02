@@ -118,7 +118,6 @@ class ProjectView:
         resp.context = {"store_name": store_name, "projects": []}
         try:
             resp.context["projects"] = self._controller.list_projects(store_name)
-            report_success(resp=resp, description="Project list loaded")
         except:
             raise
 
@@ -147,7 +146,6 @@ class AssetView:
             resp.context["assets"] = self._controller.list_assets(store_name=store_name, project_name=project_name)
             resp.context["workers"] = self._controller.get_worker_types()
             resp.context["objects"] = self._controller.check_objects(store_name=store_name, project_name=project_name, object_names=["project"])
-            report_success(resp=resp, description="Asset list loaded")
         except:
             raise
 
@@ -204,7 +202,7 @@ class ObjectEdit:
             resp.context["create"] = False
         except:
             resp.context["create"] = True
-            raise
+            raise ValidationError(title="Not found".format(object_name), description="This project does not have a '{}.json' object".format(object_name))
 
     @falcon_template.render('object-edit.html')
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):

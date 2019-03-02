@@ -62,21 +62,21 @@ class InvalidStoreError(ValidationError):
 
 class InvalidAssetError(ValidationError):
     def __init__(self, store_name: str, project_name: str, asset_name: str):
-        description = "Error while trying to retrieve asset '{}' from project '{}' on '{}'".format(store_name, project_name, asset_name)
+        description = "Error while trying to retrieve asset '{}' from project '{}' on '{}'".format(asset_name, project_name, store_name)
         super(InvalidAssetError, self).__init__(title="The provided asset '{}' is invalid".format(asset_name),
                                                 description=description)
 
 
 class InvalidObjectError(ValidationError):
     def __init__(self, store_name: str, project_name: str, object_name: str):
-        description = "Error while trying to retrieve object '{}' from project '{}' on '{}'".format(store_name, project_name, object_name)
+        description = "Error while trying to retrieve object '{}' from project '{}' on '{}'".format(object_name, project_name, store_name)
         super(InvalidObjectError, self).__init__(title="The provided object name '{}' is invalid".format(object_name),
                                                  description=description)
 
 
 class ObjectExistsError(ValidationError):
     def __init__(self, store_name: str, project_name: str = None, object_name: str = None):
-        description = "The object '{}' already exists in project '{}' on '{}'".format(store_name, project_name, object_name)
+        description = "The object '{}' already exists in project '{}' on '{}'".format(object_name, project_name, store_name)
         super(ObjectExistsError, self).__init__(title="Object already in use", description=description)
 
 
