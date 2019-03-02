@@ -1,0 +1,17 @@
+sudo: false
+language: bash
+
+services:
+  - docker
+
+stages:
+  - build
+#  - name: deploy
+#    if: branch = master AND type != pull_request
+
+jobs:
+  include:
+    - stage: build
+      script: docker-compose build
+#    - stage: deploy
+#      script: docker-compose build
