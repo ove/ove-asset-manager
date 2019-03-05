@@ -24,11 +24,11 @@ services:
       SERVICE_AM_PORT: "6080"
 
 
-  ovehub-ove-asset-manager-worker-gigaimage:
-    image: ovehub/ove-asset-manager-worker-gigaimage:latest-unstable
+  ovehub-ove-asset-manager-worker-dzi:
+    image: ovehub/ove-asset-manager-worker-dzi:latest-unstable
     build:
       context: .
-      dockerfile: docker/worker-gigaimage/Dockerfile
+      dockerfile: docker/worker-dzi/Dockerfile
     environment:
       SERVICE_LOG_LEVEL: "debug"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"

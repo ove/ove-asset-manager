@@ -8,7 +8,7 @@ WORKDIR /code
 ADD common/ common/
 ADD workers/__init__.py workers/
 ADD workers/base/ workers/base/
-ADD workers/gigaimage/ workers/gigaimage/
+ADD workers/dzi/ workers/dzi/
 
 ADD start-worker.sh .
 ADD requirements.txt .
@@ -50,7 +50,7 @@ RUN pip install -r requirements.txt && pip install pyvips
 
 RUN apk del build-base autoconf automake
 
-ENV WORKER_CLASS "workers.gigaimage.ImageWorker"
+ENV WORKER_CLASS "workers.dzi.DeepZoomImageWorker"
 ENV GUNICORN_PORT "6091"
 
 CMD "./start-worker.sh"

@@ -9,7 +9,7 @@ from common.entities import OveMeta, WorkerType
 from workers.base import BaseWorker
 
 
-class ImageWorker(BaseWorker):
+class DeepZoomImageWorker(BaseWorker):
     def worker_type(self) -> str:
         return WorkerType.DZ_IMAGE.value
 
@@ -17,10 +17,10 @@ class ImageWorker(BaseWorker):
         return [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".gif"]
 
     def description(self) -> str:
-        return "Converts large images into DZI tiled gigaimages"
+        return "Converts large images into a Deep Zoom Tiled Image (DZI)"
 
     def docs(self) -> str:
-        return "GigaImageWorker.md"
+        return "DeepZoomImageWorker.md"
 
     def parameters(self) -> Dict:
         return {}

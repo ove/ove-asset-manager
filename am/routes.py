@@ -10,7 +10,7 @@ from am.controller import FileController
 from am.managers import WorkerManager
 from common.entities import OveMeta, WorkerStatus
 from common.entities import WorkerData
-from common.errors import InvalidAssetError, ProjectExistsError, ValidationError
+from common.errors import InvalidAssetError, ValidationError
 from common.falcon_utils import parse_filename, save_filename
 from common.filters import build_meta_filter
 from common.util import is_empty
@@ -111,21 +111,6 @@ class ProjectCreate:
 
         resp.media = {'Project': project_name}
         resp.status = falcon.HTTP_200
-
-
-class ProjectValidateName:
-    def __init__(self, controller: FileController):
-        self._controller = controller
-
-    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        validate_not_null(req.media, 'name')
-        project_name = req.media.get('name')
-
-        if self._controller.check_exists_project(store_name=store_id, project_name=project_name):
-            raise ProjectExistsError(store_name=store_id, project_name=project_name)
-        else:
-            resp.media = {'Status': 'OK'}
-            resp.status = falcon.HTTP_200
 
 
 class AssetList:

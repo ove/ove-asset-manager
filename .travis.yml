@@ -6,12 +6,15 @@ services:
 
 stages:
   - build
-#  - name: deploy
-#    if: branch = master AND type != pull_request
+  - name: deploy
+    if: branch = master AND type != pull_request
 
 jobs:
   include:
     - stage: build
       script: docker-compose build
-#    - stage: deploy
-#      script: docker-compose build
+    - stage: deploy
+      script:
+        - docker-compose build
+        - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+        - docker-compose push

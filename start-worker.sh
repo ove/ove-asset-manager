@@ -23,7 +23,7 @@ cd ${scriptPath}/
 
 
 # For testing purpose this can be used, otherwise the next line should be commented
-# [[ ! -z "${WORKER_CLASS}" ]] || WORKER_CLASS="workers.gigaimage.ImageWorker"
+# [[ ! -z "${WORKER_CLASS}" ]] || WORKER_CLASS="workers.dzi.DeepZoomImageWorker"
 
 
 echo "Environment variables:"
