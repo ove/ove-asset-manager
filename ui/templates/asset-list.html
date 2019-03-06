@@ -8,10 +8,10 @@
                 "pageLength": 25,
                 "order": [1, 'asc'],
                 "columns": [
-                    {"width": "10%"}, {"width": "10%"}, {"width": "35%"}, {"width": "15%"}, {"width": "2%"}, {"width": "15%"},
+                    {"width": "10%"}, {"width": "40%"}, {"width": "15%"}, {"width": "7%"}, {"width": "15%"},
                     {"width": "5%"}, {"width": "8%", "orderable": false}
                 ],
-                "columnDefs": [{"targets": 4, "className": "align-text-right"}]
+                "columnDefs": [{"targets": 3, "className": "align-text-right"}]
             });
         });
     </script>
@@ -34,7 +34,6 @@
     <table id="table" class="table table-striped">
         <thead class="thead-dark">
         <tr>
-            <th scope="col">Project Name</th>
             <th scope="col">Asset Name</th>
             <th scope="col">Description</th>
             <th scope="col">Tags</th>
@@ -47,7 +46,6 @@
         <tbody>
         {% for object in objects -%}
             <tr>
-                <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}">{{ project_name }}</a></td>
                 <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}/object/{{ object.name }}">{{ object.name }}.json</a></td>
                 <td></td>
                 <td></td>
@@ -67,7 +65,6 @@
 
         {% for asset in assets -%}
             <tr>
-                <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}">{{ asset.project }}</a></td>
                 <td><a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}">{{ asset.name }}</a></td>
                 <td>{{ asset.description }}</td>
                 <td>
@@ -119,30 +116,22 @@
                                 {% if workers %}
                                     {% for worker in workers %}
                                         <div class="dropdown-item">
-                                            <div class="row">
-                                                <b>{{ worker.type }}</b>
-                                            </div>
-                                            <div class="row">
-                                                <small><i>{{ worker.description }}</i></small>
-                                            </div>
-                                            <div class="row">
-                                                <small>
-                                                    Works with
-                                                    <span class="badge badge-info">
+                                            <b>{{ worker.type }}</b>
+                                            <br/>
+                                            <small><i>{{ worker.description }}</i></small>
+                                            <br/>
+                                            <small>
+                                                Works with
+                                                <span class="badge badge-info">
                                                     {{ worker.extensions|join('</span>&nbsp;<span class="badge badge-info">') }}
                                                 </span>
-                                                    extensions
-                                                </small>
-                                            </div>
-                                            <div class="row mt-2">
-                                                <div class="col-8"></div>
-                                                <div class="col-2">
-                                                    <button type="button" class="btn btn-outline-primary"
-                                                            onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}', {{ worker.parameters }})">
-                                                        Process
-                                                    </button>
-                                                </div>
-                                            </div>
+                                                extensions
+                                            </small>
+                                            <br/>
+                                            <button type="button" class="btn btn-outline-primary" style="float: right; margin-top: 10px"
+                                                    onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}', {{ worker.parameters }})">
+                                                Process
+                                            </button>
                                         </div>
                                     {% endfor %}
                                 {% else %}

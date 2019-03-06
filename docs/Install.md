@@ -107,8 +107,7 @@ All the services can can run perfectly on bare-metal Linux or MacOS as well. To 
 or download a release.
 
 The services have been tested on CPython 3.6 and PyPy3.6 v7.0. For better performance PyPy is recommended, but
-for convenience CPython can be also used. It is highly recommended to avoid Python if possible because of poor
-performance.
+for convenience CPython can be also used. 
 
 A virtual environment can be created by executing:
 
