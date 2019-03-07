@@ -26,7 +26,7 @@ const ASSETS = {
     'jsoneditor/dist/jsoneditor.min.js': 'js/jsoneditor.min.js',
     'jsoneditor/dist/jsoneditor.min.css': 'css/jsoneditor.min.css',
     'jsoneditor/dist/img/jsoneditor-icons.svg': 'css/img/jsoneditor-icons.svg',
-    'bootbox/bootbox.min.js': 'js/bootbox.min.js',
+    'bootbox/dist/bootbox.min.js': 'js/bootbox.min.js',
     'jsonform/lib/jsonform.js': 'js/jsonform.js',
 };
 
