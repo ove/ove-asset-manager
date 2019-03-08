@@ -32,7 +32,7 @@
         <tbody>
         {% for worker in workers -%}
             <tr>
-                <td>{{ worker.name }}</td>
+                <td><span data-toggle="tooltip" data-placement="top" title="{{ worker.callback }}">{{ worker.name }}</span></td>
                 <td>{{ worker.description }}</td>
                 <td>
                     {% if worker.extensions %}
