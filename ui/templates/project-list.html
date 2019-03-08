@@ -5,6 +5,7 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
+                autoWidth: false,
                 pageLength: 10,
                 order: [1, 'asc'],
                 columns: [{width: 20, orderable: true}, null, {width: 20, orderable: false}]

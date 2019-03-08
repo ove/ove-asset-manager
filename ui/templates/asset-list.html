@@ -5,13 +5,14 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
-                "pageLength": 25,
-                "order": [1, 'asc'],
-                "columns": [
-                    {"width": "10%"}, {"width": "40%"}, {"width": "15%"}, {"width": "7%"}, {"width": "15%"},
-                    {"width": "5%"}, {"width": "8%", "orderable": false}
+                autoWidth: false,
+                pageLength: 25,
+                order: [1, 'asc'],
+                columns: [
+                    {width: "10%"}, {width: "40%"}, {width: "15%"}, {width: "7%"}, {width: "15%"},
+                    {width: "5%"}, {width: "8%", orderable: false}
                 ],
-                "columnDefs": [{"targets": 3, "className": "align-text-right"}]
+                columnDefs: [{targets: 3, className: "align-text-right"}]
             });
         });
     </script>
