@@ -43,7 +43,7 @@ echo "  WORKER_CLASS=${WORKER_CLASS}"
 echo ""
 
 ## did you activate the virtual environment and install the requirements?
-gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
+exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
         "workers.base:setup_worker(logging_level='${SERVICE_LOG_LEVEL}', hostname='${SERVICE_HOSTNAME}', port='${GUNICORN_PORT}',
                                    service_url='http://${SERVICE_AM_HOSTNAME}:${SERVICE_AM_PORT}/api/workers',
                                    registration_attempts=${SERVICE_AM_ATTEMPTS}, registration_timeout=${SERVICE_AM_TIMEOUT},
