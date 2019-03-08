@@ -136,6 +136,7 @@ class WorkerStatus(Enum):
 class WorkerType(Enum):
     DZ_IMAGE = "dz-image"
     EXTRACT = "extract"
+    TULIP = "tulip"
 
     def __str__(self):
         return self.value

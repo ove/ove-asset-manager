@@ -34,6 +34,18 @@ services:
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
       SERVICE_AM_PORT: "6080"
 
+
+  ovehub-ove-asset-manager-worker-tulip:
+    image: ovehub/ove-asset-manager-worker-tulip:latest-unstable
+    build:
+      context: .
+      dockerfile: docker/worker-tulip/Dockerfile
+    environment:
+      SERVICE_LOG_LEVEL: "debug"
+      SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
+      SERVICE_AM_PORT: "6080"
+
+
   ovehub-ove-asset-manager-ui:
     image: ovehub/ove-asset-manager-ui:latest-unstable
     build:
