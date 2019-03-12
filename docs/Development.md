@@ -86,7 +86,7 @@ class NewWorker(BaseWorker):
     def parameters(self) -> Dict:
         """
         :return: the worker parameter description, in json-form format:
-        see https://github.com/jsonform/jsonform for more details
+        see http://www.alpacajs.org/ for more details
         """
         return {}
 

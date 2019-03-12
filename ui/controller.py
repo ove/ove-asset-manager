@@ -1,3 +1,4 @@
+import json
 from os.path import basename
 from typing import Dict, List, Any, Union
 
@@ -18,7 +19,8 @@ class BackendController:
             'type': w['type'],
             'extensions': w['extensions'],
             'description': w['description'],
-            'parameters': w['parameters']
+            'parameters': json.dumps(w['parameters']),
+            'docs': w.get('docs', '')
         } for w in self.list_workers()}.values())
 
     def edit_worker(self, action: str, name: str) -> None:

@@ -17,6 +17,8 @@
         });
     </script>
 
+    {% include 'dialogs/worker-schedule.html' with context %}
+
     <div class="btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/new" class="btn btn-outline-primary"
            data-toggle="tooltip" data-placement="top" title="Create new asset">
@@ -78,7 +80,7 @@
                 <td>{{ asset.version }}</td>
                 <td>
                     {% if asset.index_file %}
-                        <a href="{{ asset.index_file }}" target="_blank">//.../{{ asset.short_index }}</a>
+                        <a href="{{ asset.index_file }}" target="_blank">.../{{ asset.short_index }}</a>
                     {% endif %}
                 </td>
                 <td>
@@ -108,38 +110,10 @@
                                 onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                             <i class="fas fa-upload"></i>
                         </button>
-                        <div class="btn-group dropleft" role="group">
-                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-paint-roller" data-toggle="tooltip" data-placement="top" title="Process asset"></i>
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                {% if workers %}
-                                    {% for worker in workers %}
-                                        <div class="dropdown-item">
-                                            <b>{{ worker.type }}</b>
-                                            <br/>
-                                            <small><i>{{ worker.description }}</i></small>
-                                            <br/>
-                                            <small>
-                                                Works with
-                                                <span class="badge badge-info">
-                                                    {{ worker.extensions|join('</span>&nbsp;<span class="badge badge-info">') }}
-                                                </span>
-                                                extensions
-                                            </small>
-                                            <br/>
-                                            <button type="button" class="btn btn-outline-primary" style="float: right; margin-top: 10px"
-                                                    onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}', {{ worker.parameters }})">
-                                                Process
-                                            </button>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <a class="dropdown-item disabled" href="#">No workers available</a>
-                                {% endif %}
-                            </div>
-                        </div>
+                        <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"
+                                onclick="showProcessModal('{{ asset.name }}')">
+                            <i class="fas fa-paint-roller"></i>
+                        </button>
                     </div>
                 </td>
             </tr>

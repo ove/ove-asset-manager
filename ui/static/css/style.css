@@ -112,3 +112,7 @@ body {
 .select2-selection__arrow {
     margin: 5px;
 }
+
+.has-error {
+    color: #a94442;
+}

@@ -27,7 +27,9 @@ const ASSETS = {
     'jsoneditor/dist/jsoneditor.min.css': 'css/jsoneditor.min.css',
     'jsoneditor/dist/img/jsoneditor-icons.svg': 'css/img/jsoneditor-icons.svg',
     'bootbox/dist/bootbox.min.js': 'js/bootbox.min.js',
-    'jsonform/lib/jsonform.js': 'js/jsonform.js',
+    'handlebars/dist/handlebars.js': 'js/handlebars.js',
+    'alpaca/dist/alpaca/bootstrap/alpaca.css': 'css/alpaca.css',
+    'alpaca/dist/alpaca/bootstrap/alpaca.js': 'js/alpaca.js',
 };
 
 
