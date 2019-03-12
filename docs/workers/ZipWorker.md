@@ -2,4 +2,6 @@
 
 This worker extracts standard .zip files into their folders.
 
-Currently no runtime options are available for this worker.
+## Parameters:
+
+- index_file - allows you to set the index file after extraction. This parameter defaults to ```{"index.html", "index.htm", "index.js"}``` 

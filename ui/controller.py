@@ -33,16 +33,13 @@ class BackendController:
         return self._backend.get("api/list") or []
 
     def list_projects(self, store_name: str) -> List:
-        projects = self._backend.get("api/{}/list".format(store_name)).get("Projects", [])
-        projects_with_project = set(self._backend.get("api/{}/list?hasObject=project".format(store_name)).get("Projects", []))
-        return [{"name": project, "has_project": project in projects_with_project} for project in projects]
+        return self._backend.get("api/{}/list?metadata=true".format(store_name))
 
     def create_project(self, store_name: str, project_name: str) -> None:
         self._backend.post("api/{}/create".format(store_name), data={"name": project_name})
 
     def list_assets(self, store_name: str, project_name: str) -> List:
-        return [_mutate(d, "short_index", basename(d.get("index_file", "")))
-                for d in self._backend.get("api/{}/{}/list".format(store_name, project_name)).get("Assets", {}).values()]
+        return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_name, project_name))]
 
     def get_asset(self, store_name: str, project_name: str, asset_name: str) -> Dict:
         return self._backend.get("api/{}/{}/meta/{}".format(store_name, project_name, asset_name))

@@ -13,11 +13,11 @@ This API is designed to allow you to perform the majority of necessary file oper
 
 - **/api/{store_id}/list**
     - `GET`: _Lists available projects in a file store_
-    - **Query params:** `hasObject=<object name>` - optional, return project that contain objects of the given name
+    - **Query params:** `metadata=true | false` - optional, if true the project list include some metadata
     - **Response:**
         - **Success**: <br />
         **HTTP Code:** 200 <br />
-        **Content:** `{ "Projects" : ["project1"] }` 
+        **Content:** `[{name: "project1", "creationDate": "date"}, "..."]` 
         - **Store not found**: <br />
         **HTTP Code:** 400 Bad Request <br />
         **Content:** `{title="Store not found", description="..."}`

@@ -16,11 +16,11 @@
 
         function renderParams(params) {
             if (params === null) {
-                workerScheduleFormContainer.html('<p>Please select a worker first</p>');
+                workerScheduleFormContainer.html('<p style="margin-left: 15px;">Please select a worker first</p>');
             } else if (_.isEmpty(params)) {
-                workerScheduleFormContainer.html('<p>This worker does not have any parametes to configure</p>');
+                workerScheduleFormContainer.html('<p style="margin-left: 15px;">This worker does not have any parametes to configure</p>');
             } else {
-                workerScheduleFormContainer.html('<form id="workerScheduleForm" style="width: 100%"></form>');
+                workerScheduleFormContainer.html('<form id="workerScheduleForm" style="width: 98%; margin-left: 5px;"></form>');
                 $('#workerScheduleForm').alpaca({
                     ...params, "view": "bootstrap-edit-horizontal",
                     "postRender": function () {
@@ -29,6 +29,7 @@
                         const labels = $('.form-group > .col-sm-3');
                         labels.removeClass('col-sm-3');
                         labels.addClass('col-2');
+                        labels.addClass('col-form-label');
                         const inputs = $('.form-group > .col-sm-9');
                         inputs.removeClass('col-sm-9');
                         inputs.addClass('col-10');
@@ -103,23 +104,25 @@
             <div class="modal-body" style="max-height: 400px; overflow-y: scroll;">
                 <div class="row">
                     <div class="col-1"><label for="workerType" class="col-form-label">Worker</label></div>
-                    <div class="col-10"><select id="workerType" name="workerType" class="form-control" style="width: 100%"></select></div>
-                    <div class="col-1">
-                        <a id="btnWorkerDocs" target="_blank" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top"
-                           title="Worker documentation">
-                            <i class="fas fa-book"></i>
-                        </a>
+                    <div class="col-11">
+                        <div class="input-group">
+                            <select id="workerType" name="workerType" class="form-control" style="width: 90%"></select>
+                            <div class="input-group-append">
+                                <a id="btnWorkerDocs" target="_blank" class="btn btn-outline-secondary"
+                                   data-toggle="tooltip" data-placement="top" title="Worker documentation">
+                                    <i class="fas fa-book"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="row mt-4">
                     <div class="col-12">
                         <h5>Worker parameters</h5>
                         <input id="assetNameModalField" type="hidden" value="">
                     </div>
                 </div>
-                <div class="row">
-                    <div id="workerScheduleFormContainer" class="col-12"></div>
-                </div>
+                <div id="workerScheduleFormContainer" class="row"></div>
             </div>
             <div class="modal-footer">
                 <button id="btnProcess" type="button" class="btn btn-outline-primary" onclick="submitForm()">Process</button>
