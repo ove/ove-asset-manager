@@ -123,6 +123,21 @@ class S3Manager:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
             return []
 
+        # List the assets in an s3 bucket
+
+    def list_files(self, project_name: str, asset_name: str, store_name: str = None) -> List[Dict]:
+        client = self._get_connection(store_name)
+        try:
+            meta = self.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
+            prefix = asset_name + "/" + str(meta.version) + "/"
+            return [{
+                "name": a.object_name[len(prefix):],
+                "url": meta.proxy_url + project_name + "/" + a.object_name
+            } for a in client.list_objects(project_name, prefix=prefix, recursive=True) if not a.is_dir]
+        except:
+            logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
+            return []
+
     def check_exists(self, project_name: str, store_name: str = None) -> bool:
         client = self._get_connection(store_name)
         try:

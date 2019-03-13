@@ -199,6 +199,23 @@ This API is designed to allow you to perform the majority of necessary file oper
         - **Asset not found**: <br />
         **HTTP Code:** 400 Bad Request <br />
         **Content:** `{title="Asset not found", description="..."}`
+----  
+
+- **/api/{store_id}/{project_id}/files/{asset_id}**
+    - `GET`: _list of files under the current version of the asset_
+    - **Response:**
+        - **Success**: <br />
+        **HTTP Code:** 200 <br />
+        **Content:** `[{name: "...", url: "..."}]` 
+        - **Store not found**: <br />
+        **HTTP Code:** 400 Bad Request <br />
+        **Content:** `{title="Store not found", description="..."}`
+        - **Project not found**: <br />
+        **HTTP Code:** 400 Bad Request <br />
+        **Content:** `{title="Project not found", description="..."}`
+        - **Asset not found**: <br />
+        **HTTP Code:** 400 Bad Request <br />
+        **Content:** `{title="Asset not found", description="..."}`
 ----        
 
 - **/api/{store_id}/{project_name}/upload/{asset_id}**

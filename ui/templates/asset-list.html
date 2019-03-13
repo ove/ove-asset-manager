@@ -18,6 +18,7 @@
     </script>
 
     {% include 'dialogs/worker-schedule.html' with context %}
+    {% include 'dialogs/asset-files.html' with context %}
 
     <div class="btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/new" class="btn btn-outline-primary"
@@ -106,6 +107,10 @@
                            data-toggle="tooltip" data-placement="top" title="Edit asset">
                             <i class="far fa-edit"></i>
                         </a>
+                        <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="File list"
+                                onclick="showAssetFilesModal('{{ asset.name }}')">
+                            <i class="far fa-list-alt"></i>
+                        </button>
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
                                 onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                             <i class="fas fa-upload"></i>

@@ -123,6 +123,15 @@ class AssetList:
         resp.status = falcon.HTTP_200
 
 
+class FileList:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        resp.media = self._controller.list_files(project_name=project_id, store_name=store_id, asset_name=asset_id)
+        resp.status = falcon.HTTP_200
+
+
 class AssetCreate:
     def __init__(self, controller: FileController):
         self._controller = controller

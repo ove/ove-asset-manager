@@ -32,6 +32,9 @@ class FileController:
     def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> List[Dict]:
         return self._manager.list_assets(store_name=store_name, project_name=project_name, result_filter=result_filter)
 
+    def list_files(self, project_name: str, asset_name: str, store_name: str = None) -> List[Dict]:
+        return self._manager.list_files(store_name=store_name, project_name=project_name, asset_name=asset_name)
+
     def create_project(self, project_name: str, store_name: str = None) -> None:
         # To avoid confusion, we reserve certain names for projects
         if project_name in _RESERVED_NAMES:

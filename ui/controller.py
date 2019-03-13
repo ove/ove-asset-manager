@@ -41,6 +41,15 @@ class BackendController:
     def list_assets(self, store_name: str, project_name: str) -> List:
         return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_name, project_name))]
 
+    def list_files(self, store_name: str, project_name: str, asset_name: str) -> List[Dict]:
+        files = self._backend.get("api/{}/{}/files/{}".format(store_name, project_name, asset_name))
+        file_tree = []
+
+        for file in files:
+            _add_item(item=file["name"], url=file["url"], node_type="leaf", results=file_tree)
+
+        return file_tree
+
     def get_asset(self, store_name: str, project_name: str, asset_name: str) -> Dict:
         return self._backend.get("api/{}/{}/meta/{}".format(store_name, project_name, asset_name))
 
@@ -83,3 +92,19 @@ class BackendController:
 def _mutate(d: Dict, field: str, value: Any) -> Dict:
     d[field] = value
     return d
+
+
+def _add_item(item: str, node_type: str, results: List[Dict], url: str = None):
+    if len(item) > 0:
+        path = item.rsplit("/", maxsplit=1)
+        if len(path) == 1:
+            if not _has_item(key=item, results=results):
+                results.append({"id": item, "type": node_type, "url": url, "parent": "#", "text": item})
+        else:
+            if not _has_item(key=item, results=results):
+                results.append({"id": item, "type": node_type, "url": url, "parent": path[0], "text": path[1]})
+                _add_item(item=path[0], node_type="parent", results=results)
+
+
+def _has_item(key: str, results: List[Dict]) -> bool:
+    return any([x.get("id", "") == key for x in results])
