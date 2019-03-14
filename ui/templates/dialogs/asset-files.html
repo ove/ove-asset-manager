@@ -2,6 +2,10 @@
     function showAssetFilesModal(asset_name) {
         $('#assetFileTreeContainer').html('<div id="assetFileTree"></div>');
         let tree = $('#assetFileTree');
+        let infoBox = $('#assetFileTreeInfoBox');
+
+        infoBox.html('<p>Please select a file</p>');
+
         tree.jstree({
             'core': {
                 "multiple": false,
@@ -10,6 +14,15 @@
             },
             "types": {"default": {"icon": "far fa-folder"}, "leaf": {"icon": "far fa-file-alt"}},
             "plugins": ["types"]
+        });
+
+        tree.bind("select_node.jstree", function (e, data) {
+            let url = data.node.original.url;
+            if (url) {
+                infoBox.html('<i class="fas fa-link"></i>&nbsp;&nbsp;<a href="' + url + '">' + url + '</a>');
+            } else {
+                infoBox.html('<p>Please select a file</p>');
+            }
         });
 
         tree.bind("dblclick.jstree", function (event) {
@@ -32,7 +45,10 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div id="assetFileTreeContainer" class="modal-body" style="min-height: 400px; max-height: 400px; overflow-y: scroll;"></div>
+            <div class="modal-body" style="min-height: 400px; max-height: 400px; overflow-y: scroll;">
+                <div id="assetFileTreeInfoBox" style="position: absolute; top: 16px; right: 4px; width: 35%; border: 1px solid #dee2e6; padding: 8px;"></div>
+                <div id="assetFileTreeContainer" style="width: 100%"></div>
+            </div>
         </div>
     </div>
 </div>
