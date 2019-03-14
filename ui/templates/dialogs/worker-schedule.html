@@ -15,24 +15,22 @@
         });
 
         function renderParams(params) {
+            const loader = $('#workerParamsLoader');
+            loader.show();
+
             if (params === null) {
                 workerScheduleFormContainer.html('<p style="margin-left: 15px;">Please select a worker first</p>');
+                loader.hide();
             } else if (_.isEmpty(params)) {
                 workerScheduleFormContainer.html('<p style="margin-left: 15px;">This worker does not have any parameters to configure</p>');
+                loader.hide();
             } else {
                 workerScheduleFormContainer.html('<form id="workerScheduleForm" style="width: 98%; margin-left: 5px;"></form>');
                 $('#workerScheduleForm').alpaca({
-                    ...params, "view": "bootstrap-edit-horizontal",
+                    ...params, "view": "bootstrap-edit",
                     "postRender": function () {
-                        // re-style hacks to make this look like everything else
-                        $('.form-group').addClass('row');
-                        const labels = $('.form-group > .col-sm-3');
-                        labels.removeClass('col-sm-3');
-                        labels.addClass('col-2');
-                        labels.addClass('col-form-label');
-                        const inputs = $('.form-group > .col-sm-9');
-                        inputs.removeClass('col-sm-9');
-                        inputs.addClass('col-10');
+                        loader.hide();
+                        $('#workerScheduleForm select').select2();
                     }
                 });
             }
@@ -125,7 +123,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" style="max-height: 400px; overflow-y: scroll;">
+            <div class="modal-body" style="max-height: 500px; overflow-y: scroll;">
                 <div class="row">
                     <div class="col-2"><label for="workerType" class="col-form-label">Worker</label></div>
                     <div class="col-10">
@@ -148,6 +146,7 @@
                     <div class="col-12">
                         <h5>Worker parameters</h5>
                         <input id="assetNameModalField" type="hidden" value="">
+                        <span id="workerParamsLoader"><i class="fas fa-spinner fa-pulse"></i>&nbsp;&nbsp;Rendering parameters</span>
                     </div>
                 </div>
                 <div id="workerScheduleFormContainer" class="row"></div>
