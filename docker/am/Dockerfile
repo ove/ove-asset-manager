@@ -14,4 +14,4 @@ RUN apk --no-cache add --virtual build-base && \
     pip install -r requirements.txt && \
     apk del build-base
 
-CMD "./start-am.sh"
+CMD ["./start-am.sh"]

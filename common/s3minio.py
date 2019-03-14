@@ -79,19 +79,36 @@ class S3Manager:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
 
     # List the projects in an s3 storage (returning the names)
-    def list_projects(self, store_name: str = None, with_object: str = None) -> Dict:
-        def _filter(name: str) -> bool:
-            return self.has_object(store_name=store_name, project_name=name, object_name=with_object) if with_object else True
+    def list_projects(self, store_name: str = None, metadata: bool = False) -> List[Dict]:
+        def _last_modified(project_name) -> str:
+            ts = [a.last_modified for a in client.list_objects(project_name, prefix=None, recursive=False)]
+            ts = [a for a in ts if a is not None]
+            if len(ts) > 0:
+                return '{0:%Y-%m-%d %H:%M:%S}'.format(max(ts))
+            else:
+                return ''
 
         client = self._get_connection(store_name)
         try:
-            return {'Projects': [bucket.name for bucket in client.list_buckets() if _filter(bucket.name)]}
+            if metadata:
+                # has_object is an expensive metadata to compute
+                return [{
+                    "name": bucket.name,
+                    "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
+                    "updateDate": _last_modified(bucket.name),
+                    "hasProject": self.has_object(store_name=store_name, project_name=bucket.name, object_name="project")
+                } for bucket in client.list_buckets()]
+            else:
+                return [{
+                    "name": bucket.name,
+                    "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
+                } for bucket in client.list_buckets()]
         except:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
-            return {'Projects': []}
+            return []
 
     # List the assets in an s3 bucket
-    def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> Dict:
+    def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> List[Dict]:
         def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
             return meta.to_public_json() if meta else {"name": name, "project": project_name}
 
@@ -101,10 +118,26 @@ class S3Manager:
             assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
             # For the asset list, we switch to a public meta object
             metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
-            return {'Assets': {name: _format(name, meta) for name, meta in metas.items() if result_filter(meta)}}
+            return [_format(name, meta) for name, meta in metas.items() if result_filter(meta)]
         except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
-            return {'Assets': {}}
+            return []
+
+        # List the assets in an s3 bucket
+
+    def list_files(self, project_name: str, asset_name: str, store_name: str = None) -> List[Dict]:
+        client = self._get_connection(store_name)
+        try:
+            meta = self.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
+            prefix = asset_name + "/" + str(meta.version) + "/"
+            return [{
+                "name": a.object_name[len(prefix):],
+                "url": meta.proxy_url + project_name + "/" + a.object_name,
+                "default": meta.filename == a.object_name[len(prefix):]
+            } for a in client.list_objects(project_name, prefix=prefix, recursive=True) if not a.is_dir]
+        except:
+            logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
+            return []
 
     def check_exists(self, project_name: str, store_name: str = None) -> bool:
         client = self._get_connection(store_name)

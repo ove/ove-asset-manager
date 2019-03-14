@@ -24,6 +24,6 @@ echo "  SERVICE_CONFIG=${SERVICE_CONFIG}"
 echo ""
 
 ## did you activate the virtual environment and install the requirements?
-gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
+exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
         --timeout ${GUNICORN_TIMEOUT} \
         "am:setup_app(config_file='${SERVICE_CONFIG}', logging_level='${SERVICE_LOG_LEVEL}')"

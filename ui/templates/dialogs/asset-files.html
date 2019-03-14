@@ -1,0 +1,54 @@
+<script>
+    function showAssetFilesModal(asset_name) {
+        $('#assetFileTreeContainer').html('<div id="assetFileTree"></div>');
+        let tree = $('#assetFileTree');
+        let infoBox = $('#assetFileTreeInfoBox');
+
+        infoBox.html('<p>Please select a file</p>');
+
+        tree.jstree({
+            'core': {
+                "multiple": false,
+                "animation": 0,
+                'data': {"url": "/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files?hierarchical=true", "dataType": "json"}
+            },
+            "types": {"default": {"icon": "far fa-folder"}, "leaf": {"icon": "far fa-file-alt"}},
+            "plugins": ["types"]
+        });
+
+        tree.bind("select_node.jstree", function (e, data) {
+            let url = data.node.original.url;
+            if (url) {
+                infoBox.html('<i class="fas fa-link"></i>&nbsp;&nbsp;<a href="' + url + '">' + url + '</a>');
+            } else {
+                infoBox.html('<p>Please select a file</p>');
+            }
+        });
+
+        tree.bind("dblclick.jstree", function (event) {
+            let node = $(this).jstree().get_node(event.target);
+            if (node.original.url) {
+                window.open(node.original.url, "_blank")
+            }
+        });
+
+        $('#assetFilesDialog').modal();
+    }
+</script>
+
+<div class="modal fade" id="assetFilesDialog" tabindex="-1" role="dialog" aria-labelledby="Asset files" aria-hidden="true" data-backdrop="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Asset files</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="min-height: 400px; max-height: 400px; overflow-y: scroll;">
+                <div id="assetFileTreeInfoBox" style="position: absolute; top: 16px; right: 4px; width: 45%; border: 1px solid #dee2e6; padding: 8px;"></div>
+                <div id="assetFileTreeContainer" style="width: 100%"></div>
+            </div>
+        </div>
+    </div>
+</div>

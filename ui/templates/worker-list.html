@@ -7,13 +7,14 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
-                "pageLength": 10,
-                "order": [0, 'asc'],
-                "columns": [
-                    {"width": "10%"}, {"width": "35%"}, {"width": "20%"}, {"width": "15%"},
-                    {"width": "5%", "orderable": false}, {"width": "15%", "orderable": false}
+                autoWidth: false,
+                pageLength: 10,
+                order: [0, 'asc'],
+                columns: [
+                    {width: "10%"}, {width: "35%"}, {width: "20%"}, {width: "15%"},
+                    {width: "5%", orderable: false}, {width: "15%", orderable: false}
                 ],
-                "columnDefs": [{"targets": 4, "className": "align-text-centre"}]
+                columnDefs: [{targets: 4, className: "align-text-centre"}]
             });
         });
     </script>
@@ -32,7 +33,7 @@
         <tbody>
         {% for worker in workers -%}
             <tr>
-                <td>{{ worker.name }}</td>
+                <td><span data-toggle="tooltip" data-placement="top" title="{{ worker.callback }}">{{ worker.name }}</span></td>
                 <td>{{ worker.description }}</td>
                 <td>
                     {% if worker.extensions %}

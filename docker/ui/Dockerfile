@@ -27,4 +27,4 @@ RUN apk --no-cache add --virtual build-base && \
     pip install -r requirements.ui.txt && \
     apk del build-base
 
-CMD "./start-ui.sh"
+CMD ["./start-ui.sh"]

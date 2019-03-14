@@ -113,29 +113,8 @@ function uuid() {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 
-function schedule_worker(url, parameters) {
-    if (_.isEmpty(parameters)) {
-        _post_worker_params(url, {});
-    } else {
-        let dialog = bootbox.dialog({
-            message: '<h2>Worker Parameters</h2><form id="worker-form"></form>'
-        });
-        dialog.init(function () {
-            $('#worker-form').jsonForm({
-                schema: parameters,
-                form: ["*", {type: "submit", title: "Start worker"}],
-                onSubmitValid: function (values) {
-                    _post_worker_params(url, values).always(function () {
-                        dialog.modal('hide');
-                    })
-                }
-            });
-        });
-    }
-}
-
-function _post_worker_params(url, values) {
-    return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(values)}).done(function (msg) {
+function post_worker_params(url, params) {
+    return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(params)}).done(function (msg) {
         console.info("Worker status", msg);
         reportSuccess("Worker status", "Worker scheduled successfully");
     }).catch(function (err) {

@@ -4,7 +4,7 @@ import falcon
 
 from am.controller import FileController
 from am.managers import WorkerManager
-from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload, AssetUpdate, WorkerSchedule, WorkersStatusRoute, ObjectInfo
+from am.routes import AssetCreateUpload, AssetCreate, AssetList, AssetUpload, AssetUpdate, WorkerSchedule, WorkersStatusRoute, ObjectInfo, FileList
 from am.routes import WorkersEdit, StoreList, MetaEdit, ProjectCreate, ProjectList, ObjectEdit, TagEdit
 from common.consts import DEFAULT_CONFIG
 from common.errors import handle_exceptions
@@ -30,6 +30,7 @@ def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -
     # had to redo the routes because the falcon parser cannot parse routes with the same prefix
     app.add_route('/api/{store_id}/{project_id}/object/{object_id}', ObjectEdit(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/object/{object_id}/info', ObjectInfo(controller=file_controller))
+    app.add_route('/api/{store_id}/{project_id}/files/{asset_id}', FileList(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/meta/{asset_id}', MetaEdit(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/upload/{asset_id}', AssetUpload(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/update/{asset_id}', AssetUpdate(controller=file_controller))

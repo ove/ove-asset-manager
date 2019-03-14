@@ -1,0 +1,161 @@
+<script>
+    $(document).ready(function () {
+        const workerModal = $('#workerScheduleDialog');
+        const workerScheduleFormContainer = $('#workerScheduleFormContainer');
+        const workerTypeList = $("#workerType");
+        const btnProcess = $("#btnProcess");
+        const btnDocs = $("#btnWorkerDocs");
+
+        workerModal.on('show.bs.modal', function () {
+            // init modal
+            btnProcess.prop("disabled", true);
+            btnDocs.addClass("disabled");
+            workerTypeList.val(null).trigger('change');
+            renderParams(null);
+        });
+
+        function renderParams(params) {
+            if (params === null) {
+                workerScheduleFormContainer.html('<p style="margin-left: 15px;">Please select a worker first</p>');
+            } else if (_.isEmpty(params)) {
+                workerScheduleFormContainer.html('<p style="margin-left: 15px;">This worker does not have any parameters to configure</p>');
+            } else {
+                workerScheduleFormContainer.html('<form id="workerScheduleForm" style="width: 98%; margin-left: 5px;"></form>');
+                $('#workerScheduleForm').alpaca({
+                    ...params, "view": "bootstrap-edit-horizontal",
+                    "postRender": function () {
+                        // re-style hacks to make this look like everything else
+                        $('.form-group').addClass('row');
+                        const labels = $('.form-group > .col-sm-3');
+                        labels.removeClass('col-sm-3');
+                        labels.addClass('col-2');
+                        labels.addClass('col-form-label');
+                        const inputs = $('.form-group > .col-sm-9');
+                        inputs.removeClass('col-sm-9');
+                        inputs.addClass('col-10');
+                    }
+                });
+            }
+        }
+
+        workerTypeList.select2({
+            placeholder: {
+                id: "-1",
+                text: "Select a worker type"
+            },
+            dropdownParent: workerModal,
+            templateResult: function (state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                const ext = '<span class="badge badge-info">' + state.extensions.join('</span>&nbsp;<span class="badge badge-info">') + '</span>';
+                return $('<span><b>' + state.text + '</b><br/><small><i>' + state.description + '</i></small><br/><small>Works with ' + ext + ' extensions</small></span>');
+            },
+            data: [{id: "-1", text: '', selected: 'selected', search: '', hidden: true},].concat(_.map({{ workers }}, w => ({
+                id: w.type,
+                text: w.type,
+                description: w.description,
+                extensions: w.extensions,
+                worker_parameters: JSON.parse(w.parameters) || {},
+                docs: w.docs
+            })))
+        });
+
+        workerTypeList.on('select2:select', function (e) {
+            btnProcess.prop("disabled", false);
+            btnDocs.removeClass("disabled");
+            renderParams(e.params.data.worker_parameters);
+            btnDocs.attr("href", "/docs/" + e.params.data.docs);
+        });
+    });
+
+    function submitForm() {
+        const form = $('#workerScheduleForm').alpaca('get');
+        const asset_name = $('#assetNameModalField').val();
+        if (form === null) {
+            // this worker does not have any parameters
+            post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+                {filename: $('#processFilename').val()});
+            $('#workerScheduleDialog').modal('hide');
+        } else {
+            form.refreshValidationState(true);
+            if (form.isValid(true)) {
+                post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+                    Object.assign({filename: $('#processFilename').val()}, form.getValue()));
+                $('#workerScheduleDialog').modal('hide');
+            }
+        }
+    }
+
+    function updateFilenameData(asset_name) {
+        const selectField = $('#processFilename');
+
+        selectField.empty().trigger("change");
+        selectField.append(new Option("Loading ...", "", true, true));
+        $.getJSON("/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files?hierarchical=false", function (data) {
+            selectField.empty().trigger("change");
+            let defaultValue = null;
+            _.each(data, function (e) {
+                selectField.append(new Option(e.name, e.name, false, false));
+                if (e.default) {
+                    defaultValue = e.name;
+                }
+            });
+            selectField.val(defaultValue).trigger('change');
+        });
+    }
+
+    function showProcessModal(asset_name) {
+        const workerModal = $('#workerScheduleDialog');
+
+        $('#assetNameModalField').val(asset_name);
+        $("#processFilename").select2({dropdownParent: workerModal, data: []});
+        updateFilenameData(asset_name);
+
+        workerModal.modal();
+    }
+</script>
+
+<div class="modal fade" id="workerScheduleDialog" tabindex="-1" role="dialog" aria-labelledby="Worker schedule" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Process asset</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: scroll;">
+                <div class="row">
+                    <div class="col-2"><label for="workerType" class="col-form-label">Worker</label></div>
+                    <div class="col-10">
+                        <div class="input-group">
+                            <select id="workerType" name="workerType" class="form-control" style="width: 90%"></select>
+                            <div class="input-group-append">
+                                <a id="btnWorkerDocs" target="_blank" class="btn btn-outline-secondary"
+                                   data-toggle="tooltip" data-placement="top" title="Worker documentation">
+                                    <i class="fas fa-book"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-2"><label for="processFilename" class="col-form-label">Filename</label></div>
+                    <div class="col-10"><select id="processFilename" name="filename" class="form-control" style="width: 90%"></select></div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>Worker parameters</h5>
+                        <input id="assetNameModalField" type="hidden" value="">
+                    </div>
+                </div>
+                <div id="workerScheduleFormContainer" class="row"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnProcess" type="button" class="btn btn-outline-primary" onclick="submitForm()">Process</button>
+                <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

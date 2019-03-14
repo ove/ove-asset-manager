@@ -5,16 +5,20 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
-                "pageLength": 25,
-                "order": [1, 'asc'],
-                "columns": [
-                    {"width": "10%"}, {"width": "40%"}, {"width": "15%"}, {"width": "7%"}, {"width": "15%"},
-                    {"width": "5%"}, {"width": "8%", "orderable": false}
+                autoWidth: false,
+                pageLength: 25,
+                order: [1, 'asc'],
+                columns: [
+                    {width: "10%"}, {width: "40%"}, {width: "15%"}, {width: "7%"}, {width: "15%"},
+                    {width: "5%"}, {width: "8%", orderable: false}
                 ],
-                "columnDefs": [{"targets": 3, "className": "align-text-right"}]
+                columnDefs: [{targets: 3, className: "align-text-right"}]
             });
         });
     </script>
+
+    {% include 'dialogs/worker-schedule.html' with context %}
+    {% include 'dialogs/asset-files.html' with context %}
 
     <div class="btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
         <a href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/new" class="btn btn-outline-primary"
@@ -50,7 +54,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><a href="{{ object.index_file }}" target="_blank">//.../{{ object.name }}.json</a></td>
+                <td><a href="{{ object.index_file }}" target="_blank">.../{{ object.name }}.json</a></td>
                 <td></td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Toolbox">
@@ -77,7 +81,7 @@
                 <td>{{ asset.version }}</td>
                 <td>
                     {% if asset.index_file %}
-                        <a href="{{ asset.index_file }}" target="_blank">//.../{{ asset.short_index }}</a>
+                        <a href="{{ asset.index_file }}" target="_blank">.../{{ asset.short_index }}</a>
                     {% endif %}
                 </td>
                 <td>
@@ -103,42 +107,18 @@
                            data-toggle="tooltip" data-placement="top" title="Edit asset">
                             <i class="far fa-edit"></i>
                         </a>
+                        <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="File list"
+                                onclick="showAssetFilesModal('{{ asset.name }}')">
+                            <i class="far fa-list-alt"></i>
+                        </button>
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
                                 onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                             <i class="fas fa-upload"></i>
                         </button>
-                        <div class="btn-group dropleft" role="group">
-                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-paint-roller" data-toggle="tooltip" data-placement="top" title="Process asset"></i>
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                {% if workers %}
-                                    {% for worker in workers %}
-                                        <div class="dropdown-item">
-                                            <b>{{ worker.type }}</b>
-                                            <br/>
-                                            <small><i>{{ worker.description }}</i></small>
-                                            <br/>
-                                            <small>
-                                                Works with
-                                                <span class="badge badge-info">
-                                                    {{ worker.extensions|join('</span>&nbsp;<span class="badge badge-info">') }}
-                                                </span>
-                                                extensions
-                                            </small>
-                                            <br/>
-                                            <button type="button" class="btn btn-outline-primary" style="float: right; margin-top: 10px"
-                                                    onclick="schedule_worker('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/process/{{ worker.type }}', {{ worker.parameters }})">
-                                                Process
-                                            </button>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <a class="dropdown-item disabled" href="#">No workers available</a>
-                                {% endif %}
-                            </div>
-                        </div>
+                        <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"
+                                onclick="showProcessModal('{{ asset.name }}')">
+                            <i class="fas fa-paint-roller"></i>
+                        </button>
                     </div>
                 </td>
             </tr>

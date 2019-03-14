@@ -53,4 +53,4 @@ RUN apk del build-base autoconf automake
 ENV WORKER_CLASS "workers.dzi.DeepZoomImageWorker"
 ENV GUNICORN_PORT "6091"
 
-CMD "./start-worker.sh"
+CMD ["./start-worker.sh"]

@@ -26,5 +26,5 @@ echo "  SERVICE_AM_PORT=${SERVICE_AM_PORT}"
 echo ""
 
 ## did you activate the virtual environment and install the requirements?
-gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
+exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
         "ui:setup_ui(logging_level='${SERVICE_LOG_LEVEL}', backend_url='http://${SERVICE_AM_HOSTNAME}:${SERVICE_AM_PORT}/')"

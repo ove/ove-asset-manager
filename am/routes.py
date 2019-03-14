@@ -13,7 +13,7 @@ from common.entities import WorkerData
 from common.errors import InvalidAssetError, ValidationError
 from common.falcon_utils import parse_filename, save_filename
 from common.filters import build_meta_filter
-from common.util import is_empty
+from common.util import is_empty, to_bool
 from common.validation import validate_not_null, validate_no_slashes, validate_list
 
 
@@ -94,8 +94,8 @@ class ProjectList:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        with_object = req.params.get("hasObject", None)
-        resp.media = self._controller.list_projects(store_name=store_id, with_object=with_object)
+        metadata = to_bool(req.params.get("metadata", False))
+        resp.media = self._controller.list_projects(store_name=store_id, metadata=metadata)
         resp.status = falcon.HTTP_200
 
 
@@ -120,6 +120,15 @@ class AssetList:
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         results_filter = build_meta_filter(req.params)
         resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, result_filter=results_filter)
+        resp.status = falcon.HTTP_200
+
+
+class FileList:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        resp.media = self._controller.list_files(project_name=project_id, store_name=store_id, asset_name=asset_id)
         resp.status = falcon.HTTP_200
 
 

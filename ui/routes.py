@@ -17,8 +17,12 @@ from ui.controller import BackendController
 from ui.jinja2_utils import FalconTemplate
 
 
-def handle_api_exceptions(ex: Exception, _req: falcon.Request, _resp: falcon.Response, _params):
+def handle_api_exceptions(ex: Exception, req: falcon.Request, _resp: falcon.Response, _params):
     logging.debug("Handling api exception: %s", repr(ex))
+
+    if isinstance(ex, falcon.HTTPNotFound):
+        logging.debug("%s. %s", ex.title, req.url)
+        raise ex
 
     if isinstance(ex, (falcon.HTTPNotFound, falcon.HTTPNotImplemented)):
         raise falcon.HTTPPermanentRedirect(location="/404")
@@ -253,4 +257,16 @@ class WorkerApi:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str, worker_type: str):
         self._controller.schedule_worker(store_name=store_name, project_name=project_name, asset_name=asset_name, worker_type=worker_type, parameters=req.media)
         resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class FilesApi:
+    content_type = 'application/json'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str):
+        resp.media = self._controller.list_files(store_name=store_name, project_name=project_name, asset_name=asset_name,
+                                                 hierarchical=to_bool(req.params.get("hierarchical", False)))
         resp.status = falcon.HTTP_200

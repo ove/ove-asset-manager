@@ -91,10 +91,21 @@ class BaseWorker(ABC):
             self._file_controller.lock_asset(project_name=project_name, meta=meta, worker_name=self._name)
             self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.PROCESSING)
 
-            self.process(project_name=project_name, meta=meta, options=task_options)
+            filename = task_options.get("filename", meta.filename)
+            if filename is None or len(filename) == 0:
+                filename = meta.filename
 
-            self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.DONE)
-            self.update_status(WorkerStatus.READY)
+            if filename is None:
+                logging.error("Invalid filename provided ...")
+                self.report_error("Invalid filename provided ...")
+                self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.ERROR,
+                                                          error_msg="Invalid filename provided ...")
+            else:
+                filename = str(meta.version) + "/" + filename
+                self.process(project_name=project_name, filename=filename, meta=meta, options=task_options)
+
+                self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.DONE)
+                self.update_status(WorkerStatus.READY)
         except:
             logging.error("Error while trying to process (%s, %s). Error: %s", project_name, asset_name, sys.exc_info()[1])
             error_msg = "Error while trying to process ({}, {}). Check worker logs for details.".format(project_name, asset_name)
@@ -138,15 +149,16 @@ class BaseWorker(ABC):
     def parameters(self) -> Dict:
         """
         :return: the worker parameter description, in json-form format:
-        see https://github.com/jsonform/jsonform for more details
+        see http://www.alpacajs.org/ for more details
         """
         return {}
 
     @abstractmethod
-    def process(self, project_name: str, meta: OveMeta, options: Dict):
+    def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
         """
         Override this to start processing
         :param project_name: name of the project to process
+        :param filename: the filename to process
         :param meta: the object to process
         :param options: task options, passed by the asset manager. Can be empty
         :return: None

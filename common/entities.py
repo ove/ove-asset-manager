@@ -106,7 +106,7 @@ class WorkerData:
             return self.name == str(other)
 
     def to_json(self):
-        return {k: v if isinstance(v, list) else str(v) for k, v in self.__dict__.items()}
+        return {k: v if isinstance(v, (list, dict)) else str(v) for k, v in self.__dict__.items()}
 
     def to_public_json(self):
         return {
