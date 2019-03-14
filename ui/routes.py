@@ -266,6 +266,7 @@ class FilesApi:
     def __init__(self, controller: BackendController):
         self._controller = controller
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str):
-        resp.media = self._controller.list_files(store_name=store_name, project_name=project_name, asset_name=asset_name)
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str):
+        resp.media = self._controller.list_files(store_name=store_name, project_name=project_name, asset_name=asset_name,
+                                                 hierarchical=to_bool(req.params.get("hierarchical", False)))
         resp.status = falcon.HTTP_200

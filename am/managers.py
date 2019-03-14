@@ -49,7 +49,8 @@ class WorkerManager:
                 w.error_msg = error_msg
 
     def schedule_process(self, project_name: str, meta: OveMeta, worker_type: str, store_config: Dict, task_options: Dict):
-        available = _find_workers(filename=meta.filename, worker_type=worker_type, workers=self._workers)
+        filename = task_options.get("filename", meta.filename)
+        available = _find_workers(filename=filename, worker_type=worker_type, workers=self._workers)
         if len(available) > 0:
             # load balancing ^_^
             random.shuffle(available)
@@ -63,9 +64,9 @@ class WorkerManager:
                     break
 
             if not success:
-                raise WorkerUnavailableError(filename=meta.filename)
+                raise WorkerUnavailableError(filename=filename)
         else:
-            raise WorkerUnavailableError(filename=meta.filename)
+            raise WorkerUnavailableError(filename=filename)
 
     def reset_worker_status(self, name: str = None):
         for worker in self._workers:

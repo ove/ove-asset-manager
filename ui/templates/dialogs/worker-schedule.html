@@ -11,6 +11,7 @@
             btnProcess.prop("disabled", true);
             btnDocs.addClass("disabled");
             workerTypeList.val(null).trigger('change');
+            //todo; processFileList.val()
             renderParams(null);
         });
 
@@ -67,7 +68,6 @@
             renderParams(e.params.data.worker_parameters);
             btnDocs.attr("href", "/docs/" + e.params.data.docs);
         });
-
     });
 
     function submitForm() {
@@ -75,20 +75,45 @@
         const asset_name = $('#assetNameModalField').val();
         if (form === null) {
             // this worker does not have any parameters
-            post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(), {});
+            post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+                {filename: $('#processFilename').val()});
             $('#workerScheduleDialog').modal('hide');
         } else {
             form.refreshValidationState(true);
             if (form.isValid(true)) {
-                post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(), form.getValue());
+                post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+                    Object.assign({filename: $('#processFilename').val()}, form.getValue()));
                 $('#workerScheduleDialog').modal('hide');
             }
         }
     }
 
+    function updateFilenameData(asset_name) {
+        const selectField = $('#processFilename');
+
+        selectField.empty().trigger("change");
+        selectField.append(new Option("Loading ...", "", true, true));
+        $.getJSON("/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files?hierarchical=false", function (data) {
+            selectField.empty().trigger("change");
+            let defaultValue = null;
+            _.each(data, function (e) {
+                selectField.append(new Option(e.name, e.name, false, false));
+                if (e.default) {
+                    defaultValue = e.name;
+                }
+            });
+            selectField.val(defaultValue).trigger('change');
+        });
+    }
+
     function showProcessModal(asset_name) {
+        const workerModal = $('#workerScheduleDialog');
+
         $('#assetNameModalField').val(asset_name);
-        $('#workerScheduleDialog').modal();
+        $("#processFilename").select2({dropdownParent: workerModal, data: []});
+        updateFilenameData(asset_name);
+
+        workerModal.modal();
     }
 </script>
 
@@ -103,8 +128,8 @@
             </div>
             <div class="modal-body" style="max-height: 400px; overflow-y: scroll;">
                 <div class="row">
-                    <div class="col-1"><label for="workerType" class="col-form-label">Worker</label></div>
-                    <div class="col-11">
+                    <div class="col-2"><label for="workerType" class="col-form-label">Worker</label></div>
+                    <div class="col-10">
                         <div class="input-group">
                             <select id="workerType" name="workerType" class="form-control" style="width: 90%"></select>
                             <div class="input-group-append">
@@ -115,6 +140,10 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-2"><label for="processFilename" class="col-form-label">Filename</label></div>
+                    <div class="col-10"><select id="processFilename" name="filename" class="form-control" style="width: 90%"></select></div>
                 </div>
                 <div class="row mt-4">
                     <div class="col-12">

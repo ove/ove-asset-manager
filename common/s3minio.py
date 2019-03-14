@@ -132,7 +132,8 @@ class S3Manager:
             prefix = asset_name + "/" + str(meta.version) + "/"
             return [{
                 "name": a.object_name[len(prefix):],
-                "url": meta.proxy_url + project_name + "/" + a.object_name
+                "url": meta.proxy_url + project_name + "/" + a.object_name,
+                "default": meta.filename == a.object_name[len(prefix):]
             } for a in client.list_objects(project_name, prefix=prefix, recursive=True) if not a.is_dir]
         except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])

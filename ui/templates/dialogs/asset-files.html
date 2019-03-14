@@ -10,7 +10,7 @@
             'core': {
                 "multiple": false,
                 "animation": 0,
-                'data': {"url": "/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files", "dataType": "json"}
+                'data': {"url": "/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files?hierarchical=true", "dataType": "json"}
             },
             "types": {"default": {"icon": "far fa-folder"}, "leaf": {"icon": "far fa-file-alt"}},
             "plugins": ["types"]
@@ -46,7 +46,7 @@
                 </button>
             </div>
             <div class="modal-body" style="min-height: 400px; max-height: 400px; overflow-y: scroll;">
-                <div id="assetFileTreeInfoBox" style="position: absolute; top: 16px; right: 4px; width: 35%; border: 1px solid #dee2e6; padding: 8px;"></div>
+                <div id="assetFileTreeInfoBox" style="position: absolute; top: 16px; right: 4px; width: 45%; border: 1px solid #dee2e6; padding: 8px;"></div>
                 <div id="assetFileTreeContainer" style="width: 100%"></div>
             </div>
         </div>

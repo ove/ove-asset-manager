@@ -41,14 +41,17 @@ class BackendController:
     def list_assets(self, store_name: str, project_name: str) -> List:
         return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_name, project_name))]
 
-    def list_files(self, store_name: str, project_name: str, asset_name: str) -> List[Dict]:
+    def list_files(self, store_name: str, project_name: str, asset_name: str, hierarchical: bool = False) -> List[Dict]:
         files = self._backend.get("api/{}/{}/files/{}".format(store_name, project_name, asset_name))
-        file_tree = []
 
-        for file in files:
-            _add_item(item=file["name"], url=file["url"], node_type="leaf", results=file_tree)
-
-        return file_tree
+        if hierarchical:
+            file_tree = []
+            if files:
+                for file in files:
+                    _add_item(item=file["name"], url=file["url"], node_type="leaf", results=file_tree)
+            return file_tree
+        else:
+            return files
 
     def get_asset(self, store_name: str, project_name: str, asset_name: str) -> Dict:
         return self._backend.get("api/{}/{}/meta/{}".format(store_name, project_name, asset_name))

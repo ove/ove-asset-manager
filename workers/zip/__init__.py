@@ -36,18 +36,18 @@ class ZipWorker(BaseWorker):
             }
         }
 
-    def process(self, project_name: str, meta: OveMeta, options: Dict):
+    def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
         logging.info("Unzipping %s/%s into the temp place ...", project_name, meta.name)
 
         index_files = set()
         if options.get("index_file", None):
-            index_files.add(options.get("index_file").lower())
+            index_files.add(options.get("index_file").trim().lower())
         else:
             index_files.update({"index.html", "index.htm", "index.js"})
 
         with TemporaryDirectory() as folder:
             with NamedTemporaryFile() as zip_file:
-                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=meta.file_location, down_filename=zip_file.name)
+                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=filename, down_filename=zip_file.name)
                 ZipFile(zip_file.name).extractall(path=folder)
                 self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=folder, worker_name=self.name)
 
