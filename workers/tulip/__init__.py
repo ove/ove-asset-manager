@@ -81,8 +81,8 @@ class NetworkWorker(BaseWorker):
             }
         }
 
-    def process(self, project_name: str, meta: OveMeta, options: Dict):
-        logging.info("Copying %s/%s into the temp place ...", project_name, meta.name)
+    def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
+        logging.info("Copying %s/%s into the temp place ...", project_name, filename)
 
         if not options:
             options = {}
@@ -90,12 +90,14 @@ class NetworkWorker(BaseWorker):
         with TemporaryDirectory() as folder:
 
             with TemporaryDirectory() as folder2:
-                network_file = os.path.join(folder2, meta.filename)
+
+                os.mkdir(os.path.join(folder2, os.path.split(filename)[0]))  # make subdirectory for asset version number
+
+                network_file = os.path.join(folder2, filename)
                 open(network_file, 'a').close()
 
                 self._file_controller.download_asset(project_name=project_name, asset_name=meta.name,
-                                                     filename=meta.file_location, down_filename=network_file)
-
+                                                     filename=filename, down_filename=network_file)
                 algorithm = options.get('algorithm')
                 if not algorithm:
                     algorithm = "FM^3 (OGDF)"
@@ -120,7 +122,7 @@ class NetworkWorker(BaseWorker):
                 self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=folder,
                                                           worker_name=self.name)
 
-        base_name = os.path.splitext(os.path.basename(meta.filename))[0]
+        base_name = os.path.splitext(os.path.basename(filename))[0]
         meta.index_file = os.path.join(meta.worker_root + self.name, base_name, result_name)
 
         self._file_controller.set_asset_meta(project_name, meta.name, meta)
