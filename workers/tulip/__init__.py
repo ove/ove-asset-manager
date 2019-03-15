@@ -70,6 +70,10 @@ class NetworkWorker(BaseWorker):
                     if default == 'True' or default == 'False':
                         options[field_name]['rightLabel'] = 'Enabled'
 
+        options['result_name'] = {
+            'helper': "Supported formats: TLP (.tlp, .tlp.gz, .tlpz), TLP Binary (.tlpb, .tlpb.gz, .tlpbz), TLP JSON (.json), GML (.gml), CSV (.csv)"
+        }
+
         return {
             'schema': {
                 'type': 'object',
