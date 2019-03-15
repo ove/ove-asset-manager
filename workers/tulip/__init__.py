@@ -41,7 +41,7 @@ class NetworkWorker(BaseWorker):
             }
         }
         dependencies = {}
-        options = {}
+        options = {'fields': {}}
 
         for algorithm in algorithms:
             default_params = tlp.getDefaultPluginParameters(algorithm)
@@ -50,15 +50,25 @@ class NetworkWorker(BaseWorker):
                 if field != 'result':
                     field_name = algorithm + "_" + field
 
+                    default = str(default_params[field])
+                    if default == 'True' or default == 'False':
+                        input_type = 'checkbox'
+                        data_type = 'boolean'
+                    else:
+                        input_type = 'text'
+                        data_type = 'string'
+
                     properties[field_name] = {
-                        'type': 'string',
+                        'type': data_type,
                         'title': field_name,
-                        'default': str(default_params[field])
+                        'default': default_params[field]
                     }
 
                     dependencies[field_name] = ['algorithm']
 
-                    options[field_name] = {'dependencies': {'algorithm': algorithm}}
+                    options['fields'][field_name] = {'type': input_type}
+
+                    options[field_name] = {'type': input_type, 'dependencies': {'algorithm': algorithm}}
 
         return {
             'schema': {
