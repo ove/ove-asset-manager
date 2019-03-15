@@ -84,20 +84,20 @@ class NetworkWorker(BaseWorker):
     def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
         logging.info("Copying %s/%s into the temp place ...", project_name, filename)
 
-        if not options:
-            options = {}
+        with TemporaryDirectory() as input_folder:
+            with TemporaryDirectory() as output_folder:
 
-        with TemporaryDirectory() as folder:
+                os.mkdir(os.path.join(input_folder, os.path.split(filename)[0]))  # make subdirectory for asset version number
 
-            with TemporaryDirectory() as folder2:
-
-                os.mkdir(os.path.join(folder2, os.path.split(filename)[0]))  # make subdirectory for asset version number
-
-                network_file = os.path.join(folder2, filename)
+                network_file = os.path.join(input_folder, filename)
                 open(network_file, 'a').close()
 
                 self._file_controller.download_asset(project_name=project_name, asset_name=meta.name,
                                                      filename=filename, down_filename=network_file)
+
+                if not options:
+                    options = {}
+
                 algorithm = options.get('algorithm')
                 if not algorithm:
                     algorithm = "FM^3 (OGDF)"
@@ -108,18 +108,19 @@ class NetworkWorker(BaseWorker):
 
                 logging.info("Received options %s ...", options)
                 logging.info("Performing layout using algorithm %s and options %s ...", algorithm, params)
+
                 graph = tlp.loadGraph(network_file)
                 graph.applyLayoutAlgorithm(algorithm, params)
 
                 result_name = options.get('result_name')
                 if not result_name:
                     result_name = meta.name.split('.')[0] + '.gml'
-                tlp.saveGraph(graph, os.path.join(folder, result_name))
+                tlp.saveGraph(graph, os.path.join(output_folder, result_name))
 
-                with open(os.path.join(folder, result_name + ".options"), 'w') as fp:
+                with open(os.path.join(output_folder, result_name + ".options"), 'w') as fp:
                     json.dump(options, fp)
 
-                self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=folder,
+                self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=output_folder,
                                                           worker_name=self.name)
 
         base_name = os.path.splitext(os.path.basename(filename))[0]
