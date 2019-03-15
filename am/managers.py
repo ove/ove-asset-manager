@@ -50,6 +50,9 @@ class WorkerManager:
 
     def schedule_process(self, project_name: str, meta: OveMeta, worker_type: str, store_config: Dict, task_options: Dict):
         filename = task_options.get("filename", meta.filename)
+        if filename is None or len(filename) == 0:
+            filename = meta.filename
+
         available = _find_workers(filename=filename, worker_type=worker_type, workers=self._workers)
         if len(available) > 0:
             # load balancing ^_^

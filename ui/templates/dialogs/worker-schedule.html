@@ -30,7 +30,16 @@
                     ...params, "view": "bootstrap-edit",
                     "postRender": function () {
                         loader.hide();
-                        $('#workerScheduleForm select').select2();
+                        $('#workerScheduleForm select').select2({dropdownParent: workerModal});
+
+                        const helperBlock = $('.help-block');
+                        helperBlock.replaceWith($('<small class="form-text text-muted"/>').append(helperBlock.contents()));
+
+                        const helperIcon = $('.glyphicon-info-sign');
+                        helperIcon.removeClass('glyphicon');
+                        helperIcon.removeClass('glyphicon-info-sign');
+                        helperIcon.addClass('fas');
+                        helperIcon.addClass('fa-info-circle');
                     }
                 });
             }
@@ -60,9 +69,12 @@
         });
 
         workerTypeList.on('select2:select', function (e) {
+            updateFilenameData($('#assetNameModalField').val(), e.params.data.extensions);
+
             btnProcess.prop("disabled", false);
-            btnDocs.removeClass("disabled");
             renderParams(e.params.data.worker_parameters);
+
+            btnDocs.removeClass("disabled");
             btnDocs.attr("href", "/docs/" + e.params.data.docs);
         });
     });
@@ -85,7 +97,7 @@
         }
     }
 
-    function updateFilenameData(asset_name) {
+    function updateFilenameData(asset_name, extensions) {
         const selectField = $('#processFilename');
 
         selectField.empty().trigger("change");
@@ -94,12 +106,20 @@
             selectField.empty().trigger("change");
             let defaultValue = null;
             _.each(data, function (e) {
-                selectField.append(new Option(e.name, e.name, false, false));
-                if (e.default) {
-                    defaultValue = e.name;
+                if (extensions === null || endsWith(e.name, extensions)) {
+                    selectField.append(new Option(e.name, e.name, false, false));
+                    if (e.default) {
+                        defaultValue = e.name;
+                    }
                 }
             });
             selectField.val(defaultValue).trigger('change');
+        });
+    }
+
+    function endsWith(filename, extensions) {
+        return _.some(extensions, function (e) {
+            return filename.endsWith(e);
         });
     }
 
@@ -108,7 +128,8 @@
 
         $('#assetNameModalField').val(asset_name);
         $("#processFilename").select2({dropdownParent: workerModal, data: []});
-        updateFilenameData(asset_name);
+
+        updateFilenameData(asset_name, null);
 
         workerModal.modal();
     }
@@ -140,7 +161,12 @@
                 </div>
                 <div class="row mt-2">
                     <div class="col-2"><label for="processFilename" class="col-form-label">Filename</label></div>
-                    <div class="col-10"><select id="processFilename" name="filename" class="form-control" style="width: 90%"></select></div>
+                    <div class="col-10">
+                        <select id="processFilename" name="filename" class="form-control" style="width: 90%"></select>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i>&nbsp;&nbsp;If no filename is selected then the default asset file is processed
+                        </small>
+                    </div>
                 </div>
                 <div class="row mt-4">
                     <div class="col-12">
