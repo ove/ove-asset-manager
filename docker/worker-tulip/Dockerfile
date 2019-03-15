@@ -19,4 +19,6 @@ RUN apt-get update && \
     apt-get autoremove -y
 
 ENV WORKER_CLASS "workers.tulip.NetworkWorker"
+ENV GUNICORN_PORT "6092"
+
 CMD ["./start-worker.sh"]
