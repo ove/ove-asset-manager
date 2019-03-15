@@ -12,6 +12,7 @@ ADD start-worker.sh .
 ADD requirements.txt .
 
 RUN apt-get update && \
+    apt-get install -y binutils && \
     apt-get install -y build-essential && \
     pip install -r requirements.txt && \
     pip install tulip-python && \
