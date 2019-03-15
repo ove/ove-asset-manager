@@ -24,7 +24,6 @@ class NetworkWorker(BaseWorker):
         return "Tulip.md"
 
     def parameters(self) -> Dict:
-
         algorithms = tlp.getLayoutAlgorithmPluginsList()
 
         properties = {
