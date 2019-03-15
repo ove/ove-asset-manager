@@ -102,8 +102,9 @@ class NetworkWorker(BaseWorker):
 
                 params = tlp.getDefaultPluginParameters(algorithm)
                 for param in params:
-                    params[param] = self.convert_param(options.get(param, params[param]))
+                    params[param] = self.convert_param(options.get(algorithm + '_' + param, params[param]))
 
+                logging.info("Received options %s ...", options)
                 logging.info("Performing layout using algorithm %s and options %s ...", algorithm, params)
                 graph = tlp.loadGraph(network_file)
                 graph.applyLayoutAlgorithm(algorithm, params)
