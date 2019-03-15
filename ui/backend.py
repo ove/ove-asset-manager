@@ -29,7 +29,7 @@ class BackendClient:
         return self.request(method="DELETE", api_url=api_url, data=data, headers=headers)
 
     def request(self, method: str, api_url: str, data: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
-        response = self._http.request(method=method, url=self.backend_url + api_url, headers=_fix_headers(headers),
+        response = self._http.request(method=method, url=self.backend_url + api_url, headers=_fix_headers(headers), timeout=10.0,
                                       body=json.dumps(data).encode('utf-8') if data is not None else None)
         if 200 <= response.status < 300:
             result = response.data
