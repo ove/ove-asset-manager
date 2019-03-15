@@ -19,4 +19,4 @@ RUN apt-get update && \
     apt-get autoremove -y
 
 ENV WORKER_CLASS "workers.tulip.NetworkWorker"
-CMD "./start-worker.sh"
+CMD ["./start-worker.sh"]
