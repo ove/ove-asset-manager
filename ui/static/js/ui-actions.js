@@ -37,7 +37,7 @@ function file_upload(uploadUrl, multiUpload) {
     dialog.init(function () {
         FilePond.create(document.getElementById("file-upload"));
         FilePond.setOptions({
-            allowDrop: false,
+            allowDrop: true,
             allowReplace: false,
             instantUpload: false,
             server: {
