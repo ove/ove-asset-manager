@@ -26,7 +26,7 @@ class DeepZoomImageWorker(BaseWorker):
         return {}
 
     def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
-        logging.info("Copying %s/%s into the temp place ...", project_name, meta.name)
+        logging.info("Copying %s/%s/%s into the temp place ...", project_name, meta.name, filename)
 
         with TemporaryDirectory() as folder:
             with NamedTemporaryFile() as image_file:

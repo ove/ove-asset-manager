@@ -37,7 +37,7 @@ class ZipWorker(BaseWorker):
         }
 
     def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
-        logging.info("Unzipping %s/%s into the temp place ...", project_name, meta.name)
+        logging.info("Copying %s/%s/%s into the temp place ...", project_name, meta.name, filename)
 
         index_files = set()
         if options.get("index_file", None):

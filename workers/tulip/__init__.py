@@ -1,9 +1,10 @@
+import json
 import logging
-from tulip import tlp
 import os
 from tempfile import TemporaryDirectory
 from typing import Dict, List
-import json
+
+from tulip import tlp
 
 from common.entities import OveMeta, WorkerType
 from workers.base import BaseWorker
@@ -64,10 +65,10 @@ class NetworkWorker(BaseWorker):
                     }
 
                     dependencies[field_name] = ['algorithm']
-
                     options['fields'][field_name] = {'type': input_type}
-
                     options[field_name] = {'type': input_type, 'dependencies': {'algorithm': algorithm}}
+                    if default == 'True' or default == 'False':
+                        options[field_name]['rightLabel'] = 'Enabled'
 
         return {
             'schema': {
@@ -81,25 +82,18 @@ class NetworkWorker(BaseWorker):
         }
 
     def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
-        logging.info("Copying %s/%s into the temp place ...", project_name, filename)
+        logging.info("Copying %s/%s/%s into the temp place ...", project_name, meta.name, filename)
 
         with TemporaryDirectory() as input_folder:
             with TemporaryDirectory() as output_folder:
-
                 os.mkdir(os.path.join(input_folder, os.path.split(filename)[0]))  # make subdirectory for asset version number
 
                 network_file = os.path.join(input_folder, filename)
                 open(network_file, 'a').close()
 
-                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name,
-                                                     filename=filename, down_filename=network_file)
+                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=filename, down_filename=network_file)
 
-                if not options:
-                    options = {}
-
-                algorithm = options.get('algorithm')
-                if not algorithm:
-                    algorithm = "FM^3 (OGDF)"
+                algorithm = options.get('algorithm', "FM^3 (OGDF)")
 
                 params = tlp.getDefaultPluginParameters(algorithm)
                 for param in params:
