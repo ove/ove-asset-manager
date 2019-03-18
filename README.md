@@ -8,34 +8,38 @@ proxy to provide authenticated access to data from a range of sources.
 
 ## Concepts
 
-- **Store** - is the storage engine where all the files/objects are stored. The AM currently uses an S3 
-compatible object store, such as [MINIO](http://minio.io). The AM supports working with multiple stores 
-at the same time.
-- **Project** - is a collection of assets and project-level objects in json format that can be grouped together. 
-While the AM does not assign any semantic to the project files so they can be grouped by any criteria, OVE 
-may use projects to group content displayed together (e.g. gallery projects).
-- **Asset** - is usually a collection of one or more files that can be treated as an unit: versioned, processed
- and displayed together. Each asset contains metadata on current handling of the object (e.g. processing state, 
- name, description, tags, etc.)
-- **File** - an object stored as part of an asset
-- **Version** - asset files are versioned together every time an update occurs
-- **Worker** - an async task performed on an asset to transform the original file format into new formats. The
-files created by the worker are not considered to be updates as all the worker operations are non-destructive.   
+The Asset Manager stores files in an S3 compatible object **Store**, such as [Minio](http://minio.io).
+One instance of the Asset Manager can work with multiple stores.
+
+An **Asset** is a collection of one or more **files** that can be treated as a single unit and versioned, processed
+and displayed together. Each asset has associated metadata (e.g. processing state, name, description, tags, etc.).
+
+Assets (and non-asset objects in JSON format) can be grouped together into a **Project**.
+While the AM does not assign any specific meaning to a project, and allows you to group assets by any criteria, other
+tools may interpret projects as indicating that particular content should be displayed together (e.g., a gallery might
+display all of the assets in a selected project).
+
+Each time any file in an asset is updated, a new **Version** of the whole asset is recorded. Previous versions of the
+asset are retained, and can still be accessed.
+
+**Worker** can be scheduled to asynchronously perform a task performed on a file, such as converting it to a new file
+format. Workers operate non-destructively and do not modify or delete uploaded files, so do not create new versions of
+an asset when they run.
  
 
 ## Components
 
-The service is split into 3 parts:
+The Asset Manager is split into 3 parts:
 
-- AM Backend - a service that exposes a full [restful API](docs/API.md) for all 
-the operations on projects, assets and files. This service can work independently from all 
-the other services.  
-- AM Read proxy - a service that exposes a http endpoint used to read individual files off the object store.
-The AM Read Proxy is authenticated by the same rules as the Backend service.  
-- AM UI - a service that exposes an UI for most of the operations performed by the Backend service.
-- AM Workers - async workers to perform additional tasks on assets (e.g. Unzip, Deep Zoom Image creation):
+- The **Backend** exposes a full [RESTful API](docs/API.md) for operations on projects, assets and files.
+This service can work independently from all the other services.
+- The **Read proxy** exposes an HTTP endpoint to read individual files off the object store.
+The AM Read Proxy is authenticated by the same rules as the Backend service.
+- The **UI** exposes a User Interface for most of the operations performed by the Backend service.
+- The **Workers** asynchronously perform additional tasks on assets:
     - **Unzip**: please see the [worker documentation](docs/workers/ZipWorker.md) for more details  
     - **DeepZoomImage**: please see the [worker documentation](docs/workers/DeepZoomImageWorker.md) for more details  
+    - **Tulip network layout**: please see the [worker documentation](docs/workers/Tulip.md) for more details
 
 ## Install
 
