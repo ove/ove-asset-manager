@@ -173,7 +173,7 @@ Zip worker:
  WORKER_CLASS="workers.zip.ZipWorker" ./start-worker.sh
 ```
 
-Tulip gra layout worker:
+Tulip graph layout worker:
 
 ```bash
  WORKER_CLASS="workers.tulip.NetworkWorker" ./start-worker.sh
