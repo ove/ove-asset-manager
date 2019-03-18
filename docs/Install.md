@@ -5,11 +5,15 @@
 The easiest option to run all the services is to use the [OVE Installer](https://github.com/ove/ove-install)
 that allows you to configure all the services interactively.
 
+The installer creates a [docker-compose](https://docs.docker.com/compose/) file for the Asset Manager services (the
+asset manager service, UI, asset workers, and [MINIO](http://minio.io/) instance), separate from the docker-compose
+file for the other OVE services.
+
 ## S3 Store - MINIO Configuration
 
-This step is **optional**. If you already have a S3 store please skip this step.
+This step is **optional**, and can be skipped if you already have a Amazon S3 compatible object store.
 
-The Asset Manager was tested against an open source implementation of S3 protocol called [MINIO](http://minio.io/).
+The Asset Manager was tested against [MINIO](http://minio.io/), an open object storage server.
 
 The docker-compose configuration to spin up a MINIO instance is:
 
@@ -26,28 +30,30 @@ services:
       MINIO_ACCESS_KEY: "MINIO_ACCESS_KEY"
       MINIO_SECRET_KEY: "MINIO_SECRET_KEY"
     command: server /data
-  
+
 volumes:
   minio-storage-data:
 ```
 
-While this docker setup is perfect for testing and could handle well production, it is highly recommended to configure
-the store on a bare-metal install. Please see the [MINIO install guide](https://docs.minio.io/) for more details.
+While this docker setup is perfect for testing, it is recommended to use a bare-metal install in production.
+Please see the [MINIO install guide](https://docs.minio.io/) for more details.
 
 ## Docker without installer
 
-In this guide, docker-compose will be used to simplify the syntax. All the configuration is available in plain
-docker, but the syntax should be longer and sometimes less clear.
+It is possible to run the Asset Manager services with Docker without using docker-compose.
+However, this guide uses docker-compose, as this allows the configuration to be expressed as blocks of
+ YAML](https://en.wikipedia.org/wiki/YAML), which is clearer than listing long Docker commands with many arguments.
 
-In the **docker-compose.yml** bellow, the service is configured for production use. If you wish to enable different 
-options please check the documentation for each service for all the available settings.
+In the example **docker-compose.yml** below, the service is configured for production use. If you wish to enable different
+options please check the documentation for each service.
 
-**Note:** Please set the **service version** parameter before running the config. Also, the AM service requires a 
-config file to run. Please refer to the AM Backend configuration for more details.
+**Note:** Please set the **service version** parameter before running the config.
 
-A template of the config file can be found in **config/credentials.template.json** which can be saved as 
-**config/credentials.json**. The configuration requires an existing S3 store, if you require one please read the 
-[MINIO configuration](#s3-store---minio-configuration) section. 
+The Asset Manager service requires a config file to run. A template of the config file can be found in
+**config/credentials.template.json**; this can be copied to **config/credentials.json** and modified as required
+(refer to the Asset Manager Backend configuration for more details).
+
+If you do not have an existing S3 compatible object store, please read the [MINIO configuration](#s3-store---minio-configuration) section.
 
 ```yaml
 version: '3'
@@ -101,13 +107,14 @@ docker-compose down
 ```
 
 
-## Non-docker installs
+## Non-docker installation
 
 All the services can can run perfectly on bare-metal Linux or MacOS as well. To start please clone this repository
 or download a release.
 
-The services have been tested on CPython 3.6 and PyPy3.6 v7.0. For better performance PyPy is recommended, but
-for convenience CPython can be also used. 
+The services have been tested on CPython 3.6 and PyPy3.6 v7.0. For better performance [PyPy](https://pypy.org/) is
+recommended, but for convenience [CPython](https://en.wikipedia.org/wiki/CPython) (the default Python interpreter) can
+be used instead.
 
 A virtual environment can be created by executing:
 
@@ -115,41 +122,44 @@ A virtual environment can be created by executing:
 virtualenv -p python3 env && source env/bin/activate
 ```
 
-The dependencies can be installed safely within the same virtual environment (please make sure that the virtual
-environment is active, e.g. the terminal should display something like **env** at the beginning of the line):
+The terminal should display something like **env** at the beginning of the line, indicating that the virtual
+environment is active. You can then safely install the dependencies within the same virtual environment:
+
 
 ```bash
 pip -r requirements.txt && pip -r requirements.ui.txt
 ```
 
-If you wish to install the Deep Zoom Worker, the pyvips needs to be installed in the virtual environment as well. 
-Please check the [install guide](https://libvips.github.io/pyvips/README.html#install) for details on how to 
+If you wish to install the Deep Zoom Worker, then `pyvips` needs to be installed in the virtual environment as well.
+Please check the [install guide](https://libvips.github.io/pyvips/README.html#install) for details on how to
 install the library and the system bindings.
 
-To start the AM Backend:
+To start the Asset Manager Backend:
 
 ```bash
 ./start-am.sh
 ```
 
-UI:
+### User Interface
 
-The UI requires a few JavaScript libraries to be downloaded before started (this has to be executed in the root folder):
+To downloaded required JavaScript libraries, change directory to the root folder and execute:
 
 ```bash
 npm install
 ```
 
-If the command is successful all the web assets will be downloaded into **ui/static/vendors/**. If the folder is empty after 
-execution of the npm command, please check the execution logs for more details.
+If the command is successful all the web assets will be downloaded into **ui/static/vendors/**. If this folder is empty
+after execution of the `npm` command, then something has failed: please check the execution logs for more details.
 
 After downloading all the web assets, it is safe to delete the **node_modules** folder.
 
-To start the UI:
+To start the User Interface:
 
 ```bash
 ./start-ui.sh
 ```
+
+### Workers
 
 Deep Zoom Worker:
 
@@ -161,4 +171,10 @@ Zip worker:
 
 ```bash
  WORKER_CLASS="workers.zip.ZipWorker" ./start-worker.sh
+```
+
+Tulip graph layout worker:
+
+```bash
+ WORKER_CLASS="workers.tulip.NetworkWorker" ./start-worker.sh
 ```

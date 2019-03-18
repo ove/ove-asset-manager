@@ -1,7 +1,8 @@
 # Zip Worker
 
-This worker extracts standard .zip files into their folders.
+This worker extracts the contents of a standard .zip archive file.
 
 ## Parameters:
 
-- index_file - allows you to set the index file after extraction. This parameter defaults to ```{"index.html", "index.htm", "index.js"}``` 
+- `index_file` - determines which file will be set as the the index file after extraction.
+Defaults to ```{"index.html", "index.htm", "index.js"}```.
