@@ -22,7 +22,7 @@ display all of the assets in a selected project).
 Each time any file in an asset is updated, a new **Version** of the whole asset is recorded. Previous versions of the
 asset are retained, and can still be accessed.
 
-**Worker** can be scheduled to asynchronously perform a task performed on a file, such as converting it to a new file
+**Workers** can be scheduled to asynchronously perform a task performed on a file, such as converting it to a new file
 format. Workers operate non-destructively and do not modify or delete uploaded files, so do not create new versions of
 an asset when they run.
  
