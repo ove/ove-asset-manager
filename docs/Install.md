@@ -67,6 +67,16 @@ services:
     environment:
       GUNICORN_THREADS: "8"
       SERVICE_LOG_LEVEL: "info"
+  
+  ovehub-ove-asset-manager-proxy:
+    image: ovehub/ove-asset-manager-proxy:latest-unstable
+    ports:
+      - "6081:6081"
+    volumes:
+      - ./config/:/code/config/:ro
+    environment:
+      GUNICORN_THREADS: "8"
+      SERVICE_LOG_LEVEL: "info"
 
   ovehub-ove-asset-manager-worker-zip:
     image: ovehub/ove-asset-manager-worker-zip:${service-version}
@@ -91,6 +101,13 @@ services:
       SERVICE_LOG_LEVEL: "info"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
       SERVICE_AM_PORT: "6080"
+      
+  ovehub-ove-asset-manager-worker-tulip:
+    image: ovehub/ove-asset-manager-worker-tulip:latest-unstable
+    environment:
+      SERVICE_LOG_LEVEL: "info"
+      SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
+      SERVICE_AM_PORT: "6080" 
 
 ```
 
