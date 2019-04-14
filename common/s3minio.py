@@ -11,7 +11,7 @@ from urllib3 import HTTPResponse
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
 from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
 from common.entities import OveMeta
-from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError
+from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError
 from common.filters import DEFAULT_FILTER
 from common.util import append_slash
 
@@ -151,17 +151,6 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             client.make_bucket(project_name, location=_DEFAULT_STORE_LOCATION)
-            # todo; remove this once a read proxy has been created
-            client.set_bucket_policy(project_name, policy=json.dumps({
-                "Version": "2012-10-17",
-                "Statement": [{
-                    "Sid": "",
-                    "Effect": "Allow",
-                    "Principal": {"AWS": "*"},
-                    "Action": "s3:GetObject",
-                    "Resource": "arn:aws:s3:::{}/*".format(project_name)
-                }]
-            }))
         except ResponseError:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
@@ -279,6 +268,14 @@ class S3Manager:
         except Exception:
             logging.error("Error while trying to set object. Error: %s", sys.exc_info()[1])
             raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+
+    def get_stream(self, store_name: str, project_name: str, path_name: str) -> io.FileIO:
+        client = self._get_connection(store_name)
+        try:
+            return client.get_object(project_name, path_name)
+        except Exception:
+            logging.error("Error while trying to get stream. Error: %s", sys.exc_info()[1])
+            raise StreamNotFoundError(store_name=store_name, project_name=project_name, filename=path_name)
 
 
 # Helpers

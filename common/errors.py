@@ -9,6 +9,9 @@ def handle_exceptions(ex: Exception, _req: falcon.Request, _resp: falcon.Respons
     if isinstance(ex, falcon.HTTPError):
         raise ex
 
+    if isinstance(ex, StreamNotFoundError):
+        raise falcon.HTTPNotFound()
+
     if isinstance(ex, (AssetExistsError, ObjectExistsError)):
         raise falcon.HTTPConflict(title=ex.title, description=ex.description)
 
@@ -72,6 +75,13 @@ class InvalidObjectError(ValidationError):
         description = "Error while trying to retrieve object '{}' from project '{}' on '{}'".format(object_name, project_name, store_name)
         super(InvalidObjectError, self).__init__(title="The provided object name '{}' is invalid".format(object_name),
                                                  description=description)
+
+
+class StreamNotFoundError(ValidationError):
+    def __init__(self, store_name: str, project_name: str, filename: str):
+        description = "Error while trying to retrieve stream '{}' from project '{}' on '{}'".format(filename, project_name, store_name)
+        super(StreamNotFoundError, self).__init__(title="The provided filename '{}' is invalid".format(filename),
+                                                  description=description)
 
 
 class ObjectExistsError(ValidationError):
