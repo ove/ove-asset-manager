@@ -6,7 +6,7 @@ from ui import setup_ui
 # do not use this in production
 # this is a dev only method provided for convenience
 def main():
-    simple_server.make_server('0.0.0.0', 6060, setup_ui(backend_url="http://gdo-appsdev.dsi.ic.ac.uk:6080")).serve_forever()  # nosec
+    simple_server.make_server('0.0.0.0', 6060, setup_ui(backend_url="localhost:6080")).serve_forever()  # nosec
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ class ZipWorker(BaseWorker):
 
         index_files = set()
         if options.get("index_file", None):
-            index_files.add(options.get("index_file").trim().lower())
+            index_files.add(options.get("index_file").strip().lower())
         else:
             index_files.update({"index.html", "index.htm", "index.js"})
 
@@ -51,7 +51,8 @@ class ZipWorker(BaseWorker):
                 ZipFile(zip_file.name).extractall(path=folder)
                 self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=folder, worker_name=self.name)
 
-            meta.index_file = meta.worker_root + self.name + "/" + _guess_index_file(folder, index_files=index_files)
+            meta_filename_name = os.path.splitext(os.path.basename(meta.filename))[0]
+            meta.index_file = meta.worker_root + self.name + "/" + meta_filename_name + "/" + _guess_index_file(folder, index_files=index_files)
             self._file_controller.set_asset_meta(project_name, meta.name, meta)
 
         logging.info("Finished unzipping %s/%s into the storage ...", project_name, meta.name)
@@ -64,7 +65,7 @@ def _guess_index_file(folder: str, index_files: Set[str]) -> Union[str, None]:
         if not os.path.islink(filename) and not os.path.ismount(filename) and os.path.isfile(filename):
             if not result:
                 result = filename[len(folder) + 1:]
-            elif os.path.basename(filename).lower() in index_files:
+            elif any(filename.lower().endswith(suffix) for suffix in index_files):
                 result = filename[len(folder) + 1:]
 
     return result or ""
