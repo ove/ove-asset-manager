@@ -1,4 +1,5 @@
 import json
+import urllib
 from typing import Dict, Any, List, Union
 
 import falcon
@@ -29,7 +30,7 @@ class BackendClient:
         return self.request(method="DELETE", api_url=api_url, data=data, headers=headers)
 
     def request(self, method: str, api_url: str, data: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
-        response = self._http.request(method=method, url=self.backend_url + api_url, headers=_fix_headers(headers), timeout=10.0,
+        response = self._http.request(method=method, url=self.backend_url + urllib.parse.quote(api_url), headers=_fix_headers(headers), timeout=10.0,
                                       body=json.dumps(data).encode('utf-8') if data is not None else None)
         if 200 <= response.status < 300:
             result = response.data
@@ -44,7 +45,7 @@ class BackendClient:
                                                  description=e.get("description", "Error while calling '{}'".format(api_url)))
 
     def upload(self, api_url: str, stream: Any, method: str = "POST", headers: Dict = None) -> Union[Dict, List, None]:
-        response = self._http.request(method=method, url=self.backend_url + api_url, headers=headers, body=stream.read())
+        response = self._http.request(method=method, url=self.backend_url + urllib.parse.quote(api_url), headers=headers, body=stream.read())
         if 200 <= response.status < 300:
             result = response.data
             if result is not None:
