@@ -158,9 +158,9 @@ class AssetUpload:
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
             if meta.uploaded:
-                raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, use update")
+                raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, please update the asset.")
         except InvalidAssetError:
-            raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet")
+            raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet.")
 
         filename = parse_filename(req)
         save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
