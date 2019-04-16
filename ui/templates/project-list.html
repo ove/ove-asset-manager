@@ -10,6 +10,12 @@
                 order: [1, 'asc'],
                 columns: [{width: 20}, null, {width: "10%"}, {width: "10%"}, {width: 20, orderable: false}]
             });
+
+            $('#project').keypress(function (event) {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                }
+            });
         });
     </script>
 
