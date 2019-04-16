@@ -21,28 +21,28 @@
                 <form id="asset-edit" method="post"
                       action="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ "new" if create else asset.name }}">
                     <div class="form-group row">
-                        <label for="name" class="col-sm-2 col-form-label">Name</label>
-                        <div class="col-sm-10">
+                        <label for="name" class="col-3 col-form-label">Name</label>
+                        <div class="col-9">
                             <input name="name" id="name" value="{{ asset.name }}"
                                    type="text" {{ "readonly" if not create }} class="form-control" required>
                             <div class="invalid-feedback">Please provide a valid name.</div>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="project" class="col-sm-2 col-form-label">Project</label>
-                        <div class="col-sm-10">
+                        <label for="project" class="col-3 col-form-label">Project</label>
+                        <div class="col-9">
                             <input name="project" id="project" value="{{ asset.project }}" type="text" readonly class="form-control">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="description" class="col-sm-2 col-form-label">Description</label>
-                        <div class="col-sm-10">
+                        <label for="description" class="col-3 col-form-label">Description</label>
+                        <div class="col-9">
                             <textarea name="description" id="description" class="form-control" rows="5">{{ asset.description }}</textarea>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="tags" class="col-sm-2 col-form-label">Tags</label>
-                        <div class="col-sm-10">
+                        <label for="tags" class="col-3 col-form-label">Tags</label>
+                        <div class="col-9">
                             <select name="tags[]" id="tags" multiple="multiple" class="form-control">
                                 {% if asset.tags %}
                                     {% for tag in asset.tags %}
@@ -53,17 +53,18 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="version" class="col-sm-2 col-form-label">Version</label>
-                        <div class="col-sm-10">
+                        <label for="version" class="col-3 col-form-label">Version</label>
+                        <div class="col-9">
                             <input name="version" id="version" value="{{ asset.version }}" type="text" readonly class="form-control">
                         </div>
                     </div>
-                    <div class="form-group row">
-                        <div class="col-sm-10"></div>
-                        <div class="col-sm-1">
-                            <a href="/view/store/{{ store_name }}/project/{{ project_name }}" class="btn btn-outline-danger">Close</a>
-                        </div>
-                        <div class="col-sm-1">
+                    <div class="form-group row justify-content-end">
+                        <div class="mr-3">
+                            <button type="button" class="btn btn-outline-primary mr-1" data-toggle="tooltip" data-placement="top" title="Upload into asset"
+                                    onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
+                                Upload
+                            </button>
+                            <a href="/view/store/{{ store_name }}/project/{{ project_name }}" class="btn btn-outline-danger mr-1">Close</a>
                             <button type="button" class="btn btn-outline-success"
                                     onclick="confirm_submission('asset-edit', 'Are you sure you want to save the changes?')">
                                 {{ "Create" if create else "Save" }}
