@@ -1,4 +1,5 @@
 import io
+from typing import Dict
 
 from common.consts import DEFAULT_CONFIG
 from common.s3minio import S3Manager
@@ -16,3 +17,6 @@ class FileController:
 
     def get_resource(self, store_name: str, project_name: str, path_name: str) -> io.FileIO:
         return self._manager.get_stream(store_name=store_name, project_name=project_name, path_name=path_name)
+
+    def get_resource_meta(self, store_name: str, project_name: str, path_name: str) -> Dict:
+        return self._manager.get_stream_meta(store_name=store_name, project_name=project_name, path_name=path_name)

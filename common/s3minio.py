@@ -277,6 +277,15 @@ class S3Manager:
             logging.error("Error while trying to get stream. Error: %s", sys.exc_info()[1])
             raise StreamNotFoundError(store_name=store_name, project_name=project_name, filename=path_name)
 
+    def get_stream_meta(self, store_name: str, project_name: str, path_name: str) -> Dict:
+        client = self._get_connection(store_name)
+        try:
+            obj = client.stat_object(project_name, path_name)
+            return {"size": obj.size, "last_modified": obj.last_modified}
+        except Exception:
+            logging.error("Error while trying to get stream metadata. Error: %s", sys.exc_info()[1])
+            raise StreamNotFoundError(store_name=store_name, project_name=project_name, filename=path_name)
+
 
 # Helpers
 def _validate_object_name(store_name: str, project_name: str, object_name: str) -> None:
