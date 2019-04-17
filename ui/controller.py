@@ -33,7 +33,7 @@ class BackendController:
         return self._backend.get("api/list") or []
 
     def list_projects(self, store_name: str) -> List:
-        return self._backend.get("api/{}/list?metadata=true".format(store_name))
+        return self._backend.get("api/{}/list".format(store_name), params={"metadata": True})
 
     def create_project(self, store_name: str, project_name: str) -> None:
         self._backend.post("api/{}/create".format(store_name), data={"name": project_name})
