@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory, NamedTemporaryFile
 from typing import Dict, List, Union, Set
 from zipfile import ZipFile
 
-from common.entities import OveMeta, WorkerType
+from common.entities import OveAssetMeta, WorkerType
 from common.util import append_slash
 from workers.base import BaseWorker
 
@@ -36,7 +36,7 @@ class ZipWorker(BaseWorker):
             }
         }
 
-    def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
+    def process(self, project_name: str, filename: str, meta: OveAssetMeta, options: Dict):
         logging.info("Copying %s/%s/%s into the temp place ...", project_name, meta.name, filename)
 
         index_files = set()

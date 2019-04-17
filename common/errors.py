@@ -63,6 +63,13 @@ class InvalidStoreError(ValidationError):
                                                 description="The store may not exist or you don't have access to it")
 
 
+class InvalidProjectError(ValidationError):
+    def __init__(self, store_name: str, project_name: str):
+        description = "Error while trying to retrieve project '{}' on '{}'".format(project_name, store_name)
+        super(InvalidProjectError, self).__init__(title="The provided project '{}' is invalid".format(project_name),
+                                                  description=description)
+
+
 class InvalidAssetError(ValidationError):
     def __init__(self, store_name: str, project_name: str, asset_name: str):
         description = "Error while trying to retrieve asset '{}' from project '{}' on '{}'".format(asset_name, project_name, store_name)

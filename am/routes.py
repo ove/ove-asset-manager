@@ -8,7 +8,7 @@ import falcon
 
 from am.controller import FileController
 from am.managers import WorkerManager
-from common.entities import OveMeta, WorkerStatus
+from common.entities import OveAssetMeta, WorkerStatus
 from common.entities import WorkerData
 from common.errors import InvalidAssetError, ValidationError
 from common.falcon_utils import parse_filename, save_filename
@@ -94,8 +94,14 @@ class ProjectList:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        metadata = to_bool(req.params.get("metadata", False))
-        resp.media = self._controller.list_projects(store_name=store_id, metadata=metadata)
+        results_filter = build_meta_filter(req.params)
+        if results_filter:
+            # if you use a result filter the metadata is required
+            metadata = True
+        else:
+            metadata = to_bool(req.params.get("metadata", False))
+
+        resp.media = self._controller.list_projects(store_name=store_id, metadata=metadata, result_filter=results_filter)
         resp.status = falcon.HTTP_200
 
 
@@ -140,7 +146,7 @@ class AssetCreate:
         validate_not_null(req.media, 'name')
         validate_no_slashes(req.media, 'name')
         asset_name = req.media.get('name')
-        self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_name, project=project_id))
+        self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveAssetMeta(name=asset_name, project=project_id))
 
         resp.media = {'Asset': asset_name}
         resp.status = falcon.HTTP_200
@@ -158,7 +164,8 @@ class AssetUpload:
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
             if meta.uploaded:
-                raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, please update the asset.")
+                raise falcon.HTTPConflict(title="Asset exists",
+                                          description="This asset already has a file. If you wish to change this file, please update the asset.")
         except InvalidAssetError:
             raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet.")
 
@@ -207,7 +214,7 @@ class AssetCreateUpload:
             if meta.uploaded:
                 raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, use update")
         except InvalidAssetError:
-            meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveMeta(name=asset_id, project=project_id))
+            meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
 
         filename = parse_filename(req)
         save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
@@ -217,7 +224,34 @@ class AssetCreateUpload:
         resp.status = falcon.HTTP_200
 
 
-class MetaEdit:
+class ProjectMetaEdit:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        meta = self._controller.get_project_meta(store_name=store_id, project_name=project_id)
+        resp.media = meta.to_public_json()
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        meta = self._controller.get_project_meta(store_name=store_id, project_name=project_id)
+        if is_empty(req.media.get('name')) is False:
+            # todo; this needs to move the asset into a new path as well
+            # todo; rebuild the path as well
+            # meta.name = req.media.get('name')
+            pass
+        if is_empty(req.media.get('description')) is False:
+            meta.description = req.media.get('description')
+        if is_empty(req.media.get('tags')) is False:
+            meta.tags = req.media.get('tags')
+
+        self._controller.edit_project_meta(store_name=store_id, project_name=project_id, meta=meta)
+
+        resp.media = meta.to_public_json()
+        resp.status = falcon.HTTP_200
+
+
+class AssetMetaEdit:
     def __init__(self, controller: FileController):
         self._controller = controller
 

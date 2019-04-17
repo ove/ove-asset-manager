@@ -2,7 +2,7 @@ import glob
 import os
 from typing import Dict
 
-from common.entities import OveMeta, WorkerStatus
+from common.entities import OveAssetMeta, WorkerStatus
 from common.errors import WorkerLockError
 from common.s3minio import S3Manager
 from common.util import append_slash
@@ -21,10 +21,10 @@ class FileController:
     def clean(self):
         return self._manager.clear()
 
-    def get_asset_meta(self, project_name: str, asset_name: str) -> OveMeta:
+    def get_asset_meta(self, project_name: str, asset_name: str) -> OveAssetMeta:
         return self._manager.get_asset_meta(project_name=project_name, asset_name=asset_name)
 
-    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta) -> None:
+    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveAssetMeta) -> None:
         self._manager.set_asset_meta(project_name=project_name, asset_name=asset_name, meta=meta)
 
     def download_asset(self, project_name: str, asset_name: str, filename: str, down_filename: str):
@@ -33,7 +33,7 @@ class FileController:
     def upload_asset(self, project_name: str, asset_name: str, filename: str, upload_filename: str) -> None:
         return self._manager.upload_asset(project_name=project_name, asset_name=asset_name, filename=filename, upload_filename=upload_filename)
 
-    def upload_asset_folder(self, project_name: str, meta: OveMeta, worker_name: str, upload_folder: str) -> None:
+    def upload_asset_folder(self, project_name: str, meta: OveAssetMeta, worker_name: str, upload_folder: str) -> None:
         meta_filename_name = os.path.splitext(os.path.basename(meta.filename))[0]
         prefix = str(meta.version) + "/" + worker_name + "/" + meta_filename_name
         for filename in glob.iglob(append_slash(upload_folder) + '**/*', recursive=True):
@@ -42,20 +42,20 @@ class FileController:
                 self._manager.upload_asset(project_name=project_name, asset_name=meta.name, upload_filename=filename,
                                            filename=prefix + filename[len(upload_folder):])
 
-    def lock_asset(self, project_name: str, meta: OveMeta, worker_name: str) -> None:
+    def lock_asset(self, project_name: str, meta: OveAssetMeta, worker_name: str) -> None:
         if meta.worker is None or len(meta.worker) == 0 or meta.worker == worker_name:
             meta.worker = worker_name
             return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)
         else:
             raise WorkerLockError()
 
-    def unlock_asset(self, project_name: str, meta: OveMeta, worker_name: str) -> None:
+    def unlock_asset(self, project_name: str, meta: OveAssetMeta, worker_name: str) -> None:
         # do not unlock other resources
         if meta.worker == worker_name:
             meta.worker = ""
             return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)
 
-    def update_asset_status(self, project_name: str, meta: OveMeta, status: WorkerStatus, error_msg: str = "") -> None:
+    def update_asset_status(self, project_name: str, meta: OveAssetMeta, status: WorkerStatus, error_msg: str = "") -> None:
         meta.processing_status = str(status)
         meta.processing_error = error_msg
         return self._manager.set_asset_meta(project_name=project_name, asset_name=meta.name, meta=meta)

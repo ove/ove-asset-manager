@@ -1,7 +1,7 @@
 from functools import partial
-from typing import Callable, List, Dict
+from typing import Callable, List, Dict, Union
 
-from common.entities import OveMeta
+from common.entities import OveAssetMeta, OveProjectMeta
 
 
 def build_meta_filter(params: Dict) -> Callable:
@@ -18,16 +18,16 @@ def build_meta_filter(params: Dict) -> Callable:
     return partial(_meta_filter, filters=filters) if len(filters) > 0 else DEFAULT_FILTER
 
 
-def _meta_filter(meta: OveMeta, filters: List = None) -> bool:
+def _meta_filter(meta: Union[OveAssetMeta, OveProjectMeta], filters: List = None) -> bool:
     return all([_filter(meta) for _filter in filters]) if filters is not None else True
 
 
-def _include_empty(meta: OveMeta, include_empty: bool) -> bool:
+def _include_empty(meta: Union[OveAssetMeta, OveProjectMeta], include_empty: bool) -> bool:
     return True if include_empty else meta is not None
 
 
 # beware: meta can be None
-def _by_tag(meta: OveMeta, tag: str) -> bool:
+def _by_tag(meta: Union[OveAssetMeta, OveProjectMeta], tag: str) -> bool:
     if tag is None:
         return True
     if meta is None:

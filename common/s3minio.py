@@ -10,8 +10,8 @@ from urllib3 import HTTPResponse
 
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
 from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
-from common.entities import OveMeta
-from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError
+from common.entities import OveAssetMeta, OveProjectMeta
+from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError, InvalidProjectError
 from common.filters import DEFAULT_FILTER
 from common.util import append_slash
 
@@ -79,7 +79,7 @@ class S3Manager:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
 
     # List the projects in an s3 storage (returning the names)
-    def list_projects(self, store_name: str = None, metadata: bool = False) -> List[Dict]:
+    def list_projects(self, store_name: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
         def _last_modified(project_name) -> str:
             ts = [a.last_modified for a in client.list_objects(project_name, prefix=None, recursive=False)]
             ts = [a for a in ts if a is not None]
@@ -91,13 +91,23 @@ class S3Manager:
         client = self._get_connection(store_name)
         try:
             if metadata:
+                result_filter = result_filter if result_filter is not None else DEFAULT_FILTER
                 # has_object is an expensive metadata to compute
-                return [{
-                    "name": bucket.name,
-                    "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
-                    "updateDate": _last_modified(bucket.name),
-                    "hasProject": self.has_object(store_name=store_name, project_name=bucket.name, object_name="project")
-                } for bucket in client.list_buckets()]
+                result = []
+                for bucket in client.list_buckets():
+                    meta = self.get_project_meta(store_name=store_name, project_name=bucket.name, ignore_errors=True)
+                    if result_filter(meta):
+                        item = {
+                            "name": bucket.name,
+                            "description": meta.description,
+                            "tags": meta.tags,
+                            "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
+                            "updateDate": _last_modified(bucket.name),
+                            "hasProject": self.has_object(store_name=store_name, project_name=bucket.name, object_name="project")
+                        }
+                        result.append(item)
+
+                return result
             else:
                 return [{
                     "name": bucket.name,
@@ -109,7 +119,7 @@ class S3Manager:
 
     # List the assets in an s3 bucket
     def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> List[Dict]:
-        def _format(name: str, meta: OveMeta) -> Union[str, Dict]:
+        def _format(name: str, meta: OveAssetMeta) -> Union[str, Dict]:
             return meta.to_public_json() if meta else {"name": name, "project": project_name}
 
         result_filter = result_filter if result_filter is not None else DEFAULT_FILTER
@@ -155,7 +165,7 @@ class S3Manager:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
 
-    def create_asset(self, project_name: str, meta: OveMeta, store_name: str = None) -> OveMeta:
+    def create_asset(self, project_name: str, meta: OveAssetMeta, store_name: str = None) -> OveAssetMeta:
         client = self._get_connection(store_name)
         meta.proxy_url = self._get_proxy_url(store_name)
         try:
@@ -190,6 +200,37 @@ class S3Manager:
             logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to upload asset to remote storage.")
 
+    def has_project_meta(self, project_name: str, store_name: str = None) -> bool:
+        client = self._get_connection(store_name)
+        try:
+            logging.debug('Checking if project meta exists...')
+            response = client.get_object(project_name, OVE_META)
+            return 200 <= response.status < 300
+        except:
+            return False
+
+    def get_project_meta(self, project_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveProjectMeta]:
+        client = self._get_connection(store_name)
+        try:
+            obj = _decode_json(client.get_object(project_name, OVE_META))
+            return OveProjectMeta(**obj)
+        except:
+            if ignore_errors:
+                return OveProjectMeta(name=project_name)
+            else:
+                logging.error("Error while trying to get project meta. Error: %s", sys.exc_info()[1])
+                raise InvalidProjectError(store_name=store_name, project_name=project_name)
+
+    def set_project_meta(self, project_name: str, meta: OveProjectMeta, store_name: str = None, ignore_errors: bool = False) -> None:
+        client = self._get_connection(store_name)
+        try:
+            data, size = _encode_json(meta.to_json())
+            client.put_object(project_name, OVE_META, data, size)
+        except:
+            if not ignore_errors:
+                logging.error("Error while trying to set project meta. Error: %s", sys.exc_info()[1])
+                raise InvalidProjectError(store_name=store_name, project_name=project_name)
+
     def has_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> bool:
         client = self._get_connection(store_name)
         try:
@@ -200,13 +241,13 @@ class S3Manager:
         except:
             return False
 
-    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveMeta]:
+    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveAssetMeta]:
         client = self._get_connection(store_name)
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
             obj = _decode_json(client.get_object(project_name, meta_name))
-            return OveMeta(**obj)
+            return OveAssetMeta(**obj)
         except:
             if ignore_errors:
                 return None
@@ -214,7 +255,7 @@ class S3Manager:
                 logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
                 raise InvalidAssetError(store_name=store_name, project_name=project_name, asset_name=asset_name)
 
-    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveMeta, store_name: str = None, ignore_errors: bool = False) -> None:
+    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveAssetMeta, store_name: str = None, ignore_errors: bool = False) -> None:
         client = self._get_connection(store_name)
         try:
             meta_name = asset_name + S3_SEPARATOR + OVE_META
