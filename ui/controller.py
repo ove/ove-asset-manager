@@ -38,6 +38,12 @@ class BackendController:
     def create_project(self, store_name: str, project_name: str) -> None:
         self._backend.post("api/{}/create".format(store_name), data={"name": project_name})
 
+    def get_project(self, store_name: str, project_name: str) -> Dict:
+        return self._backend.get("/api/{}/{}/projectMeta".format(store_name, project_name))
+
+    def edit_project(self, store_name: str, project_name: str, project_data: Dict) -> Dict:
+        return self._backend.post("/api/{}/{}/projectMeta".format(store_name, project_name), data=project_data)
+
     def list_assets(self, store_name: str, project_name: str) -> List:
         return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_name, project_name))]
 

@@ -7,8 +7,6 @@
             $('#tags').select2({
                 tags: true,
                 createTag: function (params) {
-                    console.log("create tag", params.term)
-                    console.log("create tag match", params.term.match(/^[a-z0-9]+$/))
                     return params.term.match(/^[a-z0-9-_]+$/) ? {id: params.term, text: params.term} : null;
                 }
             });

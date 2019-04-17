@@ -154,6 +154,38 @@ class AssetView:
             raise
 
 
+class ProjectEdit:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('project-edit.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str):
+        resp.context = {"store_name": store_name, "project_name": project_name, "project": {"name": project_name}}
+        try:
+            resp.context["project"] = self._controller.get_project(store_name=store_name, project_name=project_name)
+        except:
+            raise
+
+    @falcon_template.render('project-edit.html')
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str):
+        def _get_tags():
+            result = req.params.get("tags[]", None)
+            if isinstance(result, str):
+                result = [result]
+            return result
+
+        project = {
+            "name": req.params.get("name", ""),
+            "description": req.params.get("description", ""),
+            "tags": _get_tags()
+        }
+        resp.context = {"store_name": store_name, "project_name": project_name, "project": project}
+        try:
+            resp.context["project"] = self._controller.edit_project(store_name=store_name, project_name=project_name, project_data=project)
+        except:
+            raise
+
+
 class AssetEdit:
     def __init__(self, controller: BackendController):
         self._controller = controller

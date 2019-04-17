@@ -8,7 +8,7 @@
                 autoWidth: false,
                 pageLength: 10,
                 order: [1, 'asc'],
-                columns: [{width: 20}, null, {width: "10%"}, {width: "10%"}, {width: 20, orderable: false}]
+                columns: [{width: 20}, {width: "15%"}, null, {width: "15%"}, {width: "10%"}, {width: "10%"}, {width: 20, orderable: false}]
             });
 
             $('#project').keypress(function (event) {
@@ -36,7 +36,9 @@
         <thead class="thead-dark">
         <tr>
             <th scope="col"></th>
-            <th scope="col">Project Name</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Tags</th>
             <th scope="col">Creation Date</th>
             <th scope="col">Last Update</th>
             <th scope="col"></th>
@@ -59,10 +61,27 @@
                     {% endif %}
                 </td>
                 <td><a href="/view/store/{{ store_name }}/project/{{ project.name }}">{{ project.name }}</a></td>
+                <td>{{ project.description }}</td>
+                <td>
+                    {% if project.tags %}
+                        {% for tag in project.tags %}
+                            <span class="badge badge-info">{{ tag }}</span>&nbsp;&nbsp;
+                        {% endfor %}
+                    {% endif %}
+                </td>
                 <td>{{ project.creationDate }}</td>
                 <td>{{ project.updateDate }}</td>
                 <td>
-                    <a href="/view/store/{{ store_name }}/project/{{ project.name }}" class="btn btn-sm btn-outline-primary">Open</a>
+                    <div class="btn-group" role="group" aria-label="Toolbox">
+                        <a href="/view/store/{{ store_name }}/project/{{ project.name }}" class="btn btn-outline-primary"
+                           data-toggle="tooltip" data-placement="top" title="Open project">
+                            <i class="fas fa-folder-open"></i>
+                        </a>
+                        <a href="/view/store/{{ store_name }}/project/{{ project.name }}/edit" class="btn btn-outline-primary"
+                           data-toggle="tooltip" data-placement="top" title="Edit project">
+                            <i class="far fa-edit"></i>
+                        </a>
+                    </div>
                 </td>
             </tr>
         {%- endfor %}

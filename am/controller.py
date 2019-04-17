@@ -74,7 +74,7 @@ class FileController:
         return self._manager.get_project_meta(store_name=store_name, project_name=project_name, ignore_errors=True)
 
     def edit_project_meta(self, project_name: str, meta: OveProjectMeta, store_name: str = None) -> None:
-        self._manager.set_project_meta(project_name=project_name, meta=meta, store_name=store_name)
+        self._manager.set_project_meta(project_name=project_name, meta=meta, store_name=store_name, ignore_errors=False)
 
     def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> OveAssetMeta:
         return self._manager.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
