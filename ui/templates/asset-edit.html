@@ -60,7 +60,8 @@
                     </div>
                     <div class="form-group row justify-content-end">
                         <div class="mr-3">
-                            <button type="button" class="btn btn-outline-primary mr-1" data-toggle="tooltip" data-placement="top" title="Upload into asset"
+                            <button type="button" class="btn btn-outline-primary mr-1 {{ "invisible" if create else "visible" }}"
+                                    data-toggle="tooltip" data-placement="top" title="Upload into asset"
                                     onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                                 Upload
                             </button>
