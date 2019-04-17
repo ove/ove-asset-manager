@@ -5,7 +5,25 @@ from typing import Dict
 from common.util import append_slash
 
 
-class OveMeta:
+class OveProjectMeta:
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "")
+        self.description = kwargs.get("description", "")
+        self.permissions = kwargs.get("permissions", "")
+        self.tags = kwargs.get("tags", [])
+
+    def to_json(self) -> Dict:
+        return self.__dict__
+
+    def to_public_json(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "tags": self.tags,
+        }
+
+
+class OveAssetMeta:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
         self.project = kwargs.get("project", "")

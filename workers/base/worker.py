@@ -7,7 +7,7 @@ from typing import Dict, List
 
 import requests
 
-from common.entities import OveMeta, WorkerStatus, WorkerData
+from common.entities import OveAssetMeta, WorkerStatus, WorkerData
 from workers.base.controller import FileController
 
 
@@ -154,7 +154,7 @@ class BaseWorker(ABC):
         return {}
 
     @abstractmethod
-    def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
+    def process(self, project_name: str, filename: str, meta: OveAssetMeta, options: Dict):
         """
         Override this to start processing
         :param project_name: name of the project to process

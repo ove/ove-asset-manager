@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% block title %}OVE Asset Manager - Edit Project{% endblock %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#tags').select2({
+                tags: true,
+                createTag: function (params) {
+                    return params.term.match(/^[a-z0-9-_]+$/) ? {id: params.term, text: params.term} : null;
+                }
+            });
+        });
+    </script>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <form id="project-edit" method="post"
+                      action="/view/store/{{ store_name }}/project/{{ project_name }}/edit">
+                    <div class="form-group row">
+                        <label for="name" class="col-3 col-form-label">Name</label>
+                        <div class="col-9">
+                            <input name="name" id="name" value="{{ project.name }}" type="text" readonly class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="description" class="col-3 col-form-label">Description</label>
+                        <div class="col-9">
+                            <textarea name="description" id="description" class="form-control" rows="5">{{ project.description }}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="tags" class="col-3 col-form-label">Tags</label>
+                        <div class="col-9">
+                            <select name="tags[]" id="tags" multiple="multiple" class="form-control">
+                                {% if project.tags %}
+                                    {% for tag in project.tags %}
+                                        <option value="{{ tag }}" selected="selected">{{ tag }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row justify-content-end">
+                        <div class="mr-3">
+                            <a href="/view/store/{{ store_name }}" class="btn btn-outline-danger mr-1">Close</a>
+                            <button type="button" class="btn btn-outline-success"
+                                    onclick="confirm_submission('project-edit', 'Are you sure you want to save the changes?')">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

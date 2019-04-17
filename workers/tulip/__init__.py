@@ -6,7 +6,7 @@ from typing import Dict, List
 
 from tulip import tlp
 
-from common.entities import OveMeta, WorkerType
+from common.entities import OveAssetMeta, WorkerType
 from workers.base import BaseWorker
 
 
@@ -85,7 +85,7 @@ class NetworkWorker(BaseWorker):
             }
         }
 
-    def process(self, project_name: str, filename: str, meta: OveMeta, options: Dict):
+    def process(self, project_name: str, filename: str, meta: OveAssetMeta, options: Dict):
         logging.info("Copying %s/%s/%s into the temp place ...", project_name, meta.name, filename)
 
         with TemporaryDirectory() as input_folder:
