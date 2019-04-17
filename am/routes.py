@@ -12,7 +12,7 @@ from common.entities import OveAssetMeta, WorkerStatus
 from common.entities import WorkerData
 from common.errors import InvalidAssetError, ValidationError
 from common.falcon_utils import parse_filename, save_filename
-from common.filters import build_meta_filter
+from common.filters import build_meta_filter, DEFAULT_FILTER
 from common.util import is_empty, to_bool
 from common.validation import validate_not_null, validate_no_slashes, validate_list
 
@@ -94,7 +94,7 @@ class ProjectList:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        results_filter = build_meta_filter(req.params)
+        results_filter = build_meta_filter(req.params, default_filter=None)
         if results_filter:
             # if you use a result filter the metadata is required
             metadata = True
@@ -124,7 +124,7 @@ class AssetList:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        results_filter = build_meta_filter(req.params)
+        results_filter = build_meta_filter(req.params, default_filter=DEFAULT_FILTER)
         resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, result_filter=results_filter)
         resp.status = falcon.HTTP_200
 
