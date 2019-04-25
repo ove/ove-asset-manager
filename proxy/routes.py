@@ -24,6 +24,9 @@ class ResourceStream:
 
                 stream_meta = self._controller.get_resource_meta(store_name=store_name, project_name=project_name, path_name=path_name)
 
+                logging.debug("Media types = %s", resp.options.static_media_types)
+                logging.debug("Path name = %s ext = %s", path_name, os.path.splitext(path_name)[1])
+
                 resp.content_type = resp.options.static_media_types.get(os.path.splitext(path_name)[1], 'application/octet-stream')
                 resp.accept_ranges = "bytes"
                 resp.stream_len = stream_meta.get("size", None)
