@@ -45,6 +45,10 @@ The AM Read Proxy is authenticated by the same rules as the Backend service.
 
 Please check the [Install Guide](docs/Install.md) for more details.
 
+## Usage
+
+Please check the [Usage tutorial](docs/Usage.md) for more details.
+
 ## Development
 
 Please see the [Development Guide](docs/Development.md) for more details.
