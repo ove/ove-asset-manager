@@ -1,4 +1,4 @@
-# OVE Asset Manager REST API documentation
+# OVE Asset Manager REST API
 
 This API is designed to allow you to perform the majority of necessary file operations using a REST API
 
