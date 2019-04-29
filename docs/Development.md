@@ -9,7 +9,7 @@ Please refer to the [local install guide](Install.md#non-docker-installs) to sta
 All AM services use the following libraries:
 - [falcon](https://falconframework.org/) ([docs](https://falcon.readthedocs.io/en/stable)) - for the REST API
 - [gunicorn](https://gunicorn.org/) - as the production web server
-- [requests](http://docs.python-requests.org/en/master/) and [urllib3](https://urllib3.readthedocs.io/en/latest/) - as a REST client
+- [urllib3](https://urllib3.readthedocs.io/en/latest/) - as a REST client
 
 Backend and workers only:
 - [minio](https://www.minio.io/) - as an Amazon S3 compatible object store

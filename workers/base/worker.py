@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 import time
@@ -5,7 +6,7 @@ from abc import ABC, abstractmethod
 from multiprocessing import Process
 from typing import Dict, List
 
-import requests
+import urllib3
 
 from common.entities import OveAssetMeta, WorkerStatus, WorkerData
 from workers.base.controller import FileController
@@ -13,6 +14,7 @@ from workers.base.controller import FileController
 
 class BaseWorker(ABC):
     def __init__(self, name: str, callback: str, status_callback: str, service_url: str, file_controller: FileController):
+        self._http = urllib3.PoolManager()
         self._name = name
         self._callback = callback
         self._status_callback = status_callback
@@ -34,20 +36,24 @@ class BaseWorker(ABC):
         return self.status
 
     def update_status(self, status: WorkerStatus):
-        r = requests.patch(self._service_url, json={"name": self.name, "status": str(status)})
-        if 200 <= r.status_code < 300:
+        payload = {"name": self.name, "status": str(status)}
+        response = self._http.request(method="PATCH", url=self._service_url, body=json.dumps(payload).encode('utf-8'),
+                                      headers={'Content-Type': 'application/json'})
+        if 200 <= response.status < 300:
             logging.info("%s status updated on server '%s'", status, self._service_url)
             self._status = status
         else:
-            logging.error("Failed to update status on server '%s'. Requested status: %s. Server error: %s", self._service_url, status, r.text)
+            logging.error("Failed to update status on server '%s'. Requested status: %s. Server error: %s", self._service_url, status, response.data)
 
     def report_error(self, error: str):
-        r = requests.patch(self._service_url, json={"name": self.name, "status": str(WorkerStatus.ERROR), "error_msg": error})
-        if 200 <= r.status_code < 300:
+        payload = {"name": self.name, "status": str(WorkerStatus.ERROR), "error_msg": error}
+        response = self._http.request(method="PATCH", url=self._service_url, body=json.dumps(payload).encode('utf-8'),
+                                      headers={'Content-Type': 'application/json'})
+        if 200 <= response.status < 300:
             logging.error("Error status updated on server '%s'. Error: %s", self._service_url, error)
             self._status = WorkerStatus.ERROR
         else:
-            logging.error("Failed to update status on server '%s'. Reported error: %s. Server error: %s", self._service_url, error, r.text)
+            logging.error("Failed to update status on server '%s'. Reported error: %s. Server error: %s", self._service_url, error, response.data)
 
     def register_callback(self, attempts: int, timeout: int):
         data = WorkerData(name=self.name, callback=self._callback, status_callback=self._status_callback, type=self.worker_type(), docs=self.docs(),
@@ -57,13 +63,14 @@ class BaseWorker(ABC):
             logging.info("Register callback timeout %s ms", timeout)
             time.sleep(timeout / 1000)
             try:
-                r = requests.post(self._service_url, json=data.to_json())
-                if 200 <= r.status_code < 300:
+                response = self._http.request(method="POST", url=self._service_url, body=json.dumps(data.to_json()).encode('utf-8'),
+                                              headers={'Content-Type': 'application/json'})
+                if 200 <= response.status < 300:
                     logging.info("Registered callback '%s' on server '%s'", self._callback, self._service_url)
                     return
                 else:
                     logging.error("Failed to register callback '%s' on server '%s'. Error: %s. %s attempts left ...",
-                                  self._callback, self._service_url, r.text, attempts - i - 1)
+                                  self._callback, self._service_url, response.data, attempts - i - 1)
             except:
                 logging.error("Failed to register callback '%s' on server '%s'. Error: %s. %s attempts left ...",
                               self._callback, self._service_url, sys.exc_info()[1], attempts - i - 1)
@@ -72,12 +79,13 @@ class BaseWorker(ABC):
 
     def unregister_callback(self):
         try:
-            r = requests.delete(self._service_url, json={"name": self.name})
-            if 200 <= r.status_code < 300:
+            response = self._http.request(method="DELETE", url=self._service_url, body=json.dumps({"name": self.name}).encode('utf-8'),
+                                          headers={'Content-Type': 'application/json'})
+            if 200 <= response.status < 300:
                 logging.info("Unregistered callback '%s' on server '%s'", self._callback, self._service_url)
                 return
             else:
-                logging.error("Failed to unregister callback '%s' on server '%s'. Error: %s", self._callback, self._service_url, r.text)
+                logging.error("Failed to unregister callback '%s' on server '%s'. Error: %s", self._callback, self._service_url, response.data)
         except:
             logging.error("Failed to unregister callback '%s' on server '%s'. Error: %s", self._callback, self._service_url, sys.exc_info()[1])
 

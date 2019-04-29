@@ -1,9 +1,10 @@
+import json
 import logging
 import random
 import sys
 from typing import List, Dict
 
-import requests
+import urllib3
 
 from common.entities import WorkerData, OveAssetMeta, WorkerStatus
 from common.errors import MissingParameterError, WorkerCallbackError, WorkerUnavailableError, WorkerExistsError, WorkerNotFoundError
@@ -12,6 +13,7 @@ from common.util import is_empty_str
 
 class WorkerManager:
     def __init__(self):
+        self._http = urllib3.PoolManager()
         self._workers = []
 
     def add_worker(self, worker: WorkerData):
@@ -22,10 +24,10 @@ class WorkerManager:
         if worker.name in self._workers:
             raise WorkerExistsError()
 
-        if not _validate_callback(worker.callback):
+        if not self._validate_callback(worker.callback):
             raise WorkerCallbackError(url=worker.callback)
 
-        if not _validate_callback(worker.status_callback):
+        if not self._validate_callback(worker.status_callback):
             raise WorkerCallbackError(url=worker.status_callback)
 
         self._workers.append(worker)
@@ -53,7 +55,7 @@ class WorkerManager:
         if filename is None or len(filename) == 0:
             filename = meta.filename
 
-        available = _find_workers(filename=filename, worker_type=worker_type, workers=self._workers)
+        available = self._find_workers(filename=filename, worker_type=worker_type, workers=self._workers)
         if len(available) > 0:
             # load balancing ^_^
             random.shuffle(available)
@@ -61,7 +63,7 @@ class WorkerManager:
 
             success = False
             for w in available:
-                if _schedule_callback(w.callback, data=data):
+                if self._schedule_callback(w.callback, data=data):
                     w.status = WorkerStatus.PROCESSING
                     success = True
                     break
@@ -74,39 +76,36 @@ class WorkerManager:
     def reset_worker_status(self, name: str = None):
         for worker in self._workers:
             if name is None or worker.name == name:
-                _schedule_callback(worker.status_callback, {})
+                self._schedule_callback(worker.status_callback, {})
 
+    def _validate_callback(self, callback: str) -> bool:
+        try:
+            response = self._http.request(method="HEAD", url=callback, headers={'Content-Type': 'application/json'})
+            return 200 <= response.status < 300
+        except:
+            logging.error("Callback not reachable. Url = '%s'. Error: %s", callback, sys.exc_info()[1])
+            return False
 
-def _find_workers(filename: str, worker_type: str, workers: List[WorkerData]) -> List[WorkerData]:
-    def is_valid(w: WorkerData) -> bool:
-        if w.type == worker_type and any([filename.lower().endswith(ext) for ext in w.extensions]):
-            return _validate_callback(w.callback)
-        return False
+    def _schedule_callback(self, callback: str, data: Dict) -> bool:
+        try:
+            response = self._http.request(method="POST", url=callback, body=json.dumps(data).encode('utf-8'), headers={'Content-Type': 'application/json'})
+            if 200 <= response.status < 300:
+                return True
+            else:
+                logging.error("Callback error. Url = '%s'. Status Code: %s. Error: %s", callback, response.status, response.data)
+        except:
+            logging.error("Callback not reachable. Url = '%s'. Error: %s", callback, sys.exc_info()[1])
+            return False
 
-    return [w for w in workers if is_valid(w)]
+    def _find_workers(self, filename: str, worker_type: str, workers: List[WorkerData]) -> List[WorkerData]:
+        def is_valid(w: WorkerData) -> bool:
+            if w.type == worker_type and any([filename.lower().endswith(ext) for ext in w.extensions]):
+                return self._validate_callback(w.callback)
+            return False
+
+        return [w for w in workers if is_valid(w)]
 
 
 def _validate_field(data, field: str):
     if is_empty_str(getattr(data, field, None)):
         raise MissingParameterError(field)
-
-
-def _validate_callback(callback: str) -> bool:
-    try:
-        requests.head(callback)
-        return True
-    except:
-        logging.error("Callback not reachable. Url = '%s'. Error: %s", callback, sys.exc_info()[1])
-        return False
-
-
-def _schedule_callback(callback: str, data: Dict) -> bool:
-    try:
-        r = requests.post(callback, json=data)
-        if 200 <= r.status_code < 300:
-            return True
-        else:
-            logging.error("Callback error. Url = '%s'. Status Code: %s. Error: %s", callback, r.status_code, r.text)
-    except:
-        logging.error("Callback not reachable. Url = '%s'. Error: %s", callback, sys.exc_info()[1])
-        return False

@@ -5,7 +5,6 @@ import sys
 
 import falcon
 import markdown2
-import requests
 import urllib3
 
 from common.errors import ValidationError
@@ -50,7 +49,7 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
 
     if isinstance(ex, (falcon.HTTPError, ValidationError)):
         report_error(resp=resp, title=ex.title, description=ex.description)
-    elif isinstance(ex, (requests.exceptions.RequestException, urllib3.exceptions.RequestError)):
+    elif isinstance(ex, urllib3.exceptions.RequestError):
         report_error(resp=resp, title="Server unavailable", description="The data server seems to be unavailable at the moment")
     else:
         report_error(resp=resp, description=sys.exc_info()[1])
