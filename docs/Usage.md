@@ -11,7 +11,7 @@ When a worker program starts running, it automatically *registers* itself with t
 Multiple instances of the same `type` of worker can register with the same instance of the Asset Manager.
 
 
-The status column indicates whether the worker instance is `ready` (<i class='fa fa-check-circle icon-success'></i>), currently `processing` a file (<i class='fa fa-spinner'></i>), or has encountered an `error` (<i class='fa-exclamation-circle icon-error'); worker status can be reset to `ready` by clicking on the <i class='fa-sync fa'></i> button.
+The status column indicates whether the worker instance is `ready` (<i class='fa fa-check-circle icon-success'></i>), currently `processing` a file (<i class='fa fa-spinner'></i>), or has encountered an `error` (<i class='fa-exclamation-circle icon-error'></i>); worker status can be reset to `ready` by clicking on the <i class='fa-sync fa'></i> button.
 
 A worker should automatically de-register itself when it stops running, but it is also possible to manually de-register a worker by clicking on the button with a <i class='fa fa-trash-alt'></i> icon.
 
@@ -34,9 +34,9 @@ From the **project list**, you can edit the details of a project by clicking on 
 
 From a project's **asset list**, you can add assets to a project in one of two ways:
 
-* You can click on the `Upload' button, and select one or more files to upload. An asset will be automatically created for each file, with an asset name determined by the filename.
+* You can click on the `Upload` button, and select one or more files to upload. An asset will be automatically created for each file, with an asset name determined by the filename.
 
-* Alternatively, you can manually create an asset by clicking on the `New Asset' button, enter the asset name, and click `Save'. 
+* Alternatively, you can manually create an asset by clicking on the `New Asset` button, enter the asset name, and click `Save'. 
 You can then add an asset to this file from the Edit Asset page, which the asset creation page will automatically redirect to after it is submitted, or by clicking the upload icon (`fa-upload fa`)
 Regardless of how the asset was originally created, you can use these methods to upload a modified file. 
 
@@ -47,4 +47,4 @@ Clicking the <i class='fa-list-alt fa'></i> icon lists the contents of an asset,
 Regardless of the number of a files in an asset, there will be a single file designated as the *Index File*; a link to this is provided in a column of the asset table.
 
 As well as assets, a project can contain a *project file*, which explains how its assets should be displayed by OVE.
-This file can be edited (or created if it does not yet exist) by clicking on the `Edit project file' button above the table.
+This file can be edited (or created if it does not yet exist) by clicking on the `Edit project file` button above the table.
