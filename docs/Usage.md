@@ -36,8 +36,8 @@ From a project's **asset list**, you can add assets to a project in one of two w
 
 * You can click on the `Upload` button, and select one or more files to upload. An asset will be automatically created for each file, with an asset name determined by the filename.
 
-* Alternatively, you can manually create an asset by clicking on the `New Asset` button, enter the asset name, and click `Save'. 
-You can then add an asset to this file from the Edit Asset page, which the asset creation page will automatically redirect to after it is submitted, or by clicking the upload icon (`fa-upload fa`)
+* Alternatively, you can manually create an asset by clicking on the `New Asset` button, enter the asset name, and click `Save`. 
+You can then add an asset to this file from the Edit Asset page, which the asset creation page will automatically redirect to after it is submitted, or by clicking the upload icon (<i class= 'fa-upload fa'></i>)
 Regardless of how the asset was originally created, you can use these methods to upload a modified file. 
 
 A worker can be instructed to process an asset by clicking on the <i class=fa-paint-roller fa> button.
