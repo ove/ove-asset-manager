@@ -1,21 +1,21 @@
-# Install Guide
+# Installing OVE Asset Manager
 
-## Docker using the OVE Installer
+## Installation by running OVE installers
 
 The easiest option to run all the services is to use the [OVE Installer](https://github.com/ove/ove-install)
 that allows you to configure all the services interactively.
 
-The installer creates a [docker-compose](https://docs.docker.com/compose/) file for the Asset Manager services (the
-asset manager service, UI, asset workers, and [MINIO](http://minio.io/) instance), separate from the docker-compose
+The installer creates a [Docker Compose](https://docs.docker.com/compose/install/) file for the Asset Manager services (the
+asset manager service, UI, asset workers, and [MinIO](http://minio.io/) instance), separate from the docker-compose
 file for the other OVE services.
 
-## S3 Store - MINIO Configuration
+### S3 Store - MinIO Configuration
 
 This step is **optional**, and can be skipped if you already have a Amazon S3 compatible object store.
 
-The Asset Manager was tested against [MINIO](http://minio.io/), an open object storage server.
+The Asset Manager was tested against [MinIO](http://minio.io/), an open object storage server.
 
-The docker-compose configuration to spin up a MINIO instance is:
+The docker-compose configuration to spin up a MinIO instance is:
 
 ```yaml
 version: '3'
@@ -36,9 +36,9 @@ volumes:
 ```
 
 While this docker setup is perfect for testing, it is recommended to use a bare-metal install in production.
-Please see the [MINIO install guide](https://docs.minio.io/) for more details.
+Please refer the [MinIO documentation](https://docs.minio.io/) for more details.
 
-## Docker without installer
+## Alternative installation for a Docker environment without using OVE installers
 
 It is possible to run the Asset Manager services with Docker without using docker-compose.
 However, this guide uses docker-compose, as this allows the configuration to be expressed as blocks of
@@ -53,7 +53,7 @@ The Asset Manager service requires a config file to run. A template of the confi
 **config/credentials.template.json**; this can be copied to **config/credentials.json** and modified as required
 (refer to the Asset Manager Backend configuration for more details).
 
-If you do not have an existing S3 compatible object store, please read the [MINIO configuration](#s3-store---minio-configuration) section.
+If you do not have an existing S3 compatible object store, please read the [MinIO configuration](#s3-store---minio-configuration) section.
 
 ```yaml
 version: '3'
@@ -124,7 +124,7 @@ docker-compose down
 ```
 
 
-## Non-docker installation
+## Installation for a non-Docker environment
 
 All the services can can run perfectly on bare-metal Linux or MacOS as well. To start please clone this repository
 or download a release.
@@ -178,7 +178,7 @@ To start the User Interface:
 
 ### Workers
 
-Deep Zoom Worker:
+Deep Zoom worker:
 
 ```bash
  WORKER_CLASS="workers.gigaimage.ImageWorker" ./start-worker.sh
