@@ -2,7 +2,7 @@
 
 ## Starting the services locally
 
-Please refer to the [local install guide](Install.md#non-docker-installs) to start the development.
+Please refer to the [local install guide](Install.md#installation-for-a-non-docker-environment) to start the development.
 
 ## Dependencies
 

@@ -54,7 +54,7 @@ A worker can be instructed to process an asset by clicking on the button with a 
 
 ![](img/process_asset.png "Process Asset")
 
-After being processed by a worker, an asset may contain multiple files (e.g., because a zip file has been expanded into a directory, or because an image has been decomposed into tiles). 
+After being processed by a worker, an asset may contain multiple files (e.g., because a zip file has been expanded into a directory, or because an image has been decomposed into tiles).
 Clicking the button with a checklist icon lists the contents of an asset, with a link that allows each to be opened.
 Regardless of the number of a files in an asset, there will be a single file designated as the *Index File*; a link to this is provided in a column of the asset table.
 
@@ -62,4 +62,3 @@ Regardless of the number of a files in an asset, there will be a single file des
 
 As well as assets, a project can contain a *project file*, which explains how its assets should be displayed by OVE.
 This file can be edited (or created if it does not yet exist) by clicking on the `Edit project file` button above the table.
-

@@ -1,10 +1,8 @@
 # Tulip Network Layout Worker
 
-This worker uses the [Tulip visualization framework](http://tulip.labri.fr/TulipDrupal/) to apply network layout
-algorithms to networks.
+This worker uses the [Tulip visualization framework](http://tulip.labri.fr/TulipDrupal/) to apply network layout algorithms to networks.
 
-Documentation for the available layout algorithms is
-[provided here](http://tulip.labri.fr/Documentation/current/tulip-python/html/tulippluginsdocumentation.html#layoutpluginsdoc).
+Documentation for the available layout algorithms is [provided here](http://tulip.labri.fr/Documentation/current/tulip-python/html/tulippluginsdocumentation.html#layoutpluginsdoc).
 
 Tulip will select an export function based on the extension of the provided output filename.
 [The supported formats are](http://tulip.labri.fr/Documentation/current/tulip-python/html/tulipreference.html?highlight=savegraph#tulip.tlp.saveGraph):
