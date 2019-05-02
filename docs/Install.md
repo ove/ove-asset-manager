@@ -52,7 +52,7 @@ If you do not have an existing S3 compatible object store, please read the [MinI
 version: '3'
 services:
   ovehub-ove-asset-manager-service:
-    image: ovehub/ove-asset-manager-service:${service-version}
+    image: ovehub/ove-asset-manager-service:stable
     ports:
       - "6080:6080"
     volumes:
@@ -62,7 +62,7 @@ services:
       SERVICE_LOG_LEVEL: "info"
 
   ovehub-ove-asset-manager-proxy:
-    image: ovehub/ove-asset-manager-proxy:latest-unstable
+    image: ovehub/ove-asset-manager-proxy:stable
     ports:
       - "6081:6081"
     volumes:
@@ -72,7 +72,7 @@ services:
       SERVICE_LOG_LEVEL: "info"
 
   ovehub-ove-asset-manager-worker-zip:
-    image: ovehub/ove-asset-manager-worker-zip:${service-version}
+    image: ovehub/ove-asset-manager-worker-zip:stable
     environment:
       SERVICE_LOG_LEVEL: "info"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"
@@ -86,7 +86,7 @@ services:
       SERVICE_AM_PORT: "6080"
 
   ovehub-ove-asset-manager-ui:
-    image: ovehub/ove-asset-manager-ui:${service-version}
+    image: ovehub/ove-asset-manager-ui:stable
     ports:
       - "6060:6060"
     environment:
@@ -95,7 +95,7 @@ services:
       SERVICE_AM_PORT: "6080"
 
   ovehub-ove-asset-manager-worker-tulip:
-    image: ovehub/ove-asset-manager-worker-tulip:latest-unstable
+    image: ovehub/ove-asset-manager-worker-tulip:stable
     environment:
       SERVICE_LOG_LEVEL: "info"
       SERVICE_AM_HOSTNAME: "ovehub-ove-asset-manager-service"

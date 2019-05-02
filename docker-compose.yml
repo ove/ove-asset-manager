@@ -1,7 +1,7 @@
 version: '3'
 services:
   ovehub-ove-asset-manager-service:
-    image: ovehub/ove-asset-manager-service:latest-unstable
+    image: ovehub/ove-asset-manager-service:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/am/Dockerfile
@@ -14,7 +14,7 @@ services:
       SERVICE_LOG_LEVEL: "debug"
 
   ovehub-ove-asset-manager-proxy:
-    image: ovehub/ove-asset-manager-proxy:latest-unstable
+    image: ovehub/ove-asset-manager-proxy:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/proxy/Dockerfile
@@ -27,7 +27,7 @@ services:
       SERVICE_LOG_LEVEL: "debug"
 
   ovehub-ove-asset-manager-worker-zip:
-    image: ovehub/ove-asset-manager-worker-zip:latest-unstable
+    image: ovehub/ove-asset-manager-worker-zip:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/worker-zip/Dockerfile
@@ -38,7 +38,7 @@ services:
 
 
   ovehub-ove-asset-manager-worker-dzi:
-    image: ovehub/ove-asset-manager-worker-dzi:latest-unstable
+    image: ovehub/ove-asset-manager-worker-dzi:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/worker-dzi/Dockerfile
@@ -49,7 +49,7 @@ services:
 
 
   ovehub-ove-asset-manager-worker-tulip:
-    image: ovehub/ove-asset-manager-worker-tulip:latest-unstable
+    image: ovehub/ove-asset-manager-worker-tulip:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/worker-tulip/Dockerfile
@@ -60,7 +60,7 @@ services:
 
 
   ovehub-ove-asset-manager-ui:
-    image: ovehub/ove-asset-manager-ui:latest-unstable
+    image: ovehub/ove-asset-manager-ui:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/ui/Dockerfile

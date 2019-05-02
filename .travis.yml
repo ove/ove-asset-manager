@@ -12,9 +12,8 @@ stages:
 jobs:
   include:
     - stage: build
-      script: docker-compose build
+      script: ./build.sh
     - stage: deploy
       script:
-        - docker-compose build
         - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-        - docker-compose push
+        - ./build.sh --push
