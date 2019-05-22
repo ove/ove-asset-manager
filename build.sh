@@ -17,7 +17,7 @@ function display_help() {
 }
 
 version=$(git describe --tags --exact-match 2> /dev/null)
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
   version="latest"
 fi
 version="${version}-unstable"
@@ -55,11 +55,11 @@ trap deactivate_env EXIT SIGINT SIGTERM
 echo "Building version = ${SERVICE_VERSION}"
 
 docker-compose build
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
   # fail if the image build process failed
   exit 1
 fi
 
-if [ "${pushImage}" = true ]; then
+if [[ "${pushImage}" = true ]]; then
   docker-compose push
 fi
