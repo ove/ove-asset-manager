@@ -7,7 +7,7 @@
             $('#tags').select2({
                 tags: true,
                 createTag: function (params) {
-                    return params.term.match(/^[a-z0-9-_]+$/) ? {id: params.term, text: params.term} : null;
+                    return params.term.match(/^[a-z0-9-_]+$/) ? {id: params.term, text: params.term, newTag: true} : null;
                 }
             });
         });

@@ -1,4 +1,4 @@
 urllib3==1.25.2
-falcon==1.4.1
+falcon==2.0.0
 minio==4.0.16
 gunicorn==19.9.0

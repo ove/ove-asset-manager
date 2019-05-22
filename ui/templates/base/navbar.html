@@ -20,7 +20,7 @@
                     <span class="nav-link {{ "active" if not project_name else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ "active" if not project_name }}" href="/view/store/{{ store_name }}/">
+                    <a class="nav-link {{ "active" if not project_name }}" href="/view/store/{{ store_name }}">
                         <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
                         <span class="badge {{ "badge-primary" if not project_name else "badge-secondary" }}">{{ store_name }}</span>
                     </a>
@@ -32,7 +32,7 @@
                     <span class="nav-link {{ "active" if not asset_name and not object_name else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ "active" if not asset_name and not object_name }}" href="/view/store/{{ store_name }}/project/{{ project_name }}/">
+                    <a class="nav-link {{ "active" if not asset_name and not object_name }}" href="/view/store/{{ store_name }}/project/{{ project_name }}">
                         <i class="fas fa-list"></i>&nbsp;&nbsp;Project
                         <span class="badge {{ "badge-primary" if not asset_name and not object_name else "badge-secondary" }}">{{ project_name }}</span>
                     </a>
