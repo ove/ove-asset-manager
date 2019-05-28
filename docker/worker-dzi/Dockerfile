@@ -1,6 +1,8 @@
 FROM ovehub/alpine-pypy-vips:8.8.0
 LABEL maintainer="david.akroyd07@imperial.ac.uk"
 
+ARG PYVIPS_VERSION=2.1.6
+
 WORKDIR /code
 
 ADD common/ common/
@@ -14,7 +16,7 @@ ADD requirements.txt .
 RUN apk add --no-cache bash
 
 RUN apk --no-cache add --virtual build-base && \
-    pip install -r requirements.txt && pip install pyvips && \
+    pip install -r requirements.txt && pip install pyvips==${PYVIPS_VERSION} && \
     apk del build-base
 
 ENV WORKER_CLASS "workers.dzi.DeepZoomImageWorker"
