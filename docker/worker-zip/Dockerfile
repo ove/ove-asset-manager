@@ -13,9 +13,7 @@ ADD requirements.txt .
 
 RUN apk add --no-cache bash
 
-RUN apk --no-cache add --virtual build-base && \
-    pip install -r requirements.txt && \
-    apk del build-base
+RUN pip install -r requirements.txt
 
 ENV WORKER_CLASS "workers.zip.ZipWorker"
 ENV GUNICORN_PORT "6090"

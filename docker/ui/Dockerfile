@@ -23,8 +23,6 @@ ADD requirements.ui.txt .
 
 RUN apk add --no-cache bash
 
-RUN apk --no-cache add --virtual build-base && \
-    pip install -r requirements.ui.txt && \
-    apk del build-base
+RUN pip install -r requirements.ui.txt
 
 CMD ["./start-ui.sh"]

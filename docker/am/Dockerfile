@@ -10,8 +10,6 @@ ADD requirements.txt .
 
 RUN apk add --no-cache bash
 
-RUN apk --no-cache add --virtual build-base && \
-    pip install -r requirements.txt && \
-    apk del build-base
+RUN pip install -r requirements.txt
 
 CMD ["./start-am.sh"]

@@ -26,7 +26,7 @@ pushImage=false
 
 while [[ $# -gt 0 ]]; do
   key="$1"
-  case $key in
+  case ${key} in
     -h|--help)
       display_help
       exit 0
