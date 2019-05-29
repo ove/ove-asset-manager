@@ -18,7 +18,7 @@ class FalconTemplate:
     def __init__(self, path: str = None, error_handler: Callable = None):
         self.template_path = path or 'templates'
         self.loader = FileSystemLoader(self.template_path)
-        self._env = Environment(loader=self.loader)
+        self._env = Environment(loader=self.loader, autoescape=True)
         self._error_handler = error_handler
 
     @staticmethod

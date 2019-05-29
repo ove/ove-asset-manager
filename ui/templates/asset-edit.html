@@ -60,12 +60,12 @@
                         <div class="mr-3">
                             <button type="button" class="btn btn-outline-primary mr-1 {{ "invisible" if create else "visible" }}"
                                     data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                    onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
+                                    onclick="fileUpload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                                 Upload
                             </button>
                             <a href="/view/store/{{ store_name }}/project/{{ project_name }}" class="btn btn-outline-danger mr-1">Close</a>
                             <button type="button" class="btn btn-outline-success"
-                                    onclick="confirm_submission('asset-edit', 'Are you sure you want to save the changes?')">
+                                    onclick="confirmSubmission('asset-edit', 'Are you sure you want to save the changes?')">
                                 {{ "Create" if create else "Save" }}
                             </button>
                         </div>

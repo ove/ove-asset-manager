@@ -30,7 +30,7 @@
             <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Edit project file
         </a>
         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload & create asset"
-                onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/upload', true)">
+                onclick="fileUpload('/api/store/{{ store_name }}/project/{{ project_name }}/upload', true)">
             <i class="fas fa-upload"></i>&nbsp;&nbsp;Upload
         </button>
     </div>
@@ -112,7 +112,7 @@
                             <i class="far fa-list-alt"></i>
                         </button>
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                onclick="file_upload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
+                                onclick="fileUpload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                             <i class="fas fa-upload"></i>
                         </button>
                         <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"

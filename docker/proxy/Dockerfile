@@ -3,10 +3,10 @@ LABEL maintainer="o.serban@imperial.ac.uk"
 
 WORKDIR /code
 
-ADD common/ common/
-ADD proxy/ proxy/
-ADD start-proxy.sh .
-ADD requirements.txt .
+COPY common/ common/
+COPY proxy/ proxy/
+COPY start-proxy.sh .
+COPY requirements.txt .
 
 RUN apk add --no-cache bash
 

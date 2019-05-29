@@ -84,13 +84,13 @@
         const asset_name = $('#assetNameModalField').val();
         if (form === null) {
             // this worker does not have any parameters
-            post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+            postWorkerParams("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
                 {filename: $('#processFilename').val()});
             $('#workerScheduleDialog').modal('hide');
         } else {
             form.refreshValidationState(true);
             if (form.isValid(true)) {
-                post_worker_params("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+                postWorkerParams("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
                     Object.assign({filename: $('#processFilename').val()}, form.getValue()));
                 $('#workerScheduleDialog').modal('hide');
             }

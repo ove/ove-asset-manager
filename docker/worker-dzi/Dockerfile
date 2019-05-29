@@ -5,13 +5,13 @@ ARG PYVIPS_VERSION=2.1.6
 
 WORKDIR /code
 
-ADD common/ common/
-ADD workers/__init__.py workers/
-ADD workers/base/ workers/base/
-ADD workers/dzi/ workers/dzi/
+COPY common/ common/
+COPY workers/__init__.py workers/
+COPY workers/base/ workers/base/
+COPY workers/dzi/ workers/dzi/
 
-ADD start-worker.sh .
-ADD requirements.txt .
+COPY start-worker.sh .
+COPY requirements.txt .
 
 RUN apk add --no-cache bash
 

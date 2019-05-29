@@ -73,7 +73,7 @@
                             <input type="hidden" name="name" value="{{ worker.name }}">
                         </form>
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Unregister worker"
-                                onclick="confirm_submission('delete-{{ worker.name }}', 'Are you sure you want to remove {{ worker.name }}?')">
+                                onclick="confirmSubmission('delete-{{ worker.name }}', 'Are you sure you want to remove {{ worker.name }}?')">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                         <a class="btn btn-outline-primary" href="/docs/{{ worker.docs }}"><i class="fas fa-book"></i></a>

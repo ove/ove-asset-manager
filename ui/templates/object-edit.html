@@ -16,7 +16,7 @@
         function saveCode() {
             try{
                 document.getElementById("code-field").value = JSON.stringify(window.codeEditor.get());
-                confirm_submission('object-edit', 'Are you sure you want to save the changes?')
+                confirmSubmission('object-edit', 'Are you sure you want to save the changes?')
             } catch (e) {
                 reportError("Invalid JSON error", e.toString());
             }

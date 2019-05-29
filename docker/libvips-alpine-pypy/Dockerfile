@@ -31,11 +31,13 @@ RUN apk add \
     libgsf-dev
 
 RUN wget -O- ${VIPS_URL}/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.gz | tar xzC /tmp
-RUN cd /tmp/vips-${VIPS_VERSION} \
-	&& ./configure --prefix=/usr --disable-static --disable-debug \
-	&& make V=0 \
-	&& make install \
-	&& rm -rf /tmp/vips-${VIPS_VERSION}
+
+WORKDIR /tmp/vips-${VIPS_VERSION}
+
+RUN ./configure --prefix=/usr --disable-static --disable-debug && make V=0 && make install
+
+WORKDIR /tmp
+RUN rm -rf /tmp/vips-${VIPS_VERSION}
 
 RUN apk del build-base autoconf automake
 

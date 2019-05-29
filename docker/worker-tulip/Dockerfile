@@ -3,13 +3,13 @@ LABEL maintainer="j.scott-brown@imperial.ac.uk"
 
 WORKDIR /code
 
-ADD common/ common/
-ADD workers/__init__.py workers/
-ADD workers/base/ workers/base/
-ADD workers/tulip/ workers/tulip/
+COPY common/ common/
+COPY workers/__init__.py workers/
+COPY workers/base/ workers/base/
+COPY workers/tulip/ workers/tulip/
 
-ADD start-worker.sh .
-ADD requirements.txt .
+COPY start-worker.sh .
+COPY requirements.txt .
 
 RUN apt-get update && \
     apt-get install -y binutils && \

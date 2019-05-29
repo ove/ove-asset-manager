@@ -2,8 +2,8 @@ FROM node:alpine as builder
 
 WORKDIR /code
 
-ADD package.json .
-ADD move-assets.js .
+COPY package.json .
+COPY move-assets.js .
 
 RUN npm install && npm run move-assets
 
@@ -15,11 +15,11 @@ WORKDIR /code
 # copy the javascript libraries according to package.json
 COPY --from=builder /code/ui/ ui/
 
-ADD common/ common/
-ADD ui/ ui/
-ADD docs/ docs/
-ADD start-ui.sh .
-ADD requirements.ui.txt .
+COPY common/ common/
+COPY ui/ ui/
+COPY docs/ docs/
+COPY start-ui.sh .
+COPY requirements.ui.txt .
 
 RUN apk add --no-cache bash
 

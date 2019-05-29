@@ -3,13 +3,13 @@ LABEL maintainer="o.serban@imperial.ac.uk"
 
 WORKDIR /code
 
-ADD common/ common/
-ADD workers/__init__.py workers/
-ADD workers/base/ workers/base/
-ADD workers/zip/ workers/zip/
+COPY common/ common/
+COPY workers/__init__.py workers/
+COPY workers/base/ workers/base/
+COPY workers/zip/ workers/zip/
 
-ADD start-worker.sh .
-ADD requirements.txt .
+COPY start-worker.sh .
+COPY requirements.txt .
 
 RUN apk add --no-cache bash
 
