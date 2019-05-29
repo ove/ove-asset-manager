@@ -164,17 +164,17 @@ To start the User Interface:
 Deep Zoom worker:
 
 ```bash
- WORKER_CLASS="workers.gigaimage.ImageWorker" ./start-worker.sh
+ ./start-worker.sh --class "workers.gigaimage.ImageWorker" --port 6091
 ```
 
 Zip worker:
 
 ```bash
- WORKER_CLASS="workers.zip.ZipWorker" ./start-worker.sh
+ ./start-worker.sh --class "workers.zip.ZipWorker" --port 6090
 ```
 
 Tulip graph layout worker:
 
 ```bash
- WORKER_CLASS="workers.tulip.NetworkWorker" ./start-worker.sh
+ ./start-worker.sh --class "workers.tulip.NetworkWorker" --port 6092
 ```
