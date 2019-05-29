@@ -237,7 +237,7 @@ class ObjectEdit:
             resp.context["create"] = False
         except:
             resp.context["create"] = True
-            raise ValidationError(title="Not found".format(object_name), description="This project does not have a '{}.json' object".format(object_name))
+            raise ValidationError(title="Not found", description="This project does not have a '{}.json' object".format(object_name))
 
     @falcon_template.render('object-edit.html')
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):

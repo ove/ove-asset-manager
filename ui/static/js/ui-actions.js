@@ -7,6 +7,38 @@ $(document).ready(function () {
     $("[data-toggle='tooltip']").tooltip();
 });
 
+function uuid() {
+    return "_" + Math.random().toString(36).substr(2, 9);
+}
+
+function reportError(title, description) {
+    let id = uuid();
+    $("#alert-container").append("<div id='" + id + "' class='toast toast-error' role='alert' aria-live='assertive' aria-atomic='true' data-delay='20000'>\n" +
+        "                <div class='toast-header'>\n" +
+        "                    <strong class='mr-auto'>" + title + "</strong>\n" +
+        "                    <button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>\n" +
+        "                        <span aria-hidden='true'>&times;</span>\n" +
+        "                    </button>\n" +
+        "                </div>\n" +
+        "                <div class='toast-body'>" + description + "</div>" +
+        "            </div>");
+    $("#" + id).toast("show");
+}
+
+function reportSuccess(title, description) {
+    let id = uuid();
+    $("#alert-container").append("<div id='" + id + "' class='toast toast-success' role='alert' aria-live='assertive' aria-atomic='true' data-delay='20000'>\n" +
+        "                <div class='toast-header'>\n" +
+        "                    <strong class='mr-auto'>" + title + "</strong>\n" +
+        "                    <button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>\n" +
+        "                        <span aria-hidden='true'>&times;</span>\n" +
+        "                    </button>\n" +
+        "                </div>\n" +
+        "                <div class='toast-body'>" + description + "</div>" +
+        "            </div>");
+    $("#" + id).toast("show");
+}
+
 function confirmSubmission(formId, msg) {
     let form = document.getElementById(formId);
     if (form.checkValidity()) {
@@ -83,37 +115,6 @@ function fileUpload(uploadUrl, multiUpload) {
     });
 }
 
-function uuid() {
-    return "_" + Math.random().toString(36).substr(2, 9);
-}
-
-function reportError(title, description) {
-    let id = uuid();
-    $("#alert-container").append("<div id='" + id + "' class='toast toast-error' role='alert' aria-live='assertive' aria-atomic='true' data-delay='20000'>\n" +
-        "                <div class='toast-header'>\n" +
-        "                    <strong class='mr-auto'>" + title + "</strong>\n" +
-        "                    <button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>\n" +
-        "                        <span aria-hidden='true'>&times;</span>\n" +
-        "                    </button>\n" +
-        "                </div>\n" +
-        "                <div class='toast-body'>" + description + "</div>" +
-        "            </div>");
-    $("#" + id).toast("show");
-}
-
-function reportSuccess(title, description) {
-    let id = uuid();
-    $("#alert-container").append("<div id='" + id + "' class='toast toast-success' role='alert' aria-live='assertive' aria-atomic='true' data-delay='20000'>\n" +
-        "                <div class='toast-header'>\n" +
-        "                    <strong class='mr-auto'>" + title + "</strong>\n" +
-        "                    <button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>\n" +
-        "                        <span aria-hidden='true'>&times;</span>\n" +
-        "                    </button>\n" +
-        "                </div>\n" +
-        "                <div class='toast-body'>" + description + "</div>" +
-        "            </div>");
-    $("#" + id).toast("show");
-}
 
 function postWorkerParams(url, params) {
     return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(params)}).done(function (msg) {
