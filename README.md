@@ -19,12 +19,12 @@ Each time any file in an asset is updated, a new **Version** of the whole asset 
 
 The Asset Manager is split into 3 parts:
 
-  - The **Backend** exposes a full [RESTful API](docs/API.md) for operations on projects, assets and files. This service can work independently from all the other services.
-  - The **Read proxy** exposes an HTTP endpoint to read individual files off the object store. The AM Read Proxy is authenticated by the same rules as the Backend service.
-  - The **UI** exposes a User Interface for most of the operations performed by the Backend service.
+- The **Backend** exposes a full [RESTful API](docs/API.md) for operations on projects, assets and files. This service can work independently from all the other services.
+- The **Read proxy** exposes an HTTP endpoint to read individual files off the object store. The AM Read Proxy is authenticated by the same rules as the Backend service.
+- The **UI** exposes a User Interface for most of the operations performed by the Backend service.
 
 The **Workers** asynchronously perform additional tasks on assets:
 
-  - **Unzip**: please see the [worker documentation](docs/workers/ZipWorker.md) for more details  
-  - **DeepZoomImage**: please see the [worker documentation](docs/workers/DeepZoomImageWorker.md) for more details  
-  - **Tulip network layout**: please see the [worker documentation](docs/workers/Tulip.md) for more details
+- **Unzip**: please see the [worker documentation](docs/workers/ZipWorker.md) for more details  
+- **DeepZoomImage**: please see the [worker documentation](docs/workers/DeepZoomImageWorker.md) for more details  
+- **Tulip network layout**: please see the [worker documentation](docs/workers/Tulip.md) for more details
