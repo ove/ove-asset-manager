@@ -58,7 +58,7 @@
                 const ext = '<span class="badge badge-info">' + state.extensions.join('</span>&nbsp;<span class="badge badge-info">') + '</span>';
                 return $('<span><b>' + state.text + '</b><br/><small><i>' + state.description + '</i></small><br/><small>Works with ' + ext + ' extensions</small></span>');
             },
-            data: [{id: "-1", text: '', selected: 'selected', search: '', hidden: true},].concat(_.map({{ workers }}, w => ({
+            data: [{id: "-1", text: '', selected: 'selected', search: '', hidden: true},].concat(_.map({{ workers|tojson }}, w => ({
                 id: w.type,
                 text: w.type,
                 description: w.description,

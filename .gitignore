@@ -12,3 +12,5 @@ config/credentials.json
 
 ui/static/vendors/
 package-lock.json
+
+node_modules/

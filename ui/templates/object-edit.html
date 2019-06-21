@@ -5,7 +5,7 @@
     <script>
         $(document).ready(function () {
             let editor = new JSONEditor(document.getElementById("code-editor"), {mode: "code"});
-            editor.set({{ object }});
+            editor.set({{ object|tojson }});
             window.codeEditor = editor;
         });
 
@@ -14,7 +14,7 @@
         });
 
         function saveCode() {
-            try{
+            try {
                 document.getElementById("code-field").value = JSON.stringify(window.codeEditor.get());
                 confirmSubmission('object-edit', 'Are you sure you want to save the changes?')
             } catch (e) {

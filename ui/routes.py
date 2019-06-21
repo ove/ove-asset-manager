@@ -232,8 +232,7 @@ class ObjectEdit:
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):
         resp.context = {"store_name": store_name, "project_name": project_name, "object_name": object_name, "object": {}, "create": False}
         try:
-            resp.context["object"] = json.dumps(self._controller.get_object(store_name=store_name, project_name=project_name, object_name=object_name),
-                                                indent=2)
+            resp.context["object"] = self._controller.get_object(store_name=store_name, project_name=project_name, object_name=object_name)
             resp.context["create"] = False
         except:
             resp.context["create"] = True
@@ -242,7 +241,7 @@ class ObjectEdit:
     @falcon_template.render('object-edit.html')
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):
         resp.context = {"store_name": store_name, "project_name": project_name, "object_name": object_name, "create": False,
-                        "object": req.params.get("object", "")}
+                        "object": json.loads(req.params.get("object", ""))}
 
         self._controller.set_object(store_name=store_name, project_name=project_name, object_name=object_name,
                                     object_data=json.loads(req.params.get("object", "")))
