@@ -69,14 +69,9 @@ class BackendController:
     def edit_asset(self, store_name: str, project_name: str, asset: Dict) -> Dict:
         return self._backend.post("/api/{}/{}/meta/{}".format(store_name, project_name, asset.get("name", "")), data=asset)
 
-    def upload_asset(self, store_name: str, project_name: str, asset_name: str, filename: str, stream: Any, update: bool = False) -> None:
-        if update:
-            url = "api/{}/{}/update/{}".format(store_name, project_name, asset_name)
-        else:
-            url = "api/{}/{}/createUpload/{}".format(store_name, project_name, asset_name)
-
-        headers = {"content-disposition": "filename='{}'".format(filename)}
-        self._backend.upload(api_url=url, stream=stream, headers=headers)
+    def upload_asset(self, store_name: str, project_name: str, asset_name: str, filename: str, stream: Any, update: bool = False, create: bool = False) -> None:
+        self._backend.upload(api_url="api/{}/{}/upload/{}".format(store_name, project_name, asset_name), stream=stream,
+                             params={"filename": filename, "update": update, "create": create})
 
     def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str, parameters: Dict):
         self._backend.post("api/{}/{}/process/{}".format(store_name, project_name, asset_name), data={"worker_type": worker_type, "parameters": parameters})

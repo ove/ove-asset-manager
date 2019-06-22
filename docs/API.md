@@ -220,6 +220,10 @@ This API is designed to allow you to perform the majority of necessary file oper
 
 - **/api/{store_id}/{project_name}/upload/{asset_id}**
     - `POST`: _Upload an asset_
+    - **Query params:** 
+        - `filename= urlencoded string` - required, the filename to upload into the asset
+        - `create=true | false` - optional, if true the asset will be created on upload (default: false)
+        - `update=true | false` - optional, if true the asset will be updated on upload (default: false)
     - **Headers:** `content-disposition: filename="<file_name>"`
     - **Body:** `the file octet stream`
     - **Response:**
@@ -238,41 +242,6 @@ This API is designed to allow you to perform the majority of necessary file oper
         - **Asset exists**: <br />
         **HTTP Code:** 409 Conflict <br />
         **Content:** `{title="Asset exists", description="..."}`
-----        
-
-- **/api/{store_id}/{project_name}/update/{asset_id}**
-    - `POST`: _Update an asset file_
-    - **Headers:** `content-disposition: filename="<file_name>"`
-    - **Body:** `the file octet stream`
-    - **Response:**
-        - **Success**: <br />
-        **HTTP Code:** 200 <br />
-        **Content:** `{"Status": "OK"}`  
-        - **Store not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Store not found", description="..."}`
-        - **Project not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Project not found", description="..."}`
-        - **Asset not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Asset not found", description="..."}`
-----
-
-- **/api/{store_id}/{project_name}/createUpload/{asset_id}**
-    - `POST`: _Create an asset and upload the file content_
-    - **Headers:** `content-disposition: filename="<file_name>"`
-    - **Body:** `the file octet stream`
-    - **Response:**
-        - **Success**: <br />
-        **HTTP Code:** 200 <br />
-        **Content:** `{"Status": "OK"}`  
-        - **Store not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Store not found", description="..."}`
-        - **Project not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Project not found", description="..."}`
 ----
 
 - **/api/{store_id}/{project_name}/process/{asset_id}**
