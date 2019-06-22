@@ -1,8 +1,3 @@
-// technically this can be minified
-
-/*global bootbox FilePond:true*/
-/*eslint no-undef: "error"*/
-
 $(document).ready(function () {
     $("[data-toggle='tooltip']").tooltip();
 });
@@ -80,41 +75,6 @@ function processUploadRequest(uploadUrl, file, load, error, progress, abort) {
         }
     };
 }
-
-function fileUpload(uploadUrl, multiUpload) {
-    let dialog = bootbox.dialog({
-        message: "<div class='file-upload-container'>" +
-            "<span data-toggle='tooltip' data-placement='top' data-html='true' title='Note: The upload is not complete until the upload box " +
-            "becomes green. If you wait at 100% for a long time it may be because the content is still being uploaded to the object store in the asset " +
-            "manager.'>\n" +
-            "   <i class='fas fa-exclamation-circle icon-error'></i>\n" +
-            "</span>" +
-            "<div class='form-check' style='margin-bottom: 10px'>" +
-            "  <input class='form-check-input' type='checkbox' id='update-content'>" +
-            "  <label class='form-check-label' for='update-content'>Update content</label>" +
-            "</div>" +
-            "<input id='file-upload' type='file' " + (multiUpload ? "multiple" : "") + ">" +
-            "</div>",
-        onEscape: function () {
-            location.reload();
-        }
-    });
-    dialog.init(function () {
-        FilePond.create(document.getElementById("file-upload"));
-        FilePond.setOptions({
-            allowDrop: true,
-            allowReplace: false,
-            instantUpload: false,
-            server: {
-                process: function (_fieldName, file, _metadata, load, error, progress, abort) {
-                    const uploadFile = document.getElementById("update-content").checked;
-                    return processUploadRequest(uploadUrl + "?update=" + uploadFile, file, load, error, progress, abort);
-                }
-            }
-        });
-    });
-}
-
 
 function postWorkerParams(url, params) {
     return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(params)}).done(function (msg) {

@@ -28,6 +28,6 @@ def parse_filename(req: falcon.Request) -> str:
 
 def save_filename(save_fn: Callable, req: falcon.Request):
     with tempfile.NamedTemporaryFile() as cache:
-        cache.write(req.stream.read())
+        cache.write(req.stream.read(req.content_length or 0))
         cache.flush()
         save_fn(upload_filename=cache.name)
