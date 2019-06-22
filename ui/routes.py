@@ -8,7 +8,7 @@ import markdown2
 import urllib3
 
 from common.errors import ValidationError
-from common.falcon_utils import parse_filename
+from common.falcon_utils import unquote_filename
 from common.util import to_bool, append_slash
 from common.validation import validate_not_null
 from ui.alert_utils import report_error, report_success
@@ -268,12 +268,14 @@ class UploadApi:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, asset_name: str = None):
-        filename = parse_filename(req)
+        filename = unquote_filename(req.params.get("filename", None))
+        create = False
         if asset_name is None:
             asset_name = re.sub("\\W+", '_', filename)
+            create = True
 
         self._controller.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=filename, stream=req.bounded_stream,
-                                      update=to_bool(req.params.get("update", "True")))
+                                      update=to_bool(req.params.get("update", "True")), create=create)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 

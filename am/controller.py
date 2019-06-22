@@ -1,6 +1,5 @@
 # Module to allow connection to interpret connection to different store types
 # Additonally acts as a transformer for multiple s3 APIs including Minio and AWS implementations
-import logging
 from typing import Dict, Union, Callable, List
 
 from common.consts import DEFAULT_CONFIG
@@ -54,21 +53,18 @@ class FileController:
             raise AssetExistsError(store_name=store_name, project_name=project_name, asset_name=meta.name)
         return self._manager.create_asset(store_name=store_name, project_name=project_name, meta=meta)
 
-    def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveAssetMeta, upload_filename: str, store_name: str = None) -> None:
+    def upload_asset(self, project_name: str, asset_name: str, filename: str, meta: OveAssetMeta, upload_filename: str, store_name: str = None,
+                     update: bool = False) -> None:
         meta.filename = filename
-        self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location,
-                                   upload_filename=upload_filename)
-        logging.debug("Setting uploaded flag to True")
-        meta.uploaded = True
-        meta.upload()
-        self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
+        if update:
+            meta.update()
+        else:
+            meta.uploaded = True
+            meta.upload()
 
-    def update_asset(self, project_name: str, asset_name: str, filename: str, meta: OveAssetMeta, upload_filename: str, store_name: str = None) -> None:
-        meta.filename = filename
-        meta.update()
-        self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
         self._manager.upload_asset(store_name=store_name, project_name=project_name, asset_name=asset_name, filename=meta.file_location,
                                    upload_filename=upload_filename)
+        self._manager.set_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name, meta=meta)
 
     def get_project_meta(self, project_name: str, store_name: str = None) -> OveProjectMeta:
         return self._manager.get_project_meta(store_name=store_name, project_name=project_name, ignore_errors=True)

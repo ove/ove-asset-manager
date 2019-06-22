@@ -11,7 +11,7 @@ from am.managers import WorkerManager
 from common.entities import OveAssetMeta, WorkerStatus
 from common.entities import WorkerData
 from common.errors import InvalidAssetError, ValidationError
-from common.falcon_utils import parse_filename, save_filename
+from common.falcon_utils import unquote_filename, save_filename
 from common.filters import build_meta_filter, DEFAULT_FILTER
 from common.util import is_empty, to_bool
 from common.validation import validate_not_null, validate_no_slashes, validate_list
@@ -160,65 +160,24 @@ class AssetUpload:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        # retrieve the existing meta data
+        filename = unquote_filename(req.params.get("filename", None))
+        create_asset = to_bool(req.params.get("create", "False"))
+        update_asset = to_bool(req.params.get("update", "False"))
+
         try:
             meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-            if meta.uploaded:
-                raise falcon.HTTPConflict(title="Asset exists",
-                                          description="This asset already has a file. If you wish to change this file, please update the asset.")
+            if meta.uploaded and not update_asset:
+                raise falcon.HTTPBadRequest(title="Asset exists",
+                                            description="This asset already has a file. If you wish to change this file, please update the asset.")
         except InvalidAssetError:
-            raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet.")
+            if create_asset:
+                meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
+            else:
+                raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet.")
 
-        filename = parse_filename(req)
-        save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
-                              asset_name=asset_id, filename=filename, meta=meta), req)
-
-        resp.media = {'Asset': asset_id, 'Filename': filename}
-        resp.status = falcon.HTTP_200
-
-
-class AssetUpdate:
-    # this will be validated by the RequireJSON middleware as a custom content-type, otherwise is json
-    content_type = 'application/octet-stream'
-
-    def __init__(self, controller: FileController):
-        self._controller = controller
-
-    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        # retrieve the existing meta data
-        try:
-            meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-            if meta.uploaded is False:
-                raise falcon.HTTPConflict(title="Asset not found", description="This asset has not been uploaded yet")
-
-        except InvalidAssetError:
-            raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet")
-        filename = parse_filename(req)
-        save_filename(partial(self._controller.update_asset, store_name=store_id, project_name=project_id,
-                              asset_name=asset_id, filename=filename, meta=meta), req)
-
-        resp.media = {'Asset': asset_id, 'Filename': filename}
-        resp.status = falcon.HTTP_200
-
-
-class AssetCreateUpload:
-    # this will be validated by the RequireJSON middleware as a custom content-type, otherwise is json
-    content_type = 'application/octet-stream'
-
-    def __init__(self, controller: FileController):
-        self._controller = controller
-
-    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        try:
-            meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-            if meta.uploaded:
-                raise falcon.HTTPConflict(title="Asset exists", description="This asset already has a file. If you wish to change this file, use update")
-        except InvalidAssetError:
-            meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
-
-        filename = parse_filename(req)
-        save_filename(partial(self._controller.upload_asset, store_name=store_id, project_name=project_id,
-                              asset_name=asset_id, filename=filename, meta=meta), req)
+        up_fn = partial(self._controller.upload_asset, store_name=store_id, project_name=project_id, asset_name=asset_id, filename=filename, meta=meta,
+                        update=update_asset)
+        save_filename(up_fn, req)
 
         resp.media = {'Asset': asset_id, 'Filename': filename}
         resp.status = falcon.HTTP_200

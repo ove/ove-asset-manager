@@ -46,9 +46,9 @@ function confirmSubmission(formId, msg) {
     form.classList.add("was-validated");
 }
 
-function processUploadRequest(uploadUrl, file, load, error, progress, abort) {
+function processUploadRequest(uploadUrl, file, load, error, progress, abort, updateFlag) {
     const request = new XMLHttpRequest();
-    request.open("POST", uploadUrl);
+    request.open("POST", uploadUrl + "?update=" + updateFlag + "&filename=" + encodeURIComponent(file.name));
     request.setRequestHeader("Content-Type", "application/octet-stream");
     request.setRequestHeader("Content-Disposition", `filename='${file.name}'`);
 
@@ -77,7 +77,7 @@ function processUploadRequest(uploadUrl, file, load, error, progress, abort) {
 }
 
 function postWorkerParams(url, params) {
-    return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(params)}).done(function (msg) {
+    return $.ajax({type: "POST", url: url, contentType: "application/json", dataType: "json", data: JSON.stringify(params)}).done(function () {
         reportSuccess("Worker status", "Worker scheduled successfully");
     }).catch(function (err) {
         if (err.responseJSON) {

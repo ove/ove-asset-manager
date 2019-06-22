@@ -12,8 +12,7 @@
             instantUpload: false,
             server: {
                 process: function (_fieldName, file, _metadata, load, error, progress, abort) {
-                    const uploadFile = $("#update-asset-flag").prop('checked');
-                    return processUploadRequest(uploadUrl + "?update=" + uploadFile, file, load, error, progress, abort);
+                    return processUploadRequest(uploadUrl, file, load, error, progress, abort, $("#update-asset-flag").prop("checked"));
                 }
             }
         });
