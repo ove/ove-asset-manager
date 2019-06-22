@@ -1,0 +1,55 @@
+<script>
+    function showUploadModal(uploadUrl, multiUpload) {
+        const container = $("#upload-asset-container");
+
+        container.empty();
+        container.append($("<input id='file-upload' type='file' " + (multiUpload ? "multiple" : "") + ">"));
+
+        FilePond.create(document.getElementById("file-upload"));
+        FilePond.setOptions({
+            allowDrop: true,
+            allowReplace: false,
+            instantUpload: false,
+            server: {
+                process: function (_fieldName, file, _metadata, load, error, progress, abort) {
+                    const uploadFile = $("#update-asset-flag").prop('checked');
+                    return processUploadRequest(uploadUrl + "?update=" + uploadFile, file, load, error, progress, abort);
+                }
+            }
+        });
+
+        const modal = $("#uploadAssetDialog");
+        modal.on('hidden.bs.modal', function () {
+            location.reload();
+        });
+        modal.modal();
+    }
+</script>
+
+<div class="modal fade" id="uploadAssetDialog" tabindex="-1" role="dialog" aria-labelledby="Asset files" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Upload assets</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="min-height: 400px; max-height: 400px; overflow-y: scroll;">
+                <div class="alert alert-dark small" role="alert">
+                    <span class="badge badge-info">Note</span> The upload is not complete until the upload box becomes green. If you wait at 100% for a long
+                    time it may be because the content is still being uploaded to the object store in the asset manager.
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="update-asset-flag" data-toggle="tooltip" data-placement="top" data-html="true"
+                           title="If you attend to upload into an existing asset without ticking this box the server will reject the operation">
+                    <label class="form-check-label" for="update-asset-flag" data-toggle="tooltip" data-placement="top" data-html="true"
+                           title="If you attend to upload into an existing asset without ticking this box the server will reject the operation">
+                        Update Asset
+                    </label>
+                </div>
+                <div id="upload-asset-container" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>

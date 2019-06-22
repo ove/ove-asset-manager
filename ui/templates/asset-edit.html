@@ -13,6 +13,8 @@
         });
     </script>
 
+    {% include 'dialogs/upload-asset-dialog.html' with context %}
+
     <div class="container">
         <div class="card">
             <div class="card-body">
@@ -60,7 +62,7 @@
                         <div class="mr-3">
                             <button type="button" class="btn btn-outline-primary mr-1 {{ "invisible" if create else "visible" }}"
                                     data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                    onclick="fileUpload('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
+                                    onclick="showUploadModal('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
                                 Upload
                             </button>
                             <a href="/view/store/{{ store_name }}/project/{{ project_name }}" class="btn btn-outline-danger mr-1">Close</a>

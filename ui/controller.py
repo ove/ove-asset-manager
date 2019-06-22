@@ -75,7 +75,7 @@ class BackendController:
         else:
             url = "api/{}/{}/createUpload/{}".format(store_name, project_name, asset_name)
 
-        headers = {"Content-Type": "application/octet-stream", "content-disposition": "filename='{}'".format(filename)}
+        headers = {"content-disposition": "filename='{}'".format(filename)}
         self._backend.upload(api_url=url, stream=stream, headers=headers)
 
     def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str, parameters: Dict):
