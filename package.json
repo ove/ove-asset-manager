@@ -21,6 +21,6 @@
     "move-assets": "node ./move-assets.js"
   },
   "devDependencies": {
-    "fs-extra": "8.0.1"
+    "fs-extra": "8.1.0"
   }
 }
