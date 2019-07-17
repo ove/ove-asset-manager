@@ -43,8 +43,10 @@ The code for the AM Backend can be found in the **ui** module:
 
 The [Jinja2](http://jinja.pocoo.org/docs/2.10/) templates written in HTML and are located in the **ui/templates**.
 
-The frontend uses a few JavaScript libraries. All these must be added to **package.json**
+The frontend uses a few JavaScript libraries. If you add new dependencies, then these must be added to **package.json**
 and the assets (js, css and font files exposed by the library) must be added to **move-assets.js**.
+
+You may find it convenient to set the `SERVICE_AM_HOSTNAME` environment variable to point at an instance of the AM backend running on a different machine during development and testing.
 
 ## Adding a new Worker
 
