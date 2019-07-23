@@ -1,10 +1,10 @@
-FROM maven:latest as builder
+FROM maven:3-jdk-11 as builder
 LABEL maintainer="o.serban@imperial.ac.uk"
 
 WORKDIR /code
 
-ADD proxy/src/ src/
-ADD proxy/pom.xml .
+COPY proxy/src/ src/
+COPY proxy/pom.xml .
 
 RUN rm -rf target/ && mvn clean compile package
 
@@ -21,6 +21,6 @@ USER $APPLICATION_USER
 WORKDIR $APPLICATION_PATH
 
 COPY --from=builder /code/target/ove-am-kreadproxy-*-jar-with-dependencies.jar .
-ADD start-proxy.sh .
+COPY start-proxy.sh .
 
 CMD "./start-proxy.sh"
