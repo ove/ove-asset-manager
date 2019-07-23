@@ -32,28 +32,20 @@ class BackendClient:
     def request(self, method: str, api_url: str, data: Dict = None, params: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
         response = self._http.request(method=method, url=_url(self.backend_url, api_url, params), headers=headers, timeout=10.0,
                                       body=json.dumps(data).encode("utf-8") if data is not None else None)
+        result = response.data
         if 200 <= response.status < 300:
-            result = response.data
-            if result is not None:
-                return json.loads(result.decode("utf-8"))
-            else:
-                return None
+            return json.loads(result.decode("utf-8")) if result is not None else None
         else:
-            result = response.data
             e = json.loads(result.decode("utf-8")) if result is not None else {}
             raise falcon.HTTPInternalServerError(title=e.get("title", "Error"),
                                                  description=e.get("description", "Error while calling '{}'".format(api_url)))
 
     def upload(self, api_url: str, stream: Any, method: str = "POST", params: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
         response = self._http.request(method=method, url=_url(self.backend_url, api_url, params), headers=_fix_upload_headers(headers), body=stream.read())
+        result = response.data
         if 200 <= response.status < 300:
-            result = response.data
-            if result is not None:
-                return json.loads(result.decode("utf-8"))
-            else:
-                return None
+            return json.loads(result.decode("utf-8")) if result is not None else None
         else:
-            result = response.data
             e = json.loads(result.decode("utf-8")) if result is not None else {}
             raise falcon.HTTPInternalServerError(title=e.get("title", "Error"),
                                                  description=e.get("description", "Error while calling '{}'".format(api_url)))

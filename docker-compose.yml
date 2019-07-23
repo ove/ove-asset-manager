@@ -13,18 +13,19 @@ services:
       GUNICORN_THREADS: "8"
       SERVICE_LOG_LEVEL: "debug"
 
-  ovehub-ove-asset-manager-proxy:
-    image: ovehub/ove-asset-manager-proxy:${SERVICE_VERSION}
+  ovehub-ove-asset-manager-kproxy:
+    image: ovehub/ove-asset-manager-kproxy:${SERVICE_VERSION}
     build:
       context: .
       dockerfile: docker/proxy/Dockerfile
     ports:
       - "6081:6081"
     volumes:
-      - ./config/:/code/config/:ro
+      - ./config/:/app/config/:ro
     environment:
-      GUNICORN_THREADS: "8"
-      SERVICE_LOG_LEVEL: "debug"
+      SERVICE_PORT: 6081
+      SERVICE_CONFIG: "config/credentials.json"
+      SERVICE_ENVIRONMENT: "config/environment.properties"
 
   ovehub-ove-asset-manager-worker-zip:
     image: ovehub/ove-asset-manager-worker-zip:${SERVICE_VERSION}

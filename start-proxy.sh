@@ -1,29 +1,70 @@
 #!/usr/bin/env bash
 
 scriptPath=$(dirname "$(readlink -f "$0")")
-cd ${scriptPath}/
+cd ${scriptPath}
 
-[[ ! -z "${GUNICORN_PORT}" ]] || GUNICORN_PORT="6081"
-[[ ! -z "${GUNICORN_HOST}" ]] || GUNICORN_HOST="0.0.0.0"
-[[ ! -z "${GUNICORN_WORKERS}" ]] || GUNICORN_WORKERS="1"
-[[ ! -z "${GUNICORN_THREADS}" ]] || GUNICORN_THREADS="4"
-[[ ! -z "${GUNICORN_TIMEOUT}" ]] || GUNICORN_TIMEOUT="240" # this needs to be tuned based on the network bandwidth
+jarName="ove-am-kreadproxy-*-jar-with-dependencies.jar"
 
-[[ ! -z "${SERVICE_LOG_LEVEL}" ]] || SERVICE_LOG_LEVEL="debug"
+function display_help() {
+  echo "Start OVE AM Read Proxy"
+  echo
+  echo "usage: start.sh [option]..."
+  echo "   --port          Service port"
+  echo "   --config        Service auth config"
+  echo "   --environment   Properties file for environment substitution"
+}
+
+function detectPath() {
+    jarPath=$( find . -name ${jarName} | tail -n 1 )
+    if [[ -z ${jarPath} && -d target ]]; then
+        jarPath=$( find target/ -name ${jarName} | tail -n 1 )
+    fi
+    if [[ -z ${jarPath} && -d ../target ]]; then
+        jarPath=$( find ../target/ -name ${jarName} | tail -n 1 )
+    fi
+    if [[ -z ${jarPath} ]]; then
+        echo "Could not find ${jarName}"
+        exit 1
+    fi
+}
+
+[[ ! -z "${SERVICE_PORT}" ]] || SERVICE_PORT="6081"
 [[ ! -z "${SERVICE_CONFIG}" ]] || SERVICE_CONFIG="config/credentials.json"
+[[ ! -z "${SERVICE_ENVIRONMENT}" ]] || SERVICE_CONFIG="config/environment.properties"
+[[ ! -z "${SERVICE_OTHER_OPTIONS}" ]] || SERVICE_OTHER_OPTIONS=""
 
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case ${key} in
+    -h|--help)
+      display_help
+      exit 0
+      ;;
+    --port)
+      SERVICE_PORT="$2"
+      shift
+      ;;
+    --config)
+      SERVICE_CONFIG="$2"
+      shift
+      ;;
+    --environment)
+      SERVICE_ENVIRONMENT="$2"
+      shift
+      ;;
+    *)
+      SERVICE_OTHER_OPTIONS="${SERVICE_OTHER_OPTIONS} $key"
+      ;;
+  esac
+  shift
+done
 
 echo "Environment variables:"
-echo "  GUNICORN_PORT=${GUNICORN_PORT}"
-echo "  GUNICORN_HOST=${GUNICORN_HOST}"
-echo "  GUNICORN_WORKERS=${GUNICORN_WORKERS}"
-echo "  GUNICORN_THREADS=${GUNICORN_THREADS}"
-echo ""
-echo "  SERVICE_LOG_LEVEL=${SERVICE_LOG_LEVEL}"
+echo "  SERVICE_PORT=${SERVICE_PORT}"
 echo "  SERVICE_CONFIG=${SERVICE_CONFIG}"
+echo "  SERVICE_ENVIRONMENT=${SERVICE_ENVIRONMENT}"
+echo "  SERVICE_OTHER_OPTIONS=${SERVICE_OTHER_OPTIONS}"
 echo ""
 
-## did you activate the virtual environment and install the requirements?
-exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
-        --timeout ${GUNICORN_TIMEOUT} \
-        "proxy:setup_app(config_file='${SERVICE_CONFIG}', logging_level='${SERVICE_LOG_LEVEL}')"
+detectPath && java -server -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -jar ${jarPath} \
+                   --port ${SERVICE_PORT} --config ${SERVICE_CONFIG} --environment ${SERVICE_ENVIRONMENT} ${SERVICE_OTHER_OPTIONS}

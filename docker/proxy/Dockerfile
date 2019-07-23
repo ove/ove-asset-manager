@@ -1,15 +1,26 @@
-FROM jamiehewland/alpine-pypy:3
+FROM maven:latest as builder
 LABEL maintainer="o.serban@imperial.ac.uk"
 
 WORKDIR /code
 
-COPY common/ common/
-COPY proxy/ proxy/
-COPY start-proxy.sh .
-COPY requirements.txt .
+ADD proxy/src/ src/
+ADD proxy/pom.xml .
+
+RUN rm -rf target/ && mvn clean compile package
+
+# The optimized docker image
+FROM azul/zulu-openjdk-alpine:11-jre
 
 RUN apk add --no-cache bash
 
-RUN pip install -r requirements.txt
+ENV APPLICATION_PATH /app
+ENV APPLICATION_USER gdo
 
-CMD ["./start-proxy.sh"]
+RUN adduser -D -g '' $APPLICATION_USER && mkdir $APPLICATION_PATH && chown -R $APPLICATION_USER $APPLICATION_PATH
+USER $APPLICATION_USER
+WORKDIR $APPLICATION_PATH
+
+COPY --from=builder /code/target/ove-am-kreadproxy-*-jar-with-dependencies.jar .
+ADD start-proxy.sh .
+
+CMD "./start-proxy.sh"

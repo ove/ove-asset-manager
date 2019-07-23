@@ -14,10 +14,7 @@ def parse_logging_lvl(lvl_name: str) -> int:
 
 
 def is_empty(any_structure):
-    if any_structure:
-        return False
-    else:
-        return True
+    return not any_structure
 
 
 def to_bool(value):
