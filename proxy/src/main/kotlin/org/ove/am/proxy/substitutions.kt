@@ -1,7 +1,11 @@
 package org.ove.am.proxy
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
+
+private var logger: Logger = LoggerFactory.getLogger(ParameterSubstitution::class.java)
 
 class ParameterSubstitution(propertiesPath: File, private val storage: StorageBackend) {
     private val properties = mutableMapOf<String, String>()
@@ -11,9 +15,13 @@ class ParameterSubstitution(propertiesPath: File, private val storage: StorageBa
             propertiesPath.bufferedReader().use { reader ->
                 reader.readLines().forEach { line ->
                     val tuple = line.split("=")
-                    properties[tuple[0].trim().toUpperCase()] = tuple[1].trim()
+                    if (tuple.size == 2) {
+                        properties[tuple[0].trim().toUpperCase()] = tuple[1].trim()
+                    }
                 }
             }
+            logger.info("Loaded ${properties.size} static variable substitution(s) ...")
+            logger.info("1 dynamic variable substitution available ...")
         }
     }
 
