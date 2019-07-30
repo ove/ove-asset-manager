@@ -133,6 +133,6 @@ private val typesMap = mapOf(
     "zip" to "application/zip"
 )
 
-fun probeContentType(resource: String) = typesMap.getOrDefault(File(resource).extension, "application/octet-stream")
+fun probeContentType(resource: String) = typesMap.getOrDefault(File(resource).extension.toLowerCase(), "application/octet-stream")
 
 fun appendSlash(url: String) = if (url.endsWith("/")) url else "$url/"
