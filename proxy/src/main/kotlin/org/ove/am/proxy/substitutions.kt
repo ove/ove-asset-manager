@@ -20,9 +20,9 @@ class ParameterSubstitution(propertiesPath: File, private val storage: StorageBa
                     }
                 }
             }
-            logger.info("Loaded ${properties.size} static variable substitution(s) ...")
-            logger.info("1 dynamic variable substitution available ...")
         }
+        logger.info("Loaded ${properties.size} static variable substitution(s) ...")
+        logger.info("1 dynamic variable substitution available ...")
     }
 
     fun replaceAll(text: String): String {

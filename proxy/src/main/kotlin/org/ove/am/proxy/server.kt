@@ -20,6 +20,7 @@ import io.ktor.server.netty.Netty
 import kotlinx.coroutines.io.ByteWriteChannel
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.URLEncoder
 
 private var logger: Logger = LoggerFactory.getLogger("Server")
 
@@ -68,7 +69,7 @@ fun setupServer(port: Int, storage: StorageBackend, substitution: ParameterSubst
                 val resource = storage.getResourceData(
                     store = call.parameters["store"],
                     project = call.parameters["project"],
-                    resource = call.parameters.getAll("resource")?.joinToString("/")
+                    resource = call.parameters.getAll("resource")?.joinToString("/") { URLEncoder.encode(it, "utf-8") }
                 )
 
                 call.response.lastModified(resource.modifiedDate)
