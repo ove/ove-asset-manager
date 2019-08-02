@@ -26,7 +26,7 @@ def handle_api_exceptions(ex: Exception, req: falcon.Request, _resp: falcon.Resp
     if isinstance(ex, (falcon.HTTPNotFound, falcon.HTTPNotImplemented)):
         raise falcon.HTTPPermanentRedirect(location="/404")
 
-    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPTemporaryRedirect)):
+    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPSeeOther)):
         raise ex
 
     if isinstance(ex, falcon.HTTPError):
@@ -44,7 +44,7 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
     if not hasattr(resp, "alerts"):
         resp.alerts = []
 
-    if isinstance(ex, falcon.HTTPPermanentRedirect):
+    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPSeeOther)):
         raise ex
 
     if isinstance(ex, (falcon.HTTPError, ValidationError)):
@@ -126,16 +126,19 @@ class ProjectView:
 
     @falcon_template.render('project-list.html')
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str):
-        resp.context = {"store_name": store_name, "projects": []}
-
         validate_not_null(req.params, "project")
+        project_name = req.params.get("project", None)
+        resp.context = {"store_name": store_name, "project_name": project_name, "assets": [], "workers": {}}
+
         try:
-            self._controller.create_project(store_name=store_name, project_name=req.params.get("project", None))
+            self._controller.create_project(store_name=store_name, project_name=project_name)
             report_success(resp=resp, description="Project created")
         except:
             raise
         finally:
             resp.context["projects"] = self._controller.list_projects(store_name)
+
+        raise falcon.HTTPSeeOther('./%s/project/%s' % (store_name, project_name))
 
 
 class AssetView:
