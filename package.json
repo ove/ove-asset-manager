@@ -2,7 +2,7 @@
   "name": "am-ui-js-dependencies",
   "author": "Ovidiu Serban, o.serban@imperial.ac.uk",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "5.9.0",
+    "@fortawesome/fontawesome-free": "5.10.0",
     "alpaca": "1.5.27",
     "bootbox": "5.2.0",
     "bootstrap": "4.3.1",
