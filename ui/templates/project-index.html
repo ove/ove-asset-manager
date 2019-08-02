@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+{% block title %}OVE Asset Manager - Project list{% endblock %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                autoWidth: false,
+                pageLength: 10,
+                order: [1, 'asc'],
+                columns: [{width: "20%"}, {width: "30%"}, {width: "15%"}, {width: "10%"}, {width: "10%"}, {width: "5%"}, {width: "5%"}],
+                pageLength: 10
+            });
+
+        });
+    </script>
+
+
+    <table id="table" class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">Project Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Tags</th>
+            <th scope="col">Authors</th>
+            <th scope="col">Papers</th>
+            <th scope="col">Created</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in projects -%}
+            <tr>
+
+                <td><a href="/view/store/{{ store_name }}/project/{{ project.name }}">{{ project.name }}</a></td>
+
+                <td>{{ project.description }}</td>
+
+                <td>
+                    {% if project.tags %}
+                        {% for tag in project.tags %}
+                            <span class="badge badge-info">{{ tag }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+
+                <td>{{ project.authors }}</td>
+
+                <td>{{ project.publications }}</td>
+
+                <td>{{ project.creationDate }}</td>
+
+                <td>
+                    <a href="/view/store/{{ store_name }}/project/{{ project.name }}/edit" class="btn btn-outline-primary"
+                       data-toggle="tooltip" data-placement="top" title="Edit project">
+                        <i class="far fa-edit"></i>
+                    </a>
+                </td>
+
+            </tr>
+        {%- endfor %}
+        </tbody>
+    </table>
+{% endblock %}
