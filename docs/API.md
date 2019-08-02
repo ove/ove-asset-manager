@@ -154,7 +154,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Object not found", description="..."}`
 ----
 
-- **/api/{store_id}/{project_name}/meta/{asset_id}**
+- **/api/{store_id}/{project_name}/meta/{asset_name}**
     - `HEAD`: _Check if an asset exists_
     - **Response:**
         - **Success**: HTTP Code 200
@@ -201,7 +201,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----  
 
-- **/api/{store_id}/{project_id}/files/{asset_id}**
+- **/api/{store_id}/{project_id}/files/{asset_name}**
     - `GET`: _list of files under the current version of the asset_
     - **Response:**
         - **Success**: <br />
@@ -218,7 +218,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----        
 
-- **/api/{store_id}/{project_name}/upload/{asset_id}**
+- **/api/{store_id}/{project_name}/upload/{asset_name}**
     - `POST`: _Upload an asset_
     - **Query params:** 
         - `filename= urlencoded string` - required, the filename to upload into the asset
@@ -244,7 +244,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset exists", description="..."}`
 ----
 
-- **/api/{store_id}/{project_name}/process/{asset_id}**
+- **/api/{store_id}/{project_name}/process/{asset_name}**
     - `POST`: _Schedule a worker processing task on the selected asset_
     - **Data Params:** `{"worker_type": "...",}`
     - **Response:**
