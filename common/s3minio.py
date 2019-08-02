@@ -239,7 +239,7 @@ class S3Manager:
             for field in fields:
                 val = getattr(meta, field, '')
                 if val:
-                    project['metadata'][field] = val
+                    project['Metadata'][field] = val
 
             data, size = _encode_json(project)
             client.put_object(project_name, PROJECT_FILE, data, size)
