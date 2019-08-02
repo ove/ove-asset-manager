@@ -19,8 +19,8 @@ function detectPath() {
     if [[ -z ${jarPath} && -d target ]]; then
         jarPath=$( find target/ -name "${jarName}" | tail -n 1 )
     fi
-    if [[ -z ${jarPath} && -d ../target ]]; then
-        jarPath=$( find ../target/ -name "${jarName}" | tail -n 1 )
+    if [[ -z ${jarPath} && -d ./proxy/target ]]; then
+        jarPath=$( find ./proxy/target/ -name "${jarName}" | tail -n 1 )
     fi
     if [[ -z ${jarPath} ]]; then
         echo "Could not find ${jarName}"
@@ -28,11 +28,11 @@ function detectPath() {
     fi
 }
 
-[[ ! -z "${SERVICE_PORT}" ]] || SERVICE_PORT="6081"
-[[ ! -z "${SERVICE_CONFIG}" ]] || SERVICE_CONFIG="config/credentials.json"
-[[ ! -z "${WHITELIST_CONFIG}" ]] || WHITELIST_CONFIG="config/whitelist.json"
-[[ ! -z "${SERVICE_ENVIRONMENT}" ]] || SERVICE_CONFIG="config/environment.properties"
-[[ ! -z "${SERVICE_OTHER_OPTIONS}" ]] || SERVICE_OTHER_OPTIONS=""
+[[ -n "${SERVICE_PORT}" ]] || SERVICE_PORT="6081"
+[[ -n "${SERVICE_CONFIG}" ]] || SERVICE_CONFIG="config/credentials.json"
+[[ -n "${WHITELIST_CONFIG}" ]] || WHITELIST_CONFIG="config/whitelist.json"
+[[ -n "${SERVICE_ENVIRONMENT}" ]] || SERVICE_ENVIRONMENT="config/environment.properties"
+[[ -n "${SERVICE_OTHER_OPTIONS}" ]] || SERVICE_OTHER_OPTIONS=""
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -73,4 +73,4 @@ echo "  SERVICE_OTHER_OPTIONS=${SERVICE_OTHER_OPTIONS}"
 echo ""
 
 detectPath && java -server -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -jar "${jarPath}" \
-                   --port "${SERVICE_PORT}" --config "${SERVICE_CONFIG}" --environment "${SERVICE_ENVIRONMENT}" --whitelist "${WHITELIST_CONFIG}" "${SERVICE_OTHER_OPTIONS}"
+                   --port "${SERVICE_PORT}" --config "${SERVICE_CONFIG}" --environment "${SERVICE_ENVIRONMENT}" --whitelist "${WHITELIST_CONFIG}" ${SERVICE_OTHER_OPTIONS}
