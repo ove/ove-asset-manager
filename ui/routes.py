@@ -230,12 +230,38 @@ class ObjectEdit:
 
     @falcon_template.render('object-edit.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):
+
+        default_object = {
+            "Attribution": {
+                "Title": project_name
+            },
+            "HasVideos": False,
+            "Sections": [
+                {
+                    "app": {
+                        "states": {
+                            "load": {
+                                "url": "http://google.com"
+                            }
+                        },
+                        "url": "OVE_APP_HTML"
+                    },
+                    "h": 1080,
+                    "space": "SPACE_NAME",
+                    "w": 1920,
+                    "x": 0,
+                    "y": 0
+                }
+            ]
+        }
+
         resp.context = {"store_name": store_name, "project_name": project_name, "object_name": object_name, "object": {}, "create": False}
         try:
             resp.context["object"] = self._controller.get_object(store_name=store_name, project_name=project_name, object_name=object_name)
             resp.context["create"] = False
         except:
             resp.context["create"] = True
+            resp.context["object"] = default_object
             raise ValidationError(title="Not found", description="This project does not have a '{}.json' object".format(object_name))
 
     @falcon_template.render('object-edit.html')
