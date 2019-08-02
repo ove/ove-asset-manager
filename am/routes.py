@@ -200,7 +200,7 @@ class ProjectMetaEdit:
             # meta.name = req.media.get('name')
             pass
 
-        fields = ['description', 'tags', 'authors', 'publications']
+        fields = ['name', 'description', 'tags', 'authors', 'publications']
         for field in fields:
             if is_empty(req.media.get(field)) is False:
                 setattr(meta, field, req.media.get(field))
