@@ -235,7 +235,7 @@ class S3Manager:
             if 'Metadata' not in project.keys():
                 project['Metadata'] = {}
 
-            fields = ['name', 'description', 'authors', 'publications']
+            fields = ['name', 'description', 'tags', 'authors', 'publications']
             for field in fields:
                 val = getattr(meta, field, '')
                 if val:
