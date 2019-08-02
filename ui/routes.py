@@ -26,7 +26,7 @@ def handle_api_exceptions(ex: Exception, req: falcon.Request, _resp: falcon.Resp
     if isinstance(ex, (falcon.HTTPNotFound, falcon.HTTPNotImplemented)):
         raise falcon.HTTPPermanentRedirect(location="/404")
 
-    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPSeeOther)):
+    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPTemporaryRedirect, falcon.HTTPSeeOther)):
         raise ex
 
     if isinstance(ex, falcon.HTTPError):
