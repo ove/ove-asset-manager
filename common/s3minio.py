@@ -232,7 +232,7 @@ class S3Manager:
             except NoSuchKey:
                 project = {'Metadata': {}, 'Sections': []}
 
-            if 'metadata' not in project.keys():
+            if 'Metadata' not in project.keys():
                 project['Metadata'] = {}
 
             fields = ['name', 'description', 'authors', 'publications']
