@@ -11,7 +11,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `['store1', 'store2', '...']` 
 ----
 
-- **/api/{store_id}/list**
+- **/api/{store_name}/list**
     - `GET`: _Lists available projects in a file store_
     - **Query params:** `metadata=true | false` - optional, if true the project list include some metadata
     - **Response:**
@@ -23,7 +23,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Store not found", description="..."}`
 ----
 
-- **/api/{store_id}/create**
+- **/api/{store_name}/create**
     - `POST`: _Create project_
     - **Data Params:** `Requires JSON body`
     
@@ -43,7 +43,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     * **Notes:** _With S3 storage, the project name must conform to s3 bucket name conventions_
 ----
 
-- **/api/{store_id}/{project_name}/list**
+- **/api/{store_name}/{project_name}/list**
     - `GET`: _Lists available assets in a file store with meta data_
     - **Query params:** 
         - `includeEmpty=(True|False)` - optional, if true all folders are included regardless of whether they are ove assets`
@@ -60,7 +60,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Project not found", description="..."}`
 ----
 
-* **/api/{store_id}/{project_name}/create**
+* **/api/{store_name}/{project_name}/create**
     - `POST`: _Create asset_
     - **Data Params:** `Requires JSON body`
     
@@ -83,7 +83,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     * **Notes:** _With S3 storage, asset name is not allowed to contain / or any restricted asset names (e.g. new, .ovemeta, list, create)
 ----
 
-- **/api/{store_id}/{project_name}/object/{object_id}**
+- **/api/{store_name}/{project_name}/object/{object_id}**
     - `HEAD`: _Check if an object exists_
     - **Response:**
         - **Success**: HTTP Code 200
@@ -137,7 +137,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Object not found", description="..."}`
 ----
 
-- **/api/{store_id}/{project_name}/object/{object_id}/info**
+- **/api/{store_name}/{project_name}/object/{object_id}/info**
     - `GET`: _Get the object metadata_
     - **Response:**
         - **Success**: <br />
@@ -154,7 +154,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Object not found", description="..."}`
 ----
 
-- **/api/{store_id}/{project_name}/meta/{asset_name}**
+- **/api/{store_name}/{project_name}/meta/{asset_name}**
     - `HEAD`: _Check if an asset exists_
     - **Response:**
         - **Success**: HTTP Code 200
@@ -201,7 +201,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----  
 
-- **/api/{store_id}/{project_id}/files/{asset_name}**
+- **/api/{store_name}/{project_id}/files/{asset_name}**
     - `GET`: _list of files under the current version of the asset_
     - **Response:**
         - **Success**: <br />
@@ -218,7 +218,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----        
 
-- **/api/{store_id}/{project_name}/upload/{asset_name}**
+- **/api/{store_name}/{project_name}/upload/{asset_name}**
     - `POST`: _Upload an asset_
     - **Query params:** 
         - `filename= urlencoded string` - required, the filename to upload into the asset
@@ -244,7 +244,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset exists", description="..."}`
 ----
 
-- **/api/{store_id}/{project_name}/process/{asset_name}**
+- **/api/{store_name}/{project_name}/process/{asset_name}**
     - `POST`: _Schedule a worker processing task on the selected asset_
     - **Data Params:** `{"worker_type": "...",}`
     - **Response:**
