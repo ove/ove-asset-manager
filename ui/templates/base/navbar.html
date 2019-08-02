@@ -25,6 +25,9 @@
                         <span class="badge {{ "badge-primary" if not project_name else "badge-secondary" }}">{{ store_name }}</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link"  href="/view/store/{{  store_name }}/index">Index</a>
+                </li>
             {% endif %}
 
             {% if project_name %}
