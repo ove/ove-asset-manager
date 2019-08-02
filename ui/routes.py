@@ -26,7 +26,7 @@ def handle_api_exceptions(ex: Exception, req: falcon.Request, _resp: falcon.Resp
     if isinstance(ex, (falcon.HTTPNotFound, falcon.HTTPNotImplemented)):
         raise falcon.HTTPPermanentRedirect(location="/404")
 
-    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPTemporaryRedirect)):
+    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPTemporaryRedirect, falcon.HTTPSeeOther)):
         raise ex
 
     if isinstance(ex, falcon.HTTPError):
@@ -44,7 +44,7 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
     if not hasattr(resp, "alerts"):
         resp.alerts = []
 
-    if isinstance(ex, falcon.HTTPPermanentRedirect):
+    if isinstance(ex, (falcon.HTTPPermanentRedirect, falcon.HTTPSeeOther)):
         raise ex
 
     if isinstance(ex, (falcon.HTTPError, ValidationError)):
@@ -126,16 +126,19 @@ class ProjectView:
 
     @falcon_template.render('project-list.html')
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_name: str):
-        resp.context = {"store_name": store_name, "projects": []}
-
         validate_not_null(req.params, "project")
+        project_name = req.params.get("project", None)
+        resp.context = {"store_name": store_name, "project_name": project_name, "assets": [], "workers": {}}
+
         try:
-            self._controller.create_project(store_name=store_name, project_name=req.params.get("project", None))
+            self._controller.create_project(store_name=store_name, project_name=project_name)
             report_success(resp=resp, description="Project created")
         except:
             raise
         finally:
             resp.context["projects"] = self._controller.list_projects(store_name)
+
+        raise falcon.HTTPSeeOther('./%s/project/%s' % (store_name, project_name))
 
 
 class AssetView:
@@ -230,12 +233,38 @@ class ObjectEdit:
 
     @falcon_template.render('object-edit.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str, project_name: str, object_name: str):
+
+        default_object = {
+            "Attribution": {
+                "Title": project_name
+            },
+            "HasVideos": False,
+            "Sections": [
+                {
+                    "app": {
+                        "states": {
+                            "load": {
+                                "url": "http://google.com"
+                            }
+                        },
+                        "url": "OVE_APP_HTML"
+                    },
+                    "h": 1080,
+                    "space": "SPACE_NAME",
+                    "w": 1920,
+                    "x": 0,
+                    "y": 0
+                }
+            ]
+        }
+
         resp.context = {"store_name": store_name, "project_name": project_name, "object_name": object_name, "object": {}, "create": False}
         try:
             resp.context["object"] = self._controller.get_object(store_name=store_name, project_name=project_name, object_name=object_name)
             resp.context["create"] = False
         except:
             resp.context["create"] = True
+            resp.context["object"] = default_object
             raise ValidationError(title="Not found", description="This project does not have a '{}.json' object".format(object_name))
 
     @falcon_template.render('object-edit.html')
