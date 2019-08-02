@@ -28,7 +28,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     - **Data Params:** `Requires JSON body`
     
     `{
-	"name":"project_name"
+    "name":"project_name"
     }`
     - **Response:**
         - **Success**: <br />
@@ -65,7 +65,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     - **Data Params:** `Requires JSON body`
     
     `{
-	"name":"asset_name"
+    "name":"asset_name"
     }`
     - **Response:**
         - **Success**: <br />
@@ -83,7 +83,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     * **Notes:** _With S3 storage, asset name is not allowed to contain / or any restricted asset names (e.g. new, .ovemeta, list, create)
 ----
 
-- **/api/{store_name}/{project_name}/object/{object_id}**
+- **/api/{store_name}/{project_name}/object/{object_name}**
     - `HEAD`: _Check if an object exists_
     - **Response:**
         - **Success**: HTTP Code 200
@@ -137,7 +137,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Object not found", description="..."}`
 ----
 
-- **/api/{store_name}/{project_name}/object/{object_id}/info**
+- **/api/{store_name}/{project_name}/object/{object_name}/info**
     - `GET`: _Get the object metadata_
     - **Response:**
         - **Success**: <br />
@@ -201,7 +201,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----  
 
-- **/api/{store_name}/{project_id}/files/{asset_name}**
+- **/api/{store_name}/{project_name}/files/{asset_name}**
     - `GET`: _list of files under the current version of the asset_
     - **Response:**
         - **Success**: <br />
