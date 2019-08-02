@@ -9,6 +9,8 @@ class OveProjectMeta:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
         self.description = kwargs.get("description", "")
+        self.authors = kwargs.get("authors", "")
+        self.publications = kwargs.get("publications", "")
         self.permissions = kwargs.get("permissions", "")
         self.tags = kwargs.get("tags", [])
 
@@ -19,6 +21,8 @@ class OveProjectMeta:
         return {
             "name": self.name,
             "description": self.description,
+            "authors": self.authors,
+            "publications": self.publications,
             "tags": self.tags,
         }
 

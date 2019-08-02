@@ -7,7 +7,7 @@ from common.middleware import CORSComponent
 from common.util import parse_logging_lvl
 from ui.controller import BackendController
 from ui.middleware import ContentTypeValidator
-from ui.routes import ProjectView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, ProjectEdit
+from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, ProjectEdit
 from ui.routes import UploadApi, WorkerApi, ObjectEdit, WorkerDocs, FilesApi
 
 
@@ -32,6 +32,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/404', NotFoundView())
     app.add_route('/view/workers/', WorkerView(controller=_controller))
     app.add_route('/view/store/{store_name}/', ProjectView(controller=_controller))
+    app.add_route('/view/store/{store_name}/index', ProjectIndexView(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/', AssetView(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/edit', ProjectEdit(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/asset/{asset_name}', AssetEdit(controller=_controller))

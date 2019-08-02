@@ -31,6 +31,19 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label for="description" class="col-3 col-form-label">Authors</label>
+                        <div class="col-9">
+                            <textarea name="authors" id="authors" class="form-control" rows="2">{{ project.authors }}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="description" class="col-3 col-form-label">Publications</label>
+                        <div class="col-9">
+                            <textarea name="publications" id="publications" class="form-control" rows="2">{{ project.publications }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
                         <label for="tags" class="col-3 col-form-label">Tags</label>
                         <div class="col-9">
                             <select name="tags[]" id="tags" multiple="multiple" class="form-control">

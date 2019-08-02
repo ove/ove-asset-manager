@@ -100,6 +100,8 @@ class S3Manager:
                         item = {
                             "name": bucket.name,
                             "description": meta.description,
+                            "authors": meta.authors,
+                            "publications": meta.publications,
                             "tags": meta.tags,
                             "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
                             "updateDate": _last_modified(bucket.name),
