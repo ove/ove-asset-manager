@@ -77,7 +77,7 @@ fun setupServer(port: Int, storage: StorageBackend, substitution: ParameterSubst
 
                 val contentType = ContentType.parse(resource.contentType)
 
-                if (contentType.contentType == ContentType.Application.Json.contentType) {
+                if (substitution.shouldSubstitute(contentType, resource.resource)) {
                     resource.input.bufferedReader()
                         .use { call.respondText(substitution.replaceAll(it.readText()), contentType) }
                 } else {

@@ -34,9 +34,9 @@ class StorageBackend(configFile: String) {
     }
 
     private fun parseUrl(endpoint: String) =
-        if (endpoint.startsWith("http://") || endpoint.startsWith("https://"))
-            HttpUrl.parse(endpoint)
-        else HttpUrl.parse("http://$endpoint")
+            if (endpoint.startsWith("http://") || endpoint.startsWith("https://"))
+                HttpUrl.parse(endpoint)
+            else HttpUrl.parse("http://$endpoint")
 
 
     private fun client(store: String) = clients.getOrElse(store) {
@@ -63,12 +63,13 @@ class StorageBackend(configFile: String) {
         try {
             val stat = client.statObject(project, resource)
             return ResourceData(
-                name = stat.name(),
-                contentType = probeContentType(resource),
-                etag = stat.etag(),
-                modifiedDate = ZonedDateTime.ofInstant(stat.createdTime().toInstant(), ZoneId.systemDefault()),
-                length = stat.length(),
-                input = client.getObject(project, resource)
+                    name = stat.name(),
+                    resource = resource,
+                    contentType = probeContentType(resource),
+                    etag = stat.etag(),
+                    modifiedDate = ZonedDateTime.ofInstant(stat.createdTime().toInstant(), ZoneId.systemDefault()),
+                    length = stat.length(),
+                    input = client.getObject(project, resource)
             )
         } catch (e: Throwable) {
             logger.error("Error while getting object. $e")

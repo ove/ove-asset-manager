@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 scriptPath=$(dirname "$(readlink -f "$0")")
-cd ${scriptPath}
+cd "${scriptPath}" || exit
 
 jarName="ove-am-kreadproxy-*-jar-with-dependencies.jar"
 
@@ -15,12 +15,12 @@ function display_help() {
 }
 
 function detectPath() {
-    jarPath=$( find . -name ${jarName} | tail -n 1 )
+    jarPath=$( find . -name "${jarName}" | tail -n 1 )
     if [[ -z ${jarPath} && -d target ]]; then
-        jarPath=$( find target/ -name ${jarName} | tail -n 1 )
+        jarPath=$( find target/ -name "${jarName}" | tail -n 1 )
     fi
     if [[ -z ${jarPath} && -d ../target ]]; then
-        jarPath=$( find ../target/ -name ${jarName} | tail -n 1 )
+        jarPath=$( find ../target/ -name "${jarName}" | tail -n 1 )
     fi
     if [[ -z ${jarPath} ]]; then
         echo "Could not find ${jarName}"
@@ -30,6 +30,7 @@ function detectPath() {
 
 [[ ! -z "${SERVICE_PORT}" ]] || SERVICE_PORT="6081"
 [[ ! -z "${SERVICE_CONFIG}" ]] || SERVICE_CONFIG="config/credentials.json"
+[[ ! -z "${WHITELIST_CONFIG}" ]] || WHITELIST_CONFIG="config/whitelist.json"
 [[ ! -z "${SERVICE_ENVIRONMENT}" ]] || SERVICE_CONFIG="config/environment.properties"
 [[ ! -z "${SERVICE_OTHER_OPTIONS}" ]] || SERVICE_OTHER_OPTIONS=""
 
@@ -48,6 +49,10 @@ while [[ $# -gt 0 ]]; do
       SERVICE_CONFIG="$2"
       shift
       ;;
+    --whitelist)
+      WHITELIST_CONFIG="$2"
+      shift
+      ;;
     --environment)
       SERVICE_ENVIRONMENT="$2"
       shift
@@ -63,8 +68,9 @@ echo "Environment variables:"
 echo "  SERVICE_PORT=${SERVICE_PORT}"
 echo "  SERVICE_CONFIG=${SERVICE_CONFIG}"
 echo "  SERVICE_ENVIRONMENT=${SERVICE_ENVIRONMENT}"
+echo "  WHITELIST_CONFIG=${WHITELIST_CONFIG}"
 echo "  SERVICE_OTHER_OPTIONS=${SERVICE_OTHER_OPTIONS}"
 echo ""
 
-detectPath && java -server -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -jar ${jarPath} \
-                   --port ${SERVICE_PORT} --config ${SERVICE_CONFIG} --environment ${SERVICE_ENVIRONMENT} ${SERVICE_OTHER_OPTIONS}
+detectPath && java -server -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -jar "${jarPath}" \
+                   --port "${SERVICE_PORT}" --config "${SERVICE_CONFIG}" --environment "${SERVICE_ENVIRONMENT}" --whitelist "${WHITELIST_CONFIG}" "${SERVICE_OTHER_OPTIONS}"

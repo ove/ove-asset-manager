@@ -15,3 +15,5 @@ ui/static/vendors/
 package-lock.json
 
 node_modules/
+
+proxy/target/
