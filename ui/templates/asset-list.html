@@ -92,7 +92,7 @@
                         </span>
                     {% elif asset.processing_status == "processing" %}
                         <span data-toggle="tooltip" data-placement="top" title="Processing">
-                            <i class="fas fa-spinner fa-spin icon-ok"></i>
+                            <i class="fas fa-hourglass-start icon-ok"></i>
                         </span>
                     {% elif asset.processing_status == "error" %}
                         <span data-toggle="tooltip" data-placement="top" title="Error: {{ asset.processing_error }}">
@@ -126,4 +126,5 @@
         {%- endfor %}
         </tbody>
     </table>
+    <p>The worker status column does not auto-update: to check whether an asset has finished processing, refresh this page.</p>
 {% endblock %}
