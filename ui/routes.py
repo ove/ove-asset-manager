@@ -304,6 +304,14 @@ class WorkerDocs:
         except:
             raise falcon.HTTPNotFound(title="Docs not found", description="'{}' is not available".format(worker_doc))
 
+class APIDetails:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('api-details.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response):
+        resp.context = {"backend_url": self. _controller._backend.backend_url}
+
 
 class UploadApi:
     content_type = 'application/octet-stream'
