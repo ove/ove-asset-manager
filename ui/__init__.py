@@ -37,7 +37,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/view/store/{store_name}/project/{project_name}/edit', ProjectEdit(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/asset/{asset_name}', AssetEdit(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/object/{object_name}', ObjectEdit(controller=_controller))
-    app.add_route('/backend', BackendDetailsView(controller=_controller))
+    app.add_route('/view/backend', BackendDetailsView(controller=_controller))
 
     # api routes
     app.add_route('/api/store/{store_name}/project/{project_name}/upload', UploadApi(controller=_controller))
