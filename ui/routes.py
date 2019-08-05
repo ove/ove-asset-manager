@@ -141,6 +141,19 @@ class ProjectView:
         raise falcon.HTTPSeeOther('./%s/project/%s' % (store_name, project_name))
 
 
+class ProjectIndexView:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('project-index.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_name: str):
+        resp.context = {"store_name": store_name, "projects": []}
+        try:
+            resp.context["projects"] = self._controller.list_projects(store_name)
+        except:
+            raise
+
+
 class AssetView:
     def __init__(self, controller: BackendController):
         self._controller = controller
@@ -179,6 +192,8 @@ class ProjectEdit:
         project = {
             "name": req.params.get("name", ""),
             "description": req.params.get("description", ""),
+            "authors": req.params.get("authors", ""),
+            "publications": req.params.get("publications", ""),
             "tags": _get_tags()
         }
         resp.context = {"store_name": store_name, "project_name": project_name, "project": project}

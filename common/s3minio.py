@@ -5,11 +5,11 @@ import sys
 from typing import Union, Dict, Callable, List, Any, Tuple
 
 from minio import Minio
-from minio.error import ResponseError
+from minio.error import ResponseError, NoSuchKey
 from urllib3 import HTTPResponse
 
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
-from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
+from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, PROJECT_FILE, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
 from common.entities import OveAssetMeta, OveProjectMeta
 from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError, InvalidProjectError
 from common.filters import DEFAULT_FILTER
@@ -100,6 +100,8 @@ class S3Manager:
                         item = {
                             "name": bucket.name,
                             "description": meta.description,
+                            "authors": meta.authors,
+                            "publications": meta.publications,
                             "tags": meta.tags,
                             "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
                             "updateDate": _last_modified(bucket.name),
@@ -221,7 +223,7 @@ class S3Manager:
     def get_project_meta(self, project_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveProjectMeta]:
         client = self._get_connection(store_name)
         try:
-            obj = _decode_json(client.get_object(project_name, OVE_META))
+            obj = _decode_json(client.get_object(project_name, PROJECT_FILE))['Metadata']
             return OveProjectMeta(**obj)
         except:
             if ignore_errors:
@@ -233,8 +235,23 @@ class S3Manager:
     def set_project_meta(self, project_name: str, meta: OveProjectMeta, store_name: str = None, ignore_errors: bool = False) -> None:
         client = self._get_connection(store_name)
         try:
-            data, size = _encode_json(meta.to_json())
-            client.put_object(project_name, OVE_META, data, size)
+
+            try:
+                project = _decode_json(client.get_object(project_name, PROJECT_FILE))
+            except NoSuchKey:
+                project = {'Metadata': {}, 'Sections': []}
+
+            if 'Metadata' not in project.keys():
+                project['Metadata'] = {}
+
+            fields = ['name', 'description', 'tags', 'authors', 'publications']
+            for field in fields:
+                val = getattr(meta, field, '')
+                if val:
+                    project['Metadata'][field] = val
+
+            data, size = _encode_json(project)
+            client.put_object(project_name, PROJECT_FILE, data, size)
         except:
             if not ignore_errors:
                 logging.error("Error while trying to set project meta. Error: %s", sys.exc_info()[1])

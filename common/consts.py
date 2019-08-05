@@ -9,6 +9,7 @@ CONFIG_SECRET_KEY = "secretKey"
 CONFIG_PROXY_URL = "proxyUrl"
 
 OVE_META = ".ovemeta"
+PROJECT_FILE = "project.json"
 
 S3_SEPARATOR = "/"
 

@@ -199,10 +199,11 @@ class ProjectMetaEdit:
             # todo; rebuild the path as well
             # meta.name = req.media.get('name')
             pass
-        if is_empty(req.media.get('description')) is False:
-            meta.description = req.media.get('description')
-        if is_empty(req.media.get('tags')) is False:
-            meta.tags = req.media.get('tags')
+
+        fields = ['name', 'description', 'tags', 'authors', 'publications']
+        for field in fields:
+            if is_empty(req.media.get(field)) is False:
+                setattr(meta, field, req.media.get(field))
 
         self._controller.edit_project_meta(store_name=store_id, project_name=project_id, meta=meta)
 
