@@ -304,7 +304,8 @@ class WorkerDocs:
         except:
             raise falcon.HTTPNotFound(title="Docs not found", description="'{}' is not available".format(worker_doc))
 
-class APIDetails:
+
+class BackendDetails:
     def __init__(self, controller: BackendController):
         self._controller = controller
 
