@@ -291,7 +291,7 @@ class ObjectEdit:
                                     object_data=json.loads(req.params.get("object", "")))
 
 
-class WorkerDocs:
+class WorkerDocsView:
     def __init__(self, docs_folder: str):
         self.docs_folder = append_slash(docs_folder)
 
