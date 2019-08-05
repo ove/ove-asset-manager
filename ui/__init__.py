@@ -7,8 +7,8 @@ from common.middleware import CORSComponent
 from common.util import parse_logging_lvl
 from ui.controller import BackendController
 from ui.middleware import ContentTypeValidator
-from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, ProjectEdit
-from ui.routes import UploadApi, WorkerApi, ObjectEdit, WorkerDocs, FilesApi
+from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions, ProjectEdit, BackendDetailsView
+from ui.routes import UploadApi, WorkerApi, ObjectEdit, WorkerDocsView, FilesApi
 
 
 def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:6080") -> falcon.API:
@@ -27,7 +27,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_static_route("/img", os.getcwd() + "/ui/static/img/", downloadable=True)
     app.add_static_route("/vendors/webfonts", os.getcwd() + "/ui/static/vendors/webfonts/", downloadable=True)
 
-    # view routes
+    # view/edit routes
     app.add_route('/', IndexView(controller=_controller))
     app.add_route('/404', NotFoundView())
     app.add_route('/view/workers/', WorkerView(controller=_controller))
@@ -37,6 +37,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/view/store/{store_name}/project/{project_name}/edit', ProjectEdit(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/asset/{asset_name}', AssetEdit(controller=_controller))
     app.add_route('/view/store/{store_name}/project/{project_name}/object/{object_name}', ObjectEdit(controller=_controller))
+    app.add_route('/view/backend', BackendDetailsView(controller=_controller))
 
     # api routes
     app.add_route('/api/store/{store_name}/project/{project_name}/upload', UploadApi(controller=_controller))
@@ -45,7 +46,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/api/store/{store_name}/project/{project_name}/asset/{asset_name}/files', FilesApi(controller=_controller))
 
     # worker docs
-    app.add_route('/docs/{worker_doc}', WorkerDocs(docs_folder=os.getcwd() + "/docs/workers/"))
+    app.add_route('/docs/{worker_doc}', WorkerDocsView(docs_folder=os.getcwd() + "/docs/workers/"))
 
     app.add_error_handler(Exception, handle_api_exceptions)
 

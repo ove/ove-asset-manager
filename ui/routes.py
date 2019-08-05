@@ -291,7 +291,7 @@ class ObjectEdit:
                                     object_data=json.loads(req.params.get("object", "")))
 
 
-class WorkerDocs:
+class WorkerDocsView:
     def __init__(self, docs_folder: str):
         self.docs_folder = append_slash(docs_folder)
 
@@ -303,6 +303,15 @@ class WorkerDocs:
                 resp.context["content"] = markdown2.markdown(fin.read())
         except:
             raise falcon.HTTPNotFound(title="Docs not found", description="'{}' is not available".format(worker_doc))
+
+
+class BackendDetailsView:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('backend-details.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response):
+        resp.context = {"backend_url": self. _controller._backend.backend_url}
 
 
 class UploadApi:

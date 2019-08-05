@@ -1,0 +1,14 @@
+{% extends "base/base.html" %}
+{% block title %}OVE Asset Manager - Worker list{% endblock %}
+
+{% set active_page = "workers" %}
+
+{% block content %}
+
+    <h2>API Details</h2>
+
+    <p>This instance of the Asset Manager UI is configured to interact with an Asset Manager backend at <code>{{ backend_url }}</code></p>
+
+    <p>The AM Backend API is <a href="https://ove.readthedocs.io/en/latest/ove-asset-manager/docs/API.html">documented here</a>.</p>
+
+{% endblock %}
