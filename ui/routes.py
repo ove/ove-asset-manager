@@ -309,7 +309,7 @@ class BackendDetails:
     def __init__(self, controller: BackendController):
         self._controller = controller
 
-    @falcon_template.render('api-details.html')
+    @falcon_template.render('backend-details.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response):
         resp.context = {"backend_url": self. _controller._backend.backend_url}
 
