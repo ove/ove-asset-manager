@@ -9,7 +9,7 @@ from minio.error import ResponseError
 from urllib3 import HTTPResponse
 
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
-from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION
+from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
 from common.entities import OveAssetMeta, OveProjectMeta
 from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError, InvalidProjectError
 from common.filters import DEFAULT_FILTER
@@ -140,11 +140,20 @@ class S3Manager:
         try:
             meta = self.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
             prefix = asset_name + "/" + str(meta.version) + "/"
-            return [{
-                "name": a.object_name[len(prefix):],
-                "url": meta.proxy_url + project_name + "/" + a.object_name,
-                "default": meta.filename == a.object_name[len(prefix):]
-            } for a in client.list_objects(project_name, prefix=prefix, recursive=True) if not a.is_dir]
+
+            result = []
+            for a in client.list_objects(project_name, prefix=prefix, recursive=True):
+                if len(result) > MAX_LIST_ITEMS:
+                    break
+
+                if not a.is_dir:
+                    result.append({
+                        "name": a.object_name[len(prefix):],
+                        "url": meta.proxy_url + project_name + "/" + a.object_name,
+                        "default": meta.filename == a.object_name[len(prefix):]
+                    })
+
+            return result
         except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
             return []

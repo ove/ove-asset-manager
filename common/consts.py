@@ -13,3 +13,5 @@ OVE_META = ".ovemeta"
 S3_SEPARATOR = "/"
 
 S3_OBJECT_EXTENSION = ".json"
+
+MAX_LIST_ITEMS = 1000
