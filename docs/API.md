@@ -13,7 +13,9 @@ This API is designed to allow you to perform the majority of necessary file oper
 
 - **/api/{store_name}/list**
     - `GET`: _Lists available projects in a file store_
-    - **Query params:** `metadata=true | false` - optional, if true the project list include some metadata
+    - **Query params:** 
+        - `filterByTag=<tag_name>` - optional, filter all projects tagged by tag_name 
+        - `metadata=true | false` - optional, if true the project list include some metadata
     - **Response:**
         - **Success**: <br />
         **HTTP Code:** 200 <br />
