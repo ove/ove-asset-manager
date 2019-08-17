@@ -23,6 +23,7 @@ fi
 version="${version}-unstable"
 
 pushImage=false
+pullImage=false
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -39,6 +40,9 @@ while [[ $# -gt 0 ]]; do
     --push)
       pushImage=true
       ;;
+    --pull)
+      pullImage=true
+      ;;
     *)
       echo "Unrecognised option: $key"
       echo
@@ -53,6 +57,10 @@ export SERVICE_VERSION=${version}
 trap deactivate_env EXIT SIGINT SIGTERM
 
 echo "Building version = ${SERVICE_VERSION}"
+
+if [[ "${pullImage}" = true ]]; then
+  docker-compose pull
+fi
 
 docker-compose build
 if [[ $? -ne 0 ]]; then
