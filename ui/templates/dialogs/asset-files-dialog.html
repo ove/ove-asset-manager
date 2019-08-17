@@ -1,5 +1,5 @@
 <script>
-    function showAssetFilesModal(asset_name) {
+    function showAssetFilesModal(asset_id) {
         $('#assetFileTreeContainer').html('<div id="assetFileTree"></div>');
         let tree = $('#assetFileTree');
         let infoBox = $('#assetFileTreeInfoBox');
@@ -10,7 +10,7 @@
             'core': {
                 "multiple": false,
                 "animation": 0,
-                'data': {"url": "/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files?hierarchical=true", "dataType": "json"}
+                'data': {"url": "/api/store/{{ store_id }}/project/{{ project_id }}/asset/" + asset_id + "/files?hierarchical=true", "dataType": "json"}
             },
             "types": {"default": {"icon": "far fa-folder"}, "leaf": {"icon": "far fa-file-alt"}},
             "plugins": ["types"]

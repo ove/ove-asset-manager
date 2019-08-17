@@ -27,7 +27,7 @@
         <div class="card">
             <div class="card-body">
                 <form id="object-edit" method="post"
-                      action="/view/store/{{ store_name }}/project/{{ project_name }}/object/{{ object_name }}">
+                      action="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object_id }}">
                     <div class="form-group row">
                         <div id="code-editor" style="height: 600px; width: 100%"></div>
                         <input id="code-field" name="object" type="hidden">
@@ -35,7 +35,7 @@
                     <div class="form-group row">
                         <div class="col-sm-10"></div>
                         <div class="col-sm-1">
-                            <a href="/view/store/{{ store_name }}/project/{{ project_name }}" class="btn btn-outline-danger">Close</a>
+                            <a href="/view/store/{{ store_id }}/project/{{ project_id }}" class="btn btn-outline-danger">Close</a>
                         </div>
                         <div class="col-sm-1">
                             <button type="button" class="btn btn-outline-success"

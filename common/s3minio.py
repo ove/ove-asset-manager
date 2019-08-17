@@ -32,14 +32,14 @@ class S3Manager:
                 default_store = config.get(CONFIG_STORE_DEFAULT, None)
 
                 for client_config in config.get(CONFIG_STORES, []):
-                    store_name = client_config.get(CONFIG_STORE_NAME, "")
+                    store_id = client_config.get(CONFIG_STORE_NAME, "")
                     client = Minio(endpoint=client_config.get(CONFIG_ENDPOINT, ""),
                                    access_key=client_config.get(CONFIG_ACCESS_KEY, ""),
                                    secret_key=client_config.get(CONFIG_SECRET_KEY, ""),
                                    secure=False)
-                    self._clients[store_name] = client
-                    self._store_config[store_name] = client_config
-                    if default_store == store_name:
+                    self._clients[store_id] = client
+                    self._store_config[store_id] = client_config
+                    if default_store == store_id:
                         self._clients[_DEFAULT_LABEL] = client
                         self._store_config[_DEFAULT_LABEL] = client_config
                 logging.info("Loaded %s connection configs from s3 client config file", len(self._clients))
@@ -59,60 +59,61 @@ class S3Manager:
         self._store_config.clear()
 
     # Open a connection to the S3 storage
-    def _get_connection(self, store_name: str = None) -> Union[Minio, None]:
-        store_name = store_name if store_name else _DEFAULT_LABEL
-        connection = self._clients.get(store_name, None)
+    def _get_connection(self, store_id: str = None) -> Union[Minio, None]:
+        store_id = store_id if store_id else _DEFAULT_LABEL
+        connection = self._clients.get(store_id, None)
         if connection:
             return connection
         else:
-            raise InvalidStoreError(store_name)
+            raise InvalidStoreError(store_id)
 
-    def _get_proxy_url(self, store_name: str = None) -> str:
-        client_config = self.get_store_config(store_name)
+    def _get_proxy_url(self, store_id: str = None) -> str:
+        client_config = self.get_store_config(store_id)
         return client_config.get(CONFIG_PROXY_URL, "") if client_config is not None else ""
 
-    def get_store_config(self, store_name: str = None) -> Dict:
-        store_name = store_name if store_name else _DEFAULT_LABEL
-        return self._store_config.get(store_name, None)
+    def get_store_config(self, store_id: str = None) -> Dict:
+        store_id = store_id if store_id else _DEFAULT_LABEL
+        return self._store_config.get(store_id, None)
 
     def list_stores(self) -> List[str]:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
 
     # List the projects in an s3 storage (returning the names)
-    def list_projects(self, store_name: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
-        def _last_modified(project_name) -> str:
-            ts = [a.last_modified for a in client.list_objects(project_name, prefix=None, recursive=False)]
+    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
+        def _last_modified(project_id) -> str:
+            ts = [a.last_modified for a in client.list_objects(project_id, prefix=None, recursive=False)]
             ts = [a for a in ts if a is not None]
             if len(ts) > 0:
                 return '{0:%Y-%m-%d %H:%M:%S}'.format(max(ts))
             else:
                 return ''
 
-        client = self._get_connection(store_name)
+        client = self._get_connection(store_id)
         try:
             if metadata:
                 result_filter = result_filter if result_filter is not None else DEFAULT_FILTER
                 # has_object is an expensive metadata to compute
                 result = []
                 for bucket in client.list_buckets():
-                    meta = self.get_project_meta(store_name=store_name, project_name=bucket.name, ignore_errors=True)
+                    meta = self.get_project_meta(store_id=store_id, project_id=bucket.name, ignore_errors=True)
                     if result_filter(meta):
                         item = {
-                            "name": bucket.name,
+                            "id": bucket.name,
+                            "name": meta.name,
                             "description": meta.description,
                             "authors": meta.authors,
                             "publications": meta.publications,
                             "tags": meta.tags,
                             "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
                             "updateDate": _last_modified(bucket.name),
-                            "hasProject": self.has_object(store_name=store_name, project_name=bucket.name, object_name="project")
+                            "hasProject": self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
                         }
                         result.append(item)
 
                 return result
             else:
                 return [{
-                    "name": bucket.name,
+                    "id": bucket.name,
                     "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
                 } for bucket in client.list_buckets()]
         except:
@@ -120,16 +121,16 @@ class S3Manager:
             return []
 
     # List the assets in an s3 bucket
-    def list_assets(self, project_name: str, store_name: str = None, result_filter: Callable = None) -> List[Dict]:
+    def list_assets(self, project_id: str, store_id: str = None, result_filter: Callable = None) -> List[Dict]:
         def _format(name: str, meta: OveAssetMeta) -> Union[str, Dict]:
-            return meta.to_public_json() if meta else {"name": name, "project": project_name}
+            return meta.to_public_json() if meta else {"name": name, "project": project_id}
 
         result_filter = result_filter if result_filter is not None else DEFAULT_FILTER
-        client = self._get_connection(store_name)
+        client = self._get_connection(store_id)
         try:
-            assets = [a.object_name[0:-1] for a in client.list_objects(project_name, prefix=None, recursive=False) if a.is_dir]
+            assets = [a.object_name[0:-1] for a in client.list_objects(project_id, prefix=None, recursive=False) if a.is_dir]
             # For the asset list, we switch to a public meta object
-            metas = {asset_name: self.get_asset_meta(project_name, asset_name, store_name, ignore_errors=True) for asset_name in assets}
+            metas = {asset_id: self.get_asset_meta(project_id, asset_id, store_id, ignore_errors=True) for asset_id in assets}
             return [_format(name, meta) for name, meta in metas.items() if result_filter(meta)]
         except:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
@@ -137,21 +138,21 @@ class S3Manager:
 
         # List the assets in an s3 bucket
 
-    def list_files(self, project_name: str, asset_name: str, store_name: str = None) -> List[Dict]:
-        client = self._get_connection(store_name)
+    def list_files(self, project_id: str, asset_id: str, store_id: str = None) -> List[Dict]:
+        client = self._get_connection(store_id)
         try:
-            meta = self.get_asset_meta(store_name=store_name, project_name=project_name, asset_name=asset_name)
-            prefix = asset_name + "/" + str(meta.version) + "/"
+            meta = self.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
+            prefix = asset_id + "/" + str(meta.version) + "/"
 
             result = []
-            for a in client.list_objects(project_name, prefix=prefix, recursive=True):
+            for a in client.list_objects(project_id, prefix=prefix, recursive=True):
                 if len(result) > MAX_LIST_ITEMS:
                     break
 
                 if not a.is_dir:
                     result.append({
                         "name": a.object_name[len(prefix):],
-                        "url": meta.proxy_url + project_name + "/" + a.object_name,
+                        "url": meta.proxy_url + project_id + "/" + a.object_name,
                         "default": meta.filename == a.object_name[len(prefix):]
                     })
 
@@ -160,84 +161,85 @@ class S3Manager:
             logging.error("Error while trying to list assets. Error: %s", sys.exc_info()[1])
             return []
 
-    def check_exists(self, project_name: str, store_name: str = None) -> bool:
-        client = self._get_connection(store_name)
+    def check_exists(self, project_id: str, store_id: str = None) -> bool:
+        client = self._get_connection(store_id)
         try:
-            return client.bucket_exists(project_name)
+            return client.bucket_exists(project_id)
         except ResponseError:
             logging.error("Error while trying to check exists. Error: %s", sys.exc_info()[1])
             return False
 
-    def create_project(self, project_name: str, store_name: str = None) -> None:
-        client = self._get_connection(store_name)
+    def create_project(self, project_id: str, store_id: str = None) -> None:
+        client = self._get_connection(store_id)
         try:
-            client.make_bucket(project_name, location=_DEFAULT_STORE_LOCATION)
+            client.make_bucket(project_id, location=_DEFAULT_STORE_LOCATION)
         except ResponseError:
             logging.error("Error while trying to create project. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create project on remote storage. Please check the project name.")
 
-    def create_asset(self, project_name: str, meta: OveAssetMeta, store_name: str = None) -> OveAssetMeta:
-        client = self._get_connection(store_name)
-        meta.proxy_url = self._get_proxy_url(store_name)
+    def create_asset(self, project_id: str, meta: OveAssetMeta, store_id: str = None) -> OveAssetMeta:
+        client = self._get_connection(store_id)
+        meta.proxy_url = self._get_proxy_url(store_id)
         try:
             # minio interprets the slash as a directory
             meta_name = meta.name + S3_SEPARATOR + OVE_META
             data, size = _encode_json(meta.to_json())
-            client.put_object(project_name, meta_name, data, size)
+            client.put_object(project_id, meta_name, data, size)
             meta.created()
-            self.set_asset_meta(project_name, meta.name, meta, store_name)
+            self.set_asset_meta(project_id, meta.name, meta, store_id)
             return meta
         except ResponseError:
             logging.error("Error while trying to create asset. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to create asset on remote storage. Please check the asset name.")
 
-    def upload_asset(self, project_name: str, asset_name: str, filename: str, upload_filename: str, store_name: str = None) -> None:
-        client = self._get_connection(store_name)
+    def upload_asset(self, project_id: str, asset_id: str, filename: str, upload_filename: str, store_id: str = None) -> None:
+        client = self._get_connection(store_id)
         try:
             # filesize=os.stat(upfile.name).st_size
-            filepath = asset_name + S3_SEPARATOR + filename
-            client.fput_object(project_name, filepath, upload_filename)
+            filepath = asset_id + S3_SEPARATOR + filename
+            client.fput_object(project_id, filepath, upload_filename)
         except ResponseError:
             logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to upload asset to remote storage.")
 
-    def download_asset(self, project_name: str, asset_name: str, filename: str, down_filename: str, store_name: str = None) -> None:
-        client = self._get_connection(store_name)
+    def download_asset(self, project_id: str, asset_id: str, filename: str, down_filename: str, store_id: str = None) -> None:
+        client = self._get_connection(store_id)
         try:
             # filesize=os.stat(upfile.name).st_size
-            filepath = asset_name + S3_SEPARATOR + filename
-            client.fget_object(project_name, filepath, down_filename)
+            filepath = asset_id + S3_SEPARATOR + filename
+            client.fget_object(project_id, filepath, down_filename)
         except ResponseError:
             logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])
             raise ValidationError("Unable to upload asset to remote storage.")
 
-    def has_project_meta(self, project_name: str, store_name: str = None) -> bool:
-        client = self._get_connection(store_name)
+    def has_project_meta(self, project_id: str, store_id: str = None) -> bool:
+        client = self._get_connection(store_id)
         try:
             logging.debug('Checking if project meta exists...')
-            response = client.get_object(project_name, OVE_META)
+            response = client.get_object(project_id, OVE_META)
             return 200 <= response.status < 300
         except:
             return False
 
-    def get_project_meta(self, project_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveProjectMeta]:
-        client = self._get_connection(store_name)
+    def get_project_meta(self, project_id: str, store_id: str = None, ignore_errors: bool = False) -> Union[None, OveProjectMeta]:
+        client = self._get_connection(store_id)
         try:
-            obj = _decode_json(client.get_object(project_name, PROJECT_FILE))['Metadata']
-            return OveProjectMeta(**obj)
+            obj = _decode_json(client.get_object(project_id, PROJECT_FILE))['Metadata']
+            result = OveProjectMeta(**obj)
+            result.id = project_id
+            return result
         except:
             if ignore_errors:
-                return OveProjectMeta(name=project_name)
+                return OveProjectMeta(id=project_id, name=project_id)
             else:
                 logging.error("Error while trying to get project meta. Error: %s", sys.exc_info()[1])
-                raise InvalidProjectError(store_name=store_name, project_name=project_name)
+                raise InvalidProjectError(store_id=store_id, project_id=project_id)
 
-    def set_project_meta(self, project_name: str, meta: OveProjectMeta, store_name: str = None, ignore_errors: bool = False) -> None:
-        client = self._get_connection(store_name)
+    def set_project_meta(self, project_id: str, meta: OveProjectMeta, store_id: str = None, ignore_errors: bool = False) -> None:
+        client = self._get_connection(store_id)
         try:
-
             try:
-                project = _decode_json(client.get_object(project_name, PROJECT_FILE))
+                project = _decode_json(client.get_object(project_id, PROJECT_FILE))
             except NoSuchKey:
                 project = {'Metadata': {}, 'Sections': []}
 
@@ -251,113 +253,113 @@ class S3Manager:
                     project['Metadata'][field] = val
 
             data, size = _encode_json(project)
-            client.put_object(project_name, PROJECT_FILE, data, size)
+            client.put_object(project_id, PROJECT_FILE, data, size)
         except:
             if not ignore_errors:
                 logging.error("Error while trying to set project meta. Error: %s", sys.exc_info()[1])
-                raise InvalidProjectError(store_name=store_name, project_name=project_name)
+                raise InvalidProjectError(store_id=store_id, project_id=project_id)
 
-    def has_asset_meta(self, project_name: str, asset_name: str, store_name: str = None) -> bool:
-        client = self._get_connection(store_name)
+    def has_asset_meta(self, project_id: str, asset_id: str, store_id: str = None) -> bool:
+        client = self._get_connection(store_id)
         try:
-            meta_name = asset_name + S3_SEPARATOR + OVE_META
+            meta_name = asset_id + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists...')
-            response = client.get_object(project_name, meta_name)
+            response = client.get_object(project_id, meta_name)
             return 200 <= response.status < 300
         except:
             return False
 
-    def get_asset_meta(self, project_name: str, asset_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, OveAssetMeta]:
-        client = self._get_connection(store_name)
+    def get_asset_meta(self, project_id: str, asset_id: str, store_id: str = None, ignore_errors: bool = False) -> Union[None, OveAssetMeta]:
+        client = self._get_connection(store_id)
         try:
-            meta_name = asset_name + S3_SEPARATOR + OVE_META
+            meta_name = asset_id + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
-            obj = _decode_json(client.get_object(project_name, meta_name))
+            obj = _decode_json(client.get_object(project_id, meta_name))
             return OveAssetMeta(**obj)
         except:
             if ignore_errors:
                 return None
             else:
                 logging.error("Error while trying to get asset meta. Error: %s", sys.exc_info()[1])
-                raise InvalidAssetError(store_name=store_name, project_name=project_name, asset_name=asset_name)
+                raise InvalidAssetError(store_id=store_id, project_id=project_id, asset_id=asset_id)
 
-    def set_asset_meta(self, project_name: str, asset_name: str, meta: OveAssetMeta, store_name: str = None, ignore_errors: bool = False) -> None:
-        client = self._get_connection(store_name)
+    def set_asset_meta(self, project_id: str, asset_id: str, meta: OveAssetMeta, store_id: str = None, ignore_errors: bool = False) -> None:
+        client = self._get_connection(store_id)
         try:
-            meta_name = asset_name + S3_SEPARATOR + OVE_META
+            meta_name = asset_id + S3_SEPARATOR + OVE_META
             data, size = _encode_json(meta.to_json())
-            client.put_object(project_name, meta_name, data, size)
+            client.put_object(project_id, meta_name, data, size)
         except:
             if not ignore_errors:
                 logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
-                raise InvalidAssetError(store_name=store_name, project_name=project_name, asset_name=asset_name)
+                raise InvalidAssetError(store_id=store_id, project_id=project_id, asset_id=asset_id)
 
-    def has_object(self, project_name: str, object_name: str, store_name: str = None) -> bool:
-        _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)
+    def has_object(self, project_id: str, object_id: str, store_id: str = None) -> bool:
+        _validate_object_id(store_id=store_id, project_id=project_id, object_id=object_id)
 
-        client = self._get_connection(store_name)
+        client = self._get_connection(store_id)
         try:
             logging.debug('Checking if object exists ...')
-            response = client.get_object(project_name, object_name + S3_OBJECT_EXTENSION)
+            response = client.get_object(project_id, object_id + S3_OBJECT_EXTENSION)
             return 200 <= response.status < 300
         except:
             return False
 
-    def get_object(self, project_name: str, object_name: str, store_name: str = None, ignore_errors: bool = False) -> Union[None, Dict]:
-        _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)
+    def get_object(self, project_id: str, object_id: str, store_id: str = None, ignore_errors: bool = False) -> Union[None, Dict]:
+        _validate_object_id(store_id=store_id, project_id=project_id, object_id=object_id)
 
-        client = self._get_connection(store_name)
+        client = self._get_connection(store_id)
         try:
-            return _decode_json(client.get_object(project_name, object_name + S3_OBJECT_EXTENSION))
+            return _decode_json(client.get_object(project_id, object_id + S3_OBJECT_EXTENSION))
         except Exception:
             if ignore_errors:
                 return None
             else:
                 logging.error("Error while trying to get object. Error: %s", sys.exc_info()[1])
-                raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+                raise InvalidObjectError(store_id=store_id, project_id=project_id, object_id=object_id)
 
-    def get_object_info(self, project_name: str, object_name: str, store_name: str = None) -> Union[None, Dict]:
-        if self.has_object(store_name=store_name, project_name=project_name, object_name=object_name):
+    def get_object_info(self, project_id: str, object_id: str, store_id: str = None) -> Union[None, Dict]:
+        if self.has_object(store_id=store_id, project_id=project_id, object_id=object_id):
             return {
-                "name": object_name,
-                "index_file": append_slash(self._get_proxy_url(store_name=store_name)) + project_name + "/" + object_name + S3_OBJECT_EXTENSION
+                "name": object_id,
+                "index_file": append_slash(self._get_proxy_url(store_id=store_id)) + project_id + "/" + object_id + S3_OBJECT_EXTENSION
             }
         else:
             return None
 
-    def set_object(self, project_name: str, object_name: str, object_data: Dict, store_name: str = None) -> None:
-        _validate_object_name(store_name=store_name, project_name=project_name, object_name=object_name)
+    def set_object(self, project_id: str, object_id: str, object_data: Dict, store_id: str = None) -> None:
+        _validate_object_id(store_id=store_id, project_id=project_id, object_id=object_id)
 
-        client = self._get_connection(store_name)
+        client = self._get_connection(store_id)
         try:
             data, size = _encode_json(object_data)
-            client.put_object(project_name, object_name + S3_OBJECT_EXTENSION, data, size)
+            client.put_object(project_id, object_id + S3_OBJECT_EXTENSION, data, size)
         except Exception:
             logging.error("Error while trying to set object. Error: %s", sys.exc_info()[1])
-            raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+            raise InvalidObjectError(store_id=store_id, project_id=project_id, object_id=object_id)
 
-    def get_stream(self, store_name: str, project_name: str, path_name: str) -> io.FileIO:
-        client = self._get_connection(store_name)
+    def get_stream(self, store_id: str, project_id: str, path_name: str) -> io.FileIO:
+        client = self._get_connection(store_id)
         try:
-            return client.get_object(project_name, path_name)
+            return client.get_object(project_id, path_name)
         except Exception:
             logging.error("Error while trying to get stream. Error: %s", sys.exc_info()[1])
-            raise StreamNotFoundError(store_name=store_name, project_name=project_name, filename=path_name)
+            raise StreamNotFoundError(store_id=store_id, project_id=project_id, filename=path_name)
 
-    def get_stream_meta(self, store_name: str, project_name: str, path_name: str) -> Dict:
-        client = self._get_connection(store_name)
+    def get_stream_meta(self, store_id: str, project_id: str, path_name: str) -> Dict:
+        client = self._get_connection(store_id)
         try:
-            obj = client.stat_object(project_name, path_name)
+            obj = client.stat_object(project_id, path_name)
             return {"size": obj.size, "last_modified": obj.last_modified}
         except Exception:
             logging.error("Error while trying to get stream metadata. Error: %s", sys.exc_info()[1])
-            raise StreamNotFoundError(store_name=store_name, project_name=project_name, filename=path_name)
+            raise StreamNotFoundError(store_id=store_id, project_id=project_id, filename=path_name)
 
 
 # Helpers
-def _validate_object_name(store_name: str, project_name: str, object_name: str) -> None:
-    if not object_name or not object_name.isalnum():
-        raise InvalidObjectError(store_name=store_name, project_name=project_name, object_name=object_name)
+def _validate_object_id(store_id: str, project_id: str, object_id: str) -> None:
+    if not object_id or not object_id.isalnum():
+        raise InvalidObjectError(store_id=store_id, project_id=project_id, object_id=object_id)
 
 
 def _encode_json(data: Any) -> Tuple[io.BytesIO, int]:

@@ -89,15 +89,15 @@ class BaseWorker(ABC):
         except:
             logging.error("Failed to unregister callback '%s' on server '%s'. Error: %s", self._callback, self._service_url, sys.exc_info()[1])
 
-    def safe_process(self, store_config: Dict, project_name: str, asset_name: str, task_options: Dict):
+    def safe_process(self, store_config: Dict, project_id: str, asset_id: str, task_options: Dict):
         meta = None
         try:
             self._file_controller.setup(store_config)
 
-            meta = self._file_controller.get_asset_meta(project_name=project_name, asset_name=asset_name)
+            meta = self._file_controller.get_asset_meta(project_id=project_id, asset_id=asset_id)
             self.update_status(WorkerStatus.PROCESSING)
-            self._file_controller.lock_asset(project_name=project_name, meta=meta, worker_name=self._name)
-            self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.PROCESSING)
+            self._file_controller.lock_asset(project_id=project_id, meta=meta, worker_name=self._name)
+            self._file_controller.update_asset_status(project_id=project_id, meta=meta, status=WorkerStatus.PROCESSING)
 
             filename = task_options.get("filename", meta.filename)
             if filename is None or len(filename) == 0:
@@ -106,22 +106,22 @@ class BaseWorker(ABC):
             if filename is None:
                 logging.error("Invalid filename provided ...")
                 self.report_error("Invalid filename provided ...")
-                self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.ERROR,
+                self._file_controller.update_asset_status(project_id=project_id, meta=meta, status=WorkerStatus.ERROR,
                                                           error_msg="Invalid filename provided ...")
             else:
                 filename = str(meta.version) + "/" + filename
-                self.process(project_name=project_name, filename=filename, meta=meta, options=task_options)
+                self.process(project_id=project_id, filename=filename, meta=meta, options=task_options)
 
-                self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.DONE)
+                self._file_controller.update_asset_status(project_id=project_id, meta=meta, status=WorkerStatus.DONE)
                 self.update_status(WorkerStatus.READY)
         except:
-            logging.error("Error while trying to process (%s, %s). Error: %s", project_name, asset_name, sys.exc_info()[1])
-            error_msg = "Error while trying to process ({}, {}). Check worker logs for details.".format(project_name, asset_name)
-            self._file_controller.update_asset_status(project_name=project_name, meta=meta, status=WorkerStatus.ERROR, error_msg=error_msg)
+            logging.error("Error while trying to process (%s, %s). Error: %s", project_id, asset_id, sys.exc_info()[1])
+            error_msg = "Error while trying to process ({}, {}). Check worker logs for details.".format(project_id, asset_id)
+            self._file_controller.update_asset_status(project_id=project_id, meta=meta, status=WorkerStatus.ERROR, error_msg=error_msg)
             self.report_error(error_msg)
         finally:
             if meta is not None:
-                self._file_controller.unlock_asset(project_name=project_name, meta=meta, worker_name=self._name)
+                self._file_controller.unlock_asset(project_id=project_id, meta=meta, worker_name=self._name)
             self._file_controller.clean()
 
     @abstractmethod
@@ -162,10 +162,10 @@ class BaseWorker(ABC):
         return {}
 
     @abstractmethod
-    def process(self, project_name: str, filename: str, meta: OveAssetMeta, options: Dict):
+    def process(self, project_id: str, filename: str, meta: OveAssetMeta, options: Dict):
         """
         Override this to start processing
-        :param project_name: name of the project to process
+        :param project_id: name of the project to process
         :param filename: the filename to process
         :param meta: the object to process
         :param options: task options, passed by the asset manager. Can be empty
@@ -184,6 +184,6 @@ def unregister_callback(worker: BaseWorker):
     worker.unregister_callback()
 
 
-def process_request(worker: BaseWorker, store_config: Dict, project_name: str, asset_name: str, task_options: Dict, ):
-    p = Process(target=worker.safe_process, name="worker_process", args=(store_config, project_name, asset_name, task_options), daemon=True)
+def process_request(worker: BaseWorker, store_config: Dict, project_id: str, asset_id: str, task_options: Dict, ):
+    p = Process(target=worker.safe_process, name="worker_process", args=(store_config, project_id, asset_id, task_options), daemon=True)
     p.start()

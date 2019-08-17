@@ -80,9 +80,9 @@ class WorkerSchedule:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         validate_not_null(req.media, 'worker_type')
 
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
-        self._worker_manager.schedule_process(project_name=project_id, meta=meta, worker_type=req.media.get("worker_type"),
-                                              store_config=self._controller.get_store_config(store_name=store_id),
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
+        self._worker_manager.schedule_process(project_id=project_id, meta=meta, worker_type=req.media.get("worker_type"),
+                                              store_config=self._controller.get_store_config(store_id=store_id),
                                               task_options=req.media.get("parameters", dict()))
 
         resp.media = {'Status': 'OK'}
@@ -101,7 +101,7 @@ class ProjectList:
         else:
             metadata = to_bool(req.params.get("metadata", False))
 
-        resp.media = self._controller.list_projects(store_name=store_id, metadata=metadata, result_filter=results_filter)
+        resp.media = self._controller.list_projects(store_id=store_id, metadata=metadata, result_filter=results_filter)
         resp.status = falcon.HTTP_200
 
 
@@ -110,12 +110,46 @@ class ProjectCreate:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
+        validate_not_null(req.media, 'id')
         validate_not_null(req.media, 'name')
+        project_id = req.media.get('id')
         project_name = req.media.get('name')
 
-        self._controller.create_project(store_name=store_id, project_name=project_name)
+        self._controller.create_project(store_id=store_id, project_id=project_id)
 
-        resp.media = {'Project': project_name}
+        meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
+        meta.name = project_name
+        self._controller.edit_project_meta(store_id=store_id, project_id=project_id, meta=meta)
+
+        resp.media = {'Project': project_id}
+        resp.status = falcon.HTTP_200
+
+
+class ProjectMetaEdit:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
+        resp.media = meta.to_public_json()
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
+        if is_empty(req.media.get('name')) is False:
+            # todo; this needs to move the asset into a new path as well
+            # todo; rebuild the path as well
+            # meta.name = req.media.get('name')
+            pass
+
+        fields = ['name', 'description', 'tags', 'authors', 'publications']
+        for field in fields:
+            if is_empty(req.media.get(field)) is False:
+                setattr(meta, field, req.media.get(field))
+
+        self._controller.edit_project_meta(store_id=store_id, project_id=project_id, meta=meta)
+
+        resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
 
 
@@ -125,7 +159,7 @@ class AssetList:
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         results_filter = build_meta_filter(req.params, default_filter=DEFAULT_FILTER)
-        resp.media = self._controller.list_assets(project_name=project_id, store_name=store_id, result_filter=results_filter)
+        resp.media = self._controller.list_assets(project_id=project_id, store_id=store_id, result_filter=results_filter)
         resp.status = falcon.HTTP_200
 
 
@@ -134,7 +168,7 @@ class FileList:
         self._controller = controller
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        resp.media = self._controller.list_files(project_name=project_id, store_name=store_id, asset_name=asset_id)
+        resp.media = self._controller.list_files(project_id=project_id, store_id=store_id, asset_id=asset_id)
         resp.status = falcon.HTTP_200
 
 
@@ -145,10 +179,10 @@ class AssetCreate:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         validate_not_null(req.media, 'name')
         validate_no_slashes(req.media, 'name')
-        asset_name = req.media.get('name')
-        self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveAssetMeta(name=asset_name, project=project_id))
+        asset_id = req.media.get('name')
+        self._controller.create_asset(store_id=store_id, project_id=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
 
-        resp.media = {'Asset': asset_name}
+        resp.media = {'Asset': asset_id}
         resp.status = falcon.HTTP_200
 
 
@@ -165,49 +199,21 @@ class AssetUpload:
         update_asset = to_bool(req.params.get("update", "False"))
 
         try:
-            meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+            meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
             if meta.uploaded and not update_asset:
                 raise falcon.HTTPBadRequest(title="Asset exists",
                                             description="This asset already has a file. If you wish to change this file, please update the asset.")
         except InvalidAssetError:
             if create_asset:
-                meta = self._controller.create_asset(store_name=store_id, project_name=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
+                meta = self._controller.create_asset(store_id=store_id, project_id=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
             else:
                 raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet.")
 
-        up_fn = partial(self._controller.upload_asset, store_name=store_id, project_name=project_id, asset_name=asset_id, filename=filename, meta=meta,
+        up_fn = partial(self._controller.upload_asset, store_id=store_id, project_id=project_id, asset_id=asset_id, filename=filename, meta=meta,
                         update=update_asset)
         save_filename(up_fn, req)
 
         resp.media = {'Asset': asset_id, 'Filename': filename}
-        resp.status = falcon.HTTP_200
-
-
-class ProjectMetaEdit:
-    def __init__(self, controller: FileController):
-        self._controller = controller
-
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        meta = self._controller.get_project_meta(store_name=store_id, project_name=project_id)
-        resp.media = meta.to_public_json()
-        resp.status = falcon.HTTP_200
-
-    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        meta = self._controller.get_project_meta(store_name=store_id, project_name=project_id)
-        if is_empty(req.media.get('name')) is False:
-            # todo; this needs to move the asset into a new path as well
-            # todo; rebuild the path as well
-            # meta.name = req.media.get('name')
-            pass
-
-        fields = ['name', 'description', 'tags', 'authors', 'publications']
-        for field in fields:
-            if is_empty(req.media.get(field)) is False:
-                setattr(meta, field, req.media.get(field))
-
-        self._controller.edit_project_meta(store_name=store_id, project_name=project_id, meta=meta)
-
-        resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
 
 
@@ -216,12 +222,12 @@ class AssetMetaEdit:
         self._controller = controller
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
         resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
         if is_empty(req.media.get('name')) is False:
             # todo; this needs to move the asset into a new path as well
             # todo; rebuild the path as well
@@ -232,8 +238,8 @@ class AssetMetaEdit:
         if is_empty(req.media.get('tags')) is False:
             meta.tags = req.media.get('tags')
 
-        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id,
-                                         asset_name=asset_id, meta=meta)
+        self._controller.edit_asset_meta(store_id=store_id, project_id=project_id,
+                                         asset_id=asset_id, meta=meta)
 
         resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
@@ -244,16 +250,16 @@ class TagEdit:
         self._controller = controller
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
         resp.media = meta.tags
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         validate_list(req.media)
 
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
         meta.tags = req.media
-        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id, meta=meta)
+        self._controller.edit_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id, meta=meta)
 
         resp.media = meta.tags
         resp.status = falcon.HTTP_200
@@ -269,7 +275,7 @@ class TagEdit:
         if action not in ['add', 'remove']:
             raise ValidationError(title="Invalid action provided", description="The action should be either add or remove")
 
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
 
         new_tags = set(meta.tags)
         if action == 'add':
@@ -278,15 +284,15 @@ class TagEdit:
             new_tags.difference_update(data)
         meta.tags = list(new_tags)
 
-        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id, meta=meta)
+        self._controller.edit_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id, meta=meta)
 
         resp.media = meta.tags
         resp.status = falcon.HTTP_200
 
     def on_delete(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        meta = self._controller.get_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id)
+        meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
         meta.tags = []
-        self._controller.edit_asset_meta(store_name=store_id, project_name=project_id, asset_name=asset_id, meta=meta)
+        self._controller.edit_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id, meta=meta)
 
         resp.media = meta.tags
         resp.status = falcon.HTTP_200
@@ -297,20 +303,20 @@ class ObjectEdit:
         self._controller = controller
 
     def on_head(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        has_object = self._controller.has_object(store_name=store_id, project_name=project_id, object_name=object_id)
+        has_object = self._controller.has_object(store_id=store_id, project_id=project_id, object_id=object_id)
         resp.status = falcon.HTTP_200 if has_object else falcon.HTTP_NOT_FOUND
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        resp.media = self._controller.get_object(store_name=store_id, project_name=project_id, object_name=object_id)
+        resp.media = self._controller.get_object(store_id=store_id, project_id=project_id, object_id=object_id)
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        self._controller.set_object(store_name=store_id, project_name=project_id, object_name=object_id, object_data=req.media, update=False)
+        self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=req.media, update=False)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
     def on_put(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        self._controller.set_object(store_name=store_id, project_name=project_id, object_name=object_id, object_data=req.media, update=True)
+        self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=req.media, update=True)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
@@ -320,5 +326,5 @@ class ObjectInfo:
         self._controller = controller
 
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        resp.media = self._controller.get_object_info(store_name=store_id, project_name=project_id, object_name=object_id) or {}
+        resp.media = self._controller.get_object_info(store_id=store_id, project_id=project_id, object_id=object_id) or {}
         resp.status = falcon.HTTP_200

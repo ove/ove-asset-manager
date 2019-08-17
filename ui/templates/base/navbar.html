@@ -12,56 +12,56 @@
             </li>
             <li class="divider-vertical" style="border-right: 1px solid rgb(123,123,123); border-left: 1px solid #f2f2f2; margin: 0 9px;"></li>
             <li class="nav-item">
-                <a class="nav-link {{ "active" if not store_name and active_page not in ["workers", "docs"] }}" href="/"><i class="fas fa-home"></i>&nbsp;&nbsp;Home</a>
+                <a class="nav-link {{ "active" if not store_id and active_page not in ["workers", "docs"] }}" href="/"><i class="fas fa-home"></i>&nbsp;&nbsp;Home</a>
             </li>
 
-            {% if store_name %}
+            {% if store_id %}
                 <li class="nav-item">
-                    <span class="nav-link {{ "active" if not project_name else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
+                    <span class="nav-link {{ "active" if not project_id else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ "active" if not project_name }}" href="/view/store/{{ store_name }}">
+                    <a class="nav-link {{ "active" if not project_id }}" href="/view/store/{{ store_id }}">
                         <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
-                        <span class="badge {{ "badge-primary" if not project_name else "badge-secondary" }}">{{ store_name }}</span>
+                        <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link"  href="/view/store/{{  store_name }}/index">Index</a>
+                    <a class="nav-link"  href="/view/store/{{  store_id }}/index">Index</a>
                 </li>
             {% endif %}
 
-            {% if project_name %}
+            {% if project_id %}
                 <li class="nav-item">
-                    <span class="nav-link {{ "active" if not asset_name and not object_name else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
+                    <span class="nav-link {{ "active" if not asset_id and not object_id else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ "active" if not asset_name and not object_name }}" href="/view/store/{{ store_name }}/project/{{ project_name }}">
+                    <a class="nav-link {{ "active" if not asset_id and not object_id }}" href="/view/store/{{ store_id }}/project/{{ project_id }}">
                         <i class="fas fa-list"></i>&nbsp;&nbsp;Project
-                        <span class="badge {{ "badge-primary" if not asset_name and not object_name else "badge-secondary" }}">{{ project_name }}</span>
+                        <span class="badge {{ "badge-primary" if not asset_id and not object_id else "badge-secondary" }}">{{ project_id }}</span>
                     </a>
                 </li>
             {% endif %}
 
-            {% if asset_name %}
+            {% if asset_id %}
                 <li class="nav-item">
                     <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset_name }}">
+                    <a class="nav-link active" href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset_id }}">
                         <i class="fas fa-file-alt"></i>&nbsp;&nbsp;Asset
-                        <span class="badge badge-primary">{{ asset_name }}</span>
+                        <span class="badge badge-primary">{{ asset_id }}</span>
                     </a>
                 </li>
             {% endif %}
 
-            {% if object_name %}
+            {% if object_id %}
                 <li class="nav-item">
                     <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="/view/store/{{ store_name }}/project/{{ project_name }}/object/{{ object_name }}">
+                    <a class="nav-link active" href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object_id }}">
                         <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Object
-                        <span class="badge badge-primary">{{ object_name }}.json</span>
+                        <span class="badge badge-primary">{{ object_id }}.json</span>
                     </a>
                 </li>
             {% endif %}

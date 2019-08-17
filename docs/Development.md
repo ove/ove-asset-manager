@@ -102,10 +102,10 @@ class NewWorker(BaseWorker):
         """
         return {}
 
-    def process(self, project_name: str, meta: OveMeta, options: Dict):
+    def process(self, project_id: str, meta: OveMeta, options: Dict):
         """
         Override this to start processing
-        :param project_name: name of the project to process
+        :param project_id: name of the project to process
         :param meta: the object to process
         :param options: task options, passed by the asset manager. Can be empty
         :return: None

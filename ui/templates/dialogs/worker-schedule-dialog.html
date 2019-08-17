@@ -81,28 +81,28 @@
 
     function submitForm() {
         const form = $('#workerScheduleForm').alpaca('get');
-        const asset_name = $('#assetNameModalField').val();
+        const asset_id = $('#assetNameModalField').val();
         if (form === null) {
             // this worker does not have any parameters
-            postWorkerParams("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+            postWorkerParams("/api/store/{{  store_id }}/project/{{ project_id }}/asset/" + asset_id + "/process/" + $('#workerType').val(),
                 {filename: $('#processFilename').val()});
             $('#workerScheduleDialog').modal('hide');
         } else {
             form.refreshValidationState(true);
             if (form.isValid(true)) {
-                postWorkerParams("/api/store/{{  store_name }}/project/{{ project_name }}/asset/" + asset_name + "/process/" + $('#workerType').val(),
+                postWorkerParams("/api/store/{{  store_id }}/project/{{ project_id }}/asset/" + asset_id + "/process/" + $('#workerType').val(),
                     Object.assign({filename: $('#processFilename').val()}, form.getValue()));
                 $('#workerScheduleDialog').modal('hide');
             }
         }
     }
 
-    function updateFilenameData(asset_name, extensions) {
+    function updateFilenameData(asset_id, extensions) {
         const selectField = $('#processFilename');
 
         selectField.empty().trigger("change");
         selectField.append(new Option("Loading ...", "", true, true));
-        $.getJSON("/api/store/{{ store_name }}/project/{{ project_name }}/asset/" + asset_name + "/files?hierarchical=false", function (data) {
+        $.getJSON("/api/store/{{ store_id }}/project/{{ project_id }}/asset/" + asset_id + "/files?hierarchical=false", function (data) {
             selectField.empty().trigger("change");
             let defaultValue = null;
             _.each(data, function (e) {
@@ -123,13 +123,13 @@
         });
     }
 
-    function showProcessModal(asset_name) {
+    function showProcessModal(asset_id) {
         const workerModal = $('#workerScheduleDialog');
 
-        $('#assetNameModalField').val(asset_name);
+        $('#assetNameModalField').val(asset_id);
         $("#processFilename").select2({dropdownParent: workerModal, data: []});
 
-        updateFilenameData(asset_name, null);
+        updateFilenameData(asset_id, null);
 
         workerModal.modal();
     }

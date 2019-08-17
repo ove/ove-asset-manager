@@ -11,7 +11,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `['store1', 'store2', '...']` 
 ----
 
-- **/api/{store_name}/list**
+- **/api/{store_id}/list**
     - `GET`: _Lists available projects in a file store_
     - **Query params:** 
         - `filterByTag=<tag_name>` - optional, filter all projects tagged by tag_name 
@@ -25,17 +25,17 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Store not found", description="..."}`
 ----
 
-- **/api/{store_name}/create**
+- **/api/{store_id}/create**
     - `POST`: _Create project_
     - **Data Params:** `Requires JSON body`
     
     `{
-    "name":"project_name"
+    "name":"project_id"
     }`
     - **Response:**
         - **Success**: <br />
         **HTTP Code:** 200 <br />
-        **Content:** `{'Project': project_name}` 
+        **Content:** `{'Project': project_id}` 
         - **Error**: Store not found <br />
         **HTTP Code:** 400 Bad Request <br />
         **Content:** `{title="Store not found", description="..."}`
@@ -45,7 +45,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     * **Notes:** _With S3 storage, the project name must conform to s3 bucket name conventions_
 ----
 
-- **/api/{store_name}/{project_name}/list**
+- **/api/{store_id}/{project_id}/list**
     - `GET`: _Lists available assets in a file store with meta data_
     - **Query params:** 
         - `includeEmpty=(True|False)` - optional, if true all folders are included regardless of whether they are ove assets`
@@ -62,17 +62,17 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Project not found", description="..."}`
 ----
 
-* **/api/{store_name}/{project_name}/create**
+* **/api/{store_id}/{project_id}/create**
     - `POST`: _Create asset_
     - **Data Params:** `Requires JSON body`
     
     `{
-    "name":"asset_name"
+    "name":"asset_id"
     }`
     - **Response:**
         - **Success**: <br />
         **HTTP Code:** 200 <br />
-        **Content:** `{'Asset': asset_name}` 
+        **Content:** `{'Asset': asset_id}` 
         - **Error**: Store not found <br />
         **HTTP Code:** 400 Bad Request <br />
         **Content:** `{title="Store not found", description="..."}`
@@ -85,7 +85,7 @@ This API is designed to allow you to perform the majority of necessary file oper
     * **Notes:** _With S3 storage, asset name is not allowed to contain / or any restricted asset names (e.g. new, .ovemeta, list, create)
 ----
 
-- **/api/{store_name}/{project_name}/object/{object_name}**
+- **/api/{store_id}/{project_id}/object/{object_id}**
     - `HEAD`: _Check if an object exists_
     - **Response:**
         - **Success**: HTTP Code 200
@@ -139,7 +139,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Object not found", description="..."}`
 ----
 
-- **/api/{store_name}/{project_name}/object/{object_name}/info**
+- **/api/{store_id}/{project_id}/object/{object_id}/info**
     - `GET`: _Get the object metadata_
     - **Response:**
         - **Success**: <br />
@@ -156,7 +156,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Object not found", description="..."}`
 ----
 
-- **/api/{store_name}/{project_name}/meta/{asset_name}**
+- **/api/{store_id}/{project_id}/meta/{asset_id}**
     - `HEAD`: _Check if an asset exists_
     - **Response:**
         - **Success**: HTTP Code 200
@@ -203,7 +203,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----  
 
-- **/api/{store_name}/{project_name}/files/{asset_name}**
+- **/api/{store_id}/{project_id}/files/{asset_id}**
     - `GET`: _list of files under the current version of the asset_
     - **Response:**
         - **Success**: <br />
@@ -220,7 +220,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset not found", description="..."}`
 ----        
 
-- **/api/{store_name}/{project_name}/upload/{asset_name}**
+- **/api/{store_id}/{project_id}/upload/{asset_id}**
     - `POST`: _Upload an asset_
     - **Query params:** 
         - `filename= urlencoded string` - required, the filename to upload into the asset
@@ -246,7 +246,7 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset exists", description="..."}`
 ----
 
-- **/api/{store_name}/{project_name}/process/{asset_name}**
+- **/api/{store_id}/{project_id}/process/{asset_id}**
     - `POST`: _Schedule a worker processing task on the selected asset_
     - **Data Params:** `{"worker_type": "...",}`
     - **Response:**

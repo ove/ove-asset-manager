@@ -85,8 +85,8 @@ class NetworkWorker(BaseWorker):
             }
         }
 
-    def process(self, project_name: str, filename: str, meta: OveAssetMeta, options: Dict):
-        logging.info("Copying %s/%s/%s into the temp place ...", project_name, meta.name, filename)
+    def process(self, project_id: str, filename: str, meta: OveAssetMeta, options: Dict):
+        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.name, filename)
 
         with TemporaryDirectory() as input_folder:
             with TemporaryDirectory() as output_folder:
@@ -95,7 +95,7 @@ class NetworkWorker(BaseWorker):
                 network_file = os.path.join(input_folder, filename)
                 open(network_file, 'a').close()
 
-                self._file_controller.download_asset(project_name=project_name, asset_name=meta.name, filename=filename, down_filename=network_file)
+                self._file_controller.download_asset(project_id=project_id, asset_id=meta.name, filename=filename, down_filename=network_file)
 
                 algorithm = options.get('algorithm', "FM^3 (OGDF)")
 
@@ -117,14 +117,14 @@ class NetworkWorker(BaseWorker):
                 with open(os.path.join(output_folder, result_name + ".options"), 'w') as fp:
                     json.dump(options, fp)
 
-                self._file_controller.upload_asset_folder(project_name=project_name, meta=meta, upload_folder=output_folder,
+                self._file_controller.upload_asset_folder(project_id=project_id, meta=meta, upload_folder=output_folder,
                                                           worker_name=self.name)
 
         base_name = os.path.splitext(os.path.basename(filename))[0]
         meta.index_file = os.path.join(meta.worker_root + self.name, base_name, result_name)
 
-        self._file_controller.set_asset_meta(project_name, meta.name, meta)
-        logging.info("Finished generating %s/%s into the storage ...", project_name, meta.name)
+        self._file_controller.set_asset_meta(project_id, meta.name, meta)
+        logging.info("Finished generating %s/%s into the storage ...", project_id, meta.name)
 
     @staticmethod
     def convert_param(param):

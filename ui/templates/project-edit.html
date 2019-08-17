@@ -17,11 +17,17 @@
         <div class="card">
             <div class="card-body">
                 <form id="project-edit" method="post"
-                      action="/view/store/{{ store_name }}/project/{{ project_name }}/edit">
+                      action="/view/store/{{ store_id }}/project/{{ project_id }}/edit">
                     <div class="form-group row">
-                        <label for="name" class="col-3 col-form-label">Name</label>
+                        <label for="id" class="col-3 col-form-label">Project ID</label>
                         <div class="col-9">
-                            <input name="name" id="name" value="{{ project.name }}" type="text" readonly class="form-control" required>
+                            <input name="id" id="id" value="{{ project.id }}" type="text" readonly class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="name" class="col-3 col-form-label">Project name</label>
+                        <div class="col-9">
+                            <input name="name" id="name" value="{{ project.name }}" type="text" class="form-control" required>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -57,7 +63,7 @@
                     </div>
                     <div class="form-group row justify-content-end">
                         <div class="mr-3">
-                            <a href="/view/store/{{ store_name }}" class="btn btn-outline-danger mr-1">Close</a>
+                            <a href="/view/store/{{ store_id }}" class="btn btn-outline-danger mr-1">Close</a>
                             <button type="button" class="btn btn-outline-success"
                                     onclick="confirmSubmission('project-edit', 'Are you sure you want to save the changes?')">
                                 Save

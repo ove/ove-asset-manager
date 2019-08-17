@@ -32,23 +32,23 @@ class BackendController:
     def list_stores(self) -> List:
         return self._backend.get("api/list") or []
 
-    def list_projects(self, store_name: str) -> List:
-        return self._backend.get("api/{}/list".format(store_name), params={"metadata": True})
+    def list_projects(self, store_id: str) -> List:
+        return self._backend.get("api/{}/list".format(store_id), params={"metadata": True})
 
-    def create_project(self, store_name: str, project_name: str) -> None:
-        self._backend.post("api/{}/create".format(store_name), data={"name": project_name})
+    def create_project(self, store_id: str, project_id: str, project_name: str) -> None:
+        self._backend.post("api/{}/create".format(store_id), data={"id": project_id, "name": project_name})
 
-    def get_project(self, store_name: str, project_name: str) -> Dict:
-        return self._backend.get("/api/{}/{}/projectMeta".format(store_name, project_name))
+    def get_project(self, store_id: str, project_id: str) -> Dict:
+        return self._backend.get("/api/{}/{}/projectMeta".format(store_id, project_id))
 
-    def edit_project(self, store_name: str, project_name: str, project_data: Dict) -> Dict:
-        return self._backend.post("/api/{}/{}/projectMeta".format(store_name, project_name), data=project_data)
+    def edit_project(self, store_id: str, project_id: str, project_data: Dict) -> Dict:
+        return self._backend.post("/api/{}/{}/projectMeta".format(store_id, project_id), data=project_data)
 
-    def list_assets(self, store_name: str, project_name: str) -> List:
-        return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_name, project_name))]
+    def list_assets(self, store_id: str, project_id: str) -> List:
+        return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_id, project_id))]
 
-    def list_files(self, store_name: str, project_name: str, asset_name: str, hierarchical: bool = False) -> List[Dict]:
-        files = self._backend.get("api/{}/{}/files/{}".format(store_name, project_name, asset_name))
+    def list_files(self, store_id: str, project_id: str, asset_id: str, hierarchical: bool = False) -> List[Dict]:
+        files = self._backend.get("api/{}/{}/files/{}".format(store_id, project_id, asset_id))
 
         if hierarchical:
             file_tree = []
@@ -59,38 +59,38 @@ class BackendController:
         else:
             return files
 
-    def get_asset(self, store_name: str, project_name: str, asset_name: str) -> Dict:
-        return self._backend.get("api/{}/{}/meta/{}".format(store_name, project_name, asset_name))
+    def get_asset(self, store_id: str, project_id: str, asset_id: str) -> Dict:
+        return self._backend.get("api/{}/{}/meta/{}".format(store_id, project_id, asset_id))
 
-    def create_asset(self, store_name: str, project_name: str, asset: Dict) -> Dict:
-        self._backend.post("api/{}/{}/create".format(store_name, project_name), data=asset)
-        return self.get_asset(store_name=store_name, project_name=project_name, asset_name=asset.get("name", ""))
+    def create_asset(self, store_id: str, project_id: str, asset: Dict) -> Dict:
+        self._backend.post("api/{}/{}/create".format(store_id, project_id), data=asset)
+        return self.get_asset(store_id=store_id, project_id=project_id, asset_id=asset.get("name", ""))
 
-    def edit_asset(self, store_name: str, project_name: str, asset: Dict) -> Dict:
-        return self._backend.post("/api/{}/{}/meta/{}".format(store_name, project_name, asset.get("name", "")), data=asset)
+    def edit_asset(self, store_id: str, project_id: str, asset: Dict) -> Dict:
+        return self._backend.post("/api/{}/{}/meta/{}".format(store_id, project_id, asset.get("name", "")), data=asset)
 
-    def upload_asset(self, store_name: str, project_name: str, asset_name: str, filename: str, stream: Any, update: bool = False, create: bool = False) -> None:
-        self._backend.upload(api_url="api/{}/{}/upload/{}".format(store_name, project_name, asset_name), stream=stream,
+    def upload_asset(self, store_id: str, project_id: str, asset_id: str, filename: str, stream: Any, update: bool = False, create: bool = False) -> None:
+        self._backend.upload(api_url="api/{}/{}/upload/{}".format(store_id, project_id, asset_id), stream=stream,
                              params={"filename": filename, "update": update, "create": create})
 
-    def schedule_worker(self, store_name: str, project_name: str, asset_name: str, worker_type: str, parameters: Dict):
-        self._backend.post("api/{}/{}/process/{}".format(store_name, project_name, asset_name), data={"worker_type": worker_type, "parameters": parameters})
+    def schedule_worker(self, store_id: str, project_id: str, asset_id: str, worker_type: str, parameters: Dict):
+        self._backend.post("api/{}/{}/process/{}".format(store_id, project_id, asset_id), data={"worker_type": worker_type, "parameters": parameters})
 
-    def check_objects(self, store_name: str, project_name: str, object_names: List[str]) -> List[Dict]:
-        return [self.get_object_info(store_name=store_name, project_name=project_name, object_name=item)
-                for item in object_names if self.has_object(store_name=store_name, project_name=project_name, object_name=item)]
+    def check_objects(self, store_id: str, project_id: str, object_ids: List[str]) -> List[Dict]:
+        return [self.get_object_info(store_id=store_id, project_id=project_id, object_id=item)
+                for item in object_ids if self.has_object(store_id=store_id, project_id=project_id, object_id=item)]
 
-    def has_object(self, store_name: str, project_name: str, object_name: str) -> bool:
-        return self._backend.head("api/{}/{}/object/{}".format(store_name, project_name, object_name))
+    def has_object(self, store_id: str, project_id: str, object_id: str) -> bool:
+        return self._backend.head("api/{}/{}/object/{}".format(store_id, project_id, object_id))
 
-    def get_object(self, store_name: str, project_name: str, object_name: str) -> Union[None, Dict]:
-        return self._backend.get("api/{}/{}/object/{}".format(store_name, project_name, object_name))
+    def get_object(self, store_id: str, project_id: str, object_id: str) -> Union[None, Dict]:
+        return self._backend.get("api/{}/{}/object/{}".format(store_id, project_id, object_id))
 
-    def get_object_info(self, store_name: str, project_name: str, object_name: str) -> Union[None, Dict]:
-        return self._backend.get("api/{}/{}/object/{}/info".format(store_name, project_name, object_name))
+    def get_object_info(self, store_id: str, project_id: str, object_id: str) -> Union[None, Dict]:
+        return self._backend.get("api/{}/{}/object/{}/info".format(store_id, project_id, object_id))
 
-    def set_object(self, store_name: str, project_name: str, object_name: str, object_data: Dict) -> None:
-        return self._backend.put("api/{}/{}/object/{}".format(store_name, project_name, object_name), data=object_data)
+    def set_object(self, store_id: str, project_id: str, object_id: str, object_data: Dict) -> None:
+        return self._backend.put("api/{}/{}/object/{}".format(store_id, project_id, object_id), data=object_data)
 
 
 def _mutate(d: Dict, field: str, value: Any) -> Dict:

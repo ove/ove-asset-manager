@@ -7,6 +7,7 @@ from common.util import append_slash
 
 class OveProjectMeta:
     def __init__(self, **kwargs):
+        self.id = kwargs.get("id", "")
         self.name = kwargs.get("name", "")
         self.description = kwargs.get("description", "")
         self.authors = kwargs.get("authors", "")
@@ -19,6 +20,7 @@ class OveProjectMeta:
 
     def to_public_json(self):
         return {
+            "id": self.id,
             "name": self.name,
             "description": self.description,
             "authors": self.authors,

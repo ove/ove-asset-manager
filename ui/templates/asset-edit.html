@@ -19,7 +19,7 @@
         <div class="card">
             <div class="card-body">
                 <form id="asset-edit" method="post"
-                      action="/view/store/{{ store_name }}/project/{{ project_name }}/asset/{{ "new" if create else asset.name }}">
+                      action="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ "new" if create else asset.name }}">
                     <div class="form-group row">
                         <label for="name" class="col-3 col-form-label">Name</label>
                         <div class="col-9">
@@ -62,10 +62,10 @@
                         <div class="mr-3">
                             <button type="button" class="btn btn-outline-primary mr-1 {{ "invisible" if create else "visible" }}"
                                     data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                    onclick="showUploadModal('/api/store/{{ store_name }}/project/{{ project_name }}/asset/{{ asset.name }}/upload', false)">
+                                    onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.name }}/upload', false)">
                                 Upload
                             </button>
-                            <a href="/view/store/{{ store_name }}/project/{{ project_name }}" class="btn btn-outline-danger mr-1">Close</a>
+                            <a href="/view/store/{{ store_id }}/project/{{ project_id }}" class="btn btn-outline-danger mr-1">Close</a>
                             <button type="button" class="btn btn-outline-success"
                                     onclick="confirmSubmission('asset-edit', 'Are you sure you want to save the changes?')">
                                 {{ "Create" if create else "Save" }}
