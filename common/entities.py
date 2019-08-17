@@ -6,6 +6,8 @@ from common.util import append_slash
 
 
 class OveProjectMeta:
+    EDITABLE_FIELDS = ['name', 'description', 'tags', 'authors', 'publications']
+
     def __init__(self, **kwargs):
         self.id = kwargs.get("id", "")
         self.name = kwargs.get("name", "")
@@ -30,6 +32,8 @@ class OveProjectMeta:
 
 
 class OveAssetMeta:
+    EDITABLE_FIELDS = ['description', 'tags']
+
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
         self.project = kwargs.get("project", "")

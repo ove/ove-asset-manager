@@ -8,8 +8,7 @@ import falcon
 
 from am.controller import FileController
 from am.managers import WorkerManager
-from common.entities import OveAssetMeta, WorkerStatus
-from common.entities import WorkerData
+from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerData
 from common.errors import InvalidAssetError, ValidationError
 from common.falcon_utils import unquote_filename, save_filename
 from common.filters import build_meta_filter, DEFAULT_FILTER
@@ -136,14 +135,8 @@ class ProjectMetaEdit:
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
-        if is_empty(req.media.get('name')) is False:
-            # todo; this needs to move the asset into a new path as well
-            # todo; rebuild the path as well
-            # meta.name = req.media.get('name')
-            pass
 
-        fields = ['name', 'description', 'tags', 'authors', 'publications']
-        for field in fields:
+        for field in OveProjectMeta.EDITABLE_FIELDS:
             if is_empty(req.media.get(field)) is False:
                 setattr(meta, field, req.media.get(field))
 
@@ -180,6 +173,7 @@ class AssetCreate:
         validate_not_null(req.media, 'name')
         validate_no_slashes(req.media, 'name')
         asset_id = req.media.get('name')
+
         self._controller.create_asset(store_id=store_id, project_id=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
 
         resp.media = {'Asset': asset_id}
@@ -228,18 +222,12 @@ class AssetMetaEdit:
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
-        if is_empty(req.media.get('name')) is False:
-            # todo; this needs to move the asset into a new path as well
-            # todo; rebuild the path as well
-            # meta.name = req.media.get('name')
-            pass
-        if is_empty(req.media.get('description')) is False:
-            meta.description = req.media.get('description')
-        if is_empty(req.media.get('tags')) is False:
-            meta.tags = req.media.get('tags')
 
-        self._controller.edit_asset_meta(store_id=store_id, project_id=project_id,
-                                         asset_id=asset_id, meta=meta)
+        for field in OveAssetMeta.EDITABLE_FIELDS:
+            if is_empty(req.media.get(field)) is False:
+                setattr(meta, field, req.media.get(field))
+
+        self._controller.edit_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id, meta=meta)
 
         resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
