@@ -1,6 +1,12 @@
 sudo: false
 language: bash
 
+cache:
+  npm: true
+  pip: true
+  directories:
+    - $HOME/.m2
+
 services:
   - docker
 
