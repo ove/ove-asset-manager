@@ -21,8 +21,6 @@ services:
     ports:
       - "6081:6081"
     volumes:
-      # This is a build volume used to speed up the builds
-      - $HOME/.m2:/root/.m2
       - ./config/:/app/config/:ro
     environment:
       SERVICE_PORT: 6081
