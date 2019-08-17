@@ -48,6 +48,18 @@
                             <textarea name="publications" id="publications" class="form-control" rows="2">{{ project.publications }}</textarea>
                         </div>
                     </div>
+                    <div class="form-group row">
+                        <label for="thumbnail" class="col-3 col-form-label">Thumbnail</label>
+                        <div class="col-9">
+                            <input name="thumbnail" id="thumbnail" value="{{ project.thumbnail }}" type="text" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="controller" class="col-3 col-form-label">Control Page</label>
+                        <div class="col-9">
+                            <input name="controller" id="controller" value="{{ project.controller }}" type="text" class="form-control">
+                        </div>
+                    </div>
 
                     <div class="form-group row">
                         <label for="tags" class="col-3 col-form-label">Tags</label>

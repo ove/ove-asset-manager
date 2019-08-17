@@ -11,6 +11,9 @@ CONFIG_PROXY_URL = "proxyUrl"
 OVE_META = ".ovemeta"
 PROJECT_FILE = "project.json"
 
+PROJECT_METADATA_SECTION = "Metadata"
+PROJECT_BASIC_TEMPLATE = {PROJECT_METADATA_SECTION: {}, 'Sections': []}
+
 S3_SEPARATOR = "/"
 
 S3_OBJECT_EXTENSION = ".json"

@@ -9,6 +9,7 @@ from minio.error import ResponseError, NoSuchKey
 from urllib3 import HTTPResponse
 
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
+from common.consts import PROJECT_BASIC_TEMPLATE, PROJECT_METADATA_SECTION
 from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, PROJECT_FILE, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
 from common.entities import OveAssetMeta, OveProjectMeta
 from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError, InvalidProjectError
@@ -97,17 +98,12 @@ class S3Manager:
                 for bucket in client.list_buckets():
                     meta = self.get_project_meta(store_id=store_id, project_id=bucket.name, ignore_errors=True)
                     if result_filter(meta):
-                        item = {
-                            "id": bucket.name,
-                            "name": meta.name,
-                            "description": meta.description,
-                            "authors": meta.authors,
-                            "publications": meta.publications,
-                            "tags": meta.tags,
-                            "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
-                            "updateDate": _last_modified(bucket.name),
-                            "hasProject": self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
-                        }
+                        item = meta.to_public_json()
+                        item["id"] = bucket.name
+                        item["creationDate"] = '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date)
+                        item["updateDate"] = _last_modified(bucket.name)
+                        item["hasProject"] = self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
+
                         result.append(item)
 
                 return result
@@ -241,16 +237,13 @@ class S3Manager:
             try:
                 project = _decode_json(client.get_object(project_id, PROJECT_FILE))
             except NoSuchKey:
-                project = {'Metadata': {}, 'Sections': []}
+                project = PROJECT_BASIC_TEMPLATE
 
-            if 'Metadata' not in project.keys():
-                project['Metadata'] = {}
+            if PROJECT_METADATA_SECTION not in project.keys():
+                project[PROJECT_METADATA_SECTION] = {}
 
-            fields = ['name', 'description', 'tags', 'authors', 'publications']
-            for field in fields:
-                val = getattr(meta, field, '')
-                if val:
-                    project['Metadata'][field] = val
+            for field in OveProjectMeta.EDITABLE_FIELDS:
+                project[PROJECT_METADATA_SECTION][field] = getattr(meta, field, '')
 
             data, size = _encode_json(project)
             client.put_object(project_id, PROJECT_FILE, data, size)

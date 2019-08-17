@@ -7,6 +7,7 @@ import falcon
 import markdown2
 import urllib3
 
+from common.entities import OveProjectMeta, OveAssetMeta
 from common.errors import ValidationError
 from common.falcon_utils import unquote_filename
 from common.util import to_bool, append_slash
@@ -193,13 +194,11 @@ class ProjectEdit:
                 result = [result]
             return result
 
-        project = {
-            "name": req.params.get("name", ""),
-            "description": req.params.get("description", ""),
-            "authors": req.params.get("authors", ""),
-            "publications": req.params.get("publications", ""),
-            "tags": _get_tags()
-        }
+        project = {}
+        for field in OveProjectMeta.EDITABLE_FIELDS:
+            project[field] = req.params.get(field, "")
+        project["tags"] = _get_tags()
+
         resp.context = {"store_id": store_id, "project_id": project_id, "project": project}
         try:
             resp.context["project"] = self._controller.edit_project(store_id=store_id, project_id=project_id, project_data=project)
@@ -230,12 +229,11 @@ class AssetEdit:
                 result = [result]
             return result
 
-        asset = {
-            "name": req.params.get("name", ""),
-            "project": req.params.get("project", ""),
-            "description": req.params.get("description", ""),
-            "tags": _get_tags()
-        }
+        asset = {"name": req.params.get("name", ""), "project": req.params.get("project", "")}
+        for field in OveAssetMeta.EDITABLE_FIELDS:
+            asset[field] = req.params.get(field, "")
+        asset["tags"] = _get_tags()
+
         resp.context = {"store_id": store_id, "project_id": project_id, "asset_id": asset_id, "create": False, "asset": asset}
 
         if asset_id == "new":

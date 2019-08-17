@@ -13,10 +13,6 @@ def parse_logging_lvl(lvl_name: str) -> int:
         return logging.INFO
 
 
-def is_empty(any_structure):
-    return not any_structure
-
-
 def to_bool(value):
     """
     Converts 'something' to boolean. Raises exception if it gets a string it doesn't handle.

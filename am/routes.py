@@ -12,7 +12,7 @@ from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerDa
 from common.errors import InvalidAssetError, ValidationError
 from common.falcon_utils import unquote_filename, save_filename
 from common.filters import build_meta_filter, DEFAULT_FILTER
-from common.util import is_empty, to_bool
+from common.util import to_bool
 from common.validation import validate_not_null, validate_no_slashes, validate_list
 
 
@@ -134,10 +134,12 @@ class ProjectMetaEdit:
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        validate_not_null(req.media, 'name')
+
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
 
         for field in OveProjectMeta.EDITABLE_FIELDS:
-            if is_empty(req.media.get(field)) is False:
+            if field in req.media:
                 setattr(meta, field, req.media.get(field))
 
         self._controller.edit_project_meta(store_id=store_id, project_id=project_id, meta=meta)
@@ -221,10 +223,12 @@ class AssetMetaEdit:
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        validate_not_null(req.media, 'name')
+
         meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
 
         for field in OveAssetMeta.EDITABLE_FIELDS:
-            if is_empty(req.media.get(field)) is False:
+            if field in req.media:
                 setattr(meta, field, req.media.get(field))
 
         self._controller.edit_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id, meta=meta)
