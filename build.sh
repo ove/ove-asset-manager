@@ -62,7 +62,7 @@ if [[ "${pullImage}" = true ]]; then
   docker-compose pull
 fi
 
-docker-compose build
+docker-compose build --parallel
 if [[ $? -ne 0 ]]; then
   # fail if the image build process failed
   exit 1

@@ -18,8 +18,8 @@ stages:
 jobs:
   include:
     - stage: build
-      script: ./build.sh --pull
+      script: ./build.sh
     - stage: deploy
       script:
         - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-        - ./build.sh --pull --push
+        - ./build.sh --push
