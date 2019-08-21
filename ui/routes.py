@@ -276,6 +276,10 @@ class ObjectEdit:
         }
 
         resp.context = {"store_id": store_id, "project_id": project_id, "object_id": object_id, "object": {}, "create": False}
+
+        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=["project"])
+        resp.context['file_url'] = objects[0]['index_file']
+
         try:
             resp.context["object"] = self._controller.get_object(store_id=store_id, project_id=project_id, object_id=object_id)
             resp.context["create"] = False
