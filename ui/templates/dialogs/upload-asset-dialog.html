@@ -19,9 +19,9 @@
 
         let title = "Upload assets";
         if (assetName){
-            title = "Upload into asset " + assetName;
+            title = `Upload into asset <span class="badge badge-primary">${assetName}</span>`;
         }
-        document.getElementById('assetUploadModalLabel').innerText = title;
+        $('#assetUploadModalLabel').html(title);
 
         const modal = $("#uploadAssetDialog");
         modal.on('hidden.bs.modal', function () {
