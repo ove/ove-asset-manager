@@ -120,7 +120,7 @@
                             <i class="far fa-list-alt"></i>
                         </button>
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.name }}/upload', false)">
+                                onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.name }}/upload', false, '{{ asset.name }}')">
                             <i class="fas fa-upload"></i>
                         </button>
                         <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"

@@ -1,5 +1,5 @@
 <script>
-    function showUploadModal(uploadUrl, multiUpload) {
+    function showUploadModal(uploadUrl, multiUpload, assetName) {
         const container = $("#upload-asset-container");
 
         container.empty();
@@ -17,6 +17,12 @@
             }
         });
 
+        let title = "Upload assets";
+        if (assetName){
+            title = `Upload into asset <span class="badge badge-primary">${assetName}</span>`;
+        }
+        $('#assetUploadModalLabel').html(title);
+
         const modal = $("#uploadAssetDialog");
         modal.on('hidden.bs.modal', function () {
             location.reload();
@@ -29,7 +35,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Upload assets</h5>
+                <h5 class="modal-title" id="assetUploadModalLabel">Upload assets</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

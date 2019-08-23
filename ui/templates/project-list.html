@@ -41,7 +41,7 @@
             <div class="col-md-2">
                 <div class="form-group">
                     <label for="project_id" class="sr-only">Project</label>
-                    <input type="text" class="form-control" id="project_id" name="project_id" placeholder="Project ID" required readonly>
+                    <input type="text" class="form-control" id="project_id" name="project_id" placeholder="Project ID" required readonly disabled>
                     <div class="invalid-feedback">Please provide a valid project id.</div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                            data-toggle="tooltip" data-placement="top" title="Edit project">
                             <i class="far fa-edit"></i>
                         </a>
-                        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/project" class="btn btn-outline-primary"
+                        <a href="/view/store/{{ store_id }}/project/{{ project.id }}/object/project" class="btn btn-outline-primary"
                            data-toggle="tooltip" data-placement="top" title="Edit project file">
                             <i class="fas fa-file-powerpoint"></i>
                         </a>
