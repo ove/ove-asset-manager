@@ -9,15 +9,15 @@ class OveProjectMeta:
     EDITABLE_FIELDS = ['name', 'description', 'tags', 'authors', 'publications', 'thumbnail', 'controller']
 
     def __init__(self, **kwargs):
-        self.id = kwargs.get("id", "")
-        self.name = kwargs.get("name", "")
-        self.description = kwargs.get("description", "")
-        self.authors = kwargs.get("authors", "")
-        self.publications = kwargs.get("publications", "")
-        self.thumbnail = kwargs.get("thumbnail", "")
-        self.controller = kwargs.get("controller", "")
-        self.permissions = kwargs.get("permissions", "")
-        self.tags = kwargs.get("tags", [])
+        self.id = kwargs.get("id", "") or ""
+        self.name = kwargs.get("name", "") or ""
+        self.description = kwargs.get("description", "") or ""
+        self.authors = kwargs.get("authors", "") or ""
+        self.publications = kwargs.get("publications", "") or ""
+        self.thumbnail = kwargs.get("thumbnail", "") or ""
+        self.controller = kwargs.get("controller", "") or ""
+        self.permissions = kwargs.get("permissions", "") or ""
+        self.tags = kwargs.get("tags", []) or []
 
     def to_json(self) -> Dict:
         return self.__dict__
@@ -39,23 +39,23 @@ class OveAssetMeta:
     EDITABLE_FIELDS = ['description', 'tags']
 
     def __init__(self, **kwargs):
-        self.name = kwargs.get("name", "")
-        self.project = kwargs.get("project", "")
-        self.description = kwargs.get("description", "")
-        self.filename = kwargs.get("filename", "")
-        self.proxy_url = append_slash(kwargs.get("proxy_url", ""))
-        self.index_file = kwargs.get("index_file", "")
-        self.uploaded = kwargs.get("uploaded", False)
-        self.permissions = kwargs.get("permissions", "")
+        self.name = kwargs.get("name", "") or ""
+        self.project = kwargs.get("project", "") or ""
+        self.description = kwargs.get("description", "") or ""
+        self.filename = kwargs.get("filename", "") or ""
+        self.proxy_url = append_slash(kwargs.get("proxy_url", "")) or ""
+        self.index_file = kwargs.get("index_file", "") or ""
+        self.uploaded = kwargs.get("uploaded", False) or ""
+        self.permissions = kwargs.get("permissions", "") or ""
         self.history = kwargs.get("history", [{
             "Type": "Placeholder",
             "Time": str(datetime.datetime.today()),
-            "Version": 1}])
-        self.tags = kwargs.get("tags", [])
-        self.version = kwargs.get("version", 1)
-        self.worker = kwargs.get("worker", "")
-        self.processing_status = kwargs.get("processing_status", "")
-        self.processing_error = kwargs.get("processing_error", "")
+            "Version": 1}]) or []
+        self.tags = kwargs.get("tags", []) or []
+        self.version = kwargs.get("version", 1) or 1
+        self.worker = kwargs.get("worker", "") or ""
+        self.processing_status = kwargs.get("processing_status", "") or ""
+        self.processing_error = kwargs.get("processing_error", "") or ""
 
     def update(self):
         self.history.append({
