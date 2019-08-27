@@ -18,9 +18,12 @@ class OveProjectMeta:
         self.controller = kwargs.get("controller", "") or ""
         self.permissions = kwargs.get("permissions", "") or ""
         self.tags = kwargs.get("tags", []) or []
+        self.url = kwargs.get("url", "") or ""
 
     def to_json(self) -> Dict:
-        return self.__dict__
+        result = dict(self.__dict__)
+        del result["url"]
+        return result
 
     def to_public_json(self):
         return {
@@ -32,6 +35,7 @@ class OveProjectMeta:
             "thumbnail": self.thumbnail,
             "controller": self.controller,
             "tags": self.tags,
+            "url": self.url,
         }
 
 

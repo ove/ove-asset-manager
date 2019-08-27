@@ -98,13 +98,11 @@ class S3Manager:
                 for bucket in client.list_buckets():
                     meta = self.get_project_meta(store_id=store_id, project_id=bucket.name, ignore_errors=True)
                     if result_filter(meta):
-                        project_info = self.get_object_info(store_id=store_id, project_id=bucket.name, object_id="project")
                         item = meta.to_public_json()
                         item["id"] = bucket.name
                         item["creationDate"] = '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date)
                         item["updateDate"] = _last_modified(bucket.name)
-                        item["hasProject"] = project_info is not None
-                        item["url"] = project_info.get("index_file", "") if project_info else ""
+                        item["hasProject"] = self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
 
                         result.append(item)
 
@@ -225,6 +223,9 @@ class S3Manager:
             obj = _decode_json(client.get_object(project_id, PROJECT_FILE))['Metadata']
             result = OveProjectMeta(**obj)
             result.id = project_id
+
+            project_info = self.get_object_info(store_id=store_id, project_id=project_id, object_id="project")
+            result.url = project_info.get("index_file", "") if project_info else ""
             return result
         except:
             if ignore_errors:
