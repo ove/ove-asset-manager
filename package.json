@@ -13,7 +13,7 @@
     "jquery": "3.4.1",
     "jsoneditor": "6.3.0",
     "jstree": "3.3.8",
-    "select2": "4.0.8",
+    "select2": "4.0.10",
     "underscore": "1.9.1"
   },
   "scripts": {
