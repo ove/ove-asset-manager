@@ -7,6 +7,7 @@ import falcon
 import markdown2
 import urllib3
 
+from common.consts import OBJECT_TEMPLATE
 from common.entities import OveProjectMeta, OveAssetMeta
 from common.errors import ValidationError
 from common.falcon_utils import unquote_filename
@@ -250,34 +251,10 @@ class ObjectEdit:
 
     @falcon_template.render('object-edit.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        default_object = {
-            "Attribution": {
-                "Title": project_id
-            },
-            "HasVideos": False,
-            "Sections": [
-                {
-                    "app": {
-                        "states": {
-                            "load": {
-                                "url": "http://google.com"
-                            }
-                        },
-                        "url": "OVE_APP_HTML"
-                    },
-                    "h": 1080,
-                    "space": "SPACE_NAME",
-                    "w": 1920,
-                    "x": 0,
-                    "y": 0
-                }
-            ]
-        }
+        default_object = OBJECT_TEMPLATE.get(object_id, {})
 
-        resp.context = {"store_id": store_id, "project_id": project_id, "object_id": object_id, "object": {}, "create": False}
-
-        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=["project"])
-
+        resp.context = {"store_id": store_id, "project_id": project_id, "object_id": object_id, "object": default_object, "create": False}
+        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=[object_id])
         if len(objects) > 0:
             resp.context['file_url'] = objects[0]['index_file']
 
@@ -296,6 +273,10 @@ class ObjectEdit:
 
         self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id,
                                     object_data=json.loads(req.params.get("object", "")))
+
+        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=[object_id])
+        if len(objects) > 0:
+            resp.context['file_url'] = objects[0]['index_file']
 
 
 class WorkerDocsView:

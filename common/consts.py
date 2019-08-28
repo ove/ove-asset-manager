@@ -19,3 +19,26 @@ S3_SEPARATOR = "/"
 S3_OBJECT_EXTENSION = ".json"
 
 MAX_LIST_ITEMS = 1000
+
+# todo; this could be a config file
+OBJECT_TEMPLATE = {
+    "project": {
+        "Sections": [
+            {
+                "app": {
+                    "states": {
+                        "load": {
+                            "url": "http://google.com"
+                        }
+                    },
+                    "url": "OVE_APP_HTML"
+                },
+                "space": "SPACE_NAME",
+                "h": 1080,
+                "w": 1920,
+                "x": 0,
+                "y": 0
+            }
+        ]
+    }
+}
