@@ -18,14 +18,12 @@
             });
 
             $('#project_name').keyup(function () {
-                $('#project_id').val($('#project_name').val().toLowerCase().replace(/[^0-9a-z]/gi, '').trim());
+                const project_id = $('#project_name').val().toLowerCase().replace(/[^0-9a-z]/gi, '').trim();
+                $('#project_id').val(project_id);
+                $('#project_id_visible').val(project_id);
             });
 
-            $('#project_id').keypress(function (event) {
-                if (event.keyCode === 13) {
-                    event.preventDefault();
-                }
-            });
+
         });
     </script>
 
@@ -38,13 +36,16 @@
                     <div class="invalid-feedback">Please provide a valid project name.</div>
                 </div>
             </div>
+
             <div class="col-md-2">
                 <div class="form-group">
-                    <label for="project_id" class="sr-only">Project</label>
-                    <input type="text" class="form-control" id="project_id" name="project_id" placeholder="Project ID" required readonly disabled>
+                    <label for="project_id_visible" class="sr-only">Project</label>
+                    <input type="text" class="form-control" id="project_id_visible" name="project_id_visible" placeholder="Project ID" required readonly disabled>
+                    <input type="hidden" id="project_id" name="project_id" placeholder="Project ID">
                     <div class="invalid-feedback">Please provide a valid project id.</div>
                 </div>
             </div>
+
             <div class="col-md-1">
                 <button type="button" class="btn btn-primary"
                         data-toggle="tooltip" data-placement="top" title="Create new project"
