@@ -45,7 +45,9 @@
                         </div>
                     </div>
                 </form>
-                <p>This file is accessible at <a href="{{ file_url }}"><code>{{ file_url }}</code></a></p>
+                {% if file_url %}
+                    <p>This file is accessible at <a href="{{ file_url }}"><code>{{ file_url }}</code></a></p>
+                {% endif %}
             </div>
         </div>
     </div>

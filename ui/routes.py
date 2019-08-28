@@ -250,7 +250,6 @@ class ObjectEdit:
 
     @falcon_template.render('object-edit.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-
         default_object = {
             "Attribution": {
                 "Title": project_id
@@ -278,7 +277,9 @@ class ObjectEdit:
         resp.context = {"store_id": store_id, "project_id": project_id, "object_id": object_id, "object": {}, "create": False}
 
         objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=["project"])
-        resp.context['file_url'] = objects[0]['index_file']
+
+        if len(objects) > 0:
+            resp.context['file_url'] = objects[0]['index_file']
 
         try:
             resp.context["object"] = self._controller.get_object(store_id=store_id, project_id=project_id, object_id=object_id)
