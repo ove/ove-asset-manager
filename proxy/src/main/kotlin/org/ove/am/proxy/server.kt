@@ -52,12 +52,13 @@ fun setupServer(port: Int, storage: StorageBackend, substitution: ParameterSubst
         install(StatusPages) {
             exception<AccessDeniedError> { call.respond(HttpStatusCode.Forbidden) }
             exception<ResourceNotFoundError> { call.respond(HttpStatusCode.NotFound) }
+            exception<InvalidRequestError> { call.respond(HttpStatusCode.BadRequest) }
             exception<Throwable> {
                 logger.error("Exception in service call. $it")
                 call.respondText(
-                    contentType = ContentType.Text.Any,
-                    status = HttpStatusCode.InternalServerError,
-                    text = "Service error"
+                        contentType = ContentType.Text.Any,
+                        status = HttpStatusCode.InternalServerError,
+                        text = "Service error"
                 )
             }
         }
@@ -66,11 +67,19 @@ fun setupServer(port: Int, storage: StorageBackend, substitution: ParameterSubst
 
         routing {
             get("/{store}/{project}/{resource...}") {
-                val resource = storage.getResourceData(
-                    store = call.parameters["store"],
-                    project = call.parameters["project"],
-                    resource = call.parameters.getAll("resource")?.joinToString("/") { URLEncoder.encode(it, "utf-8") }
-                )
+                val resource = try {
+                    storage.getResourceData(
+                            store = call.parameters["store"],
+                            project = call.parameters["project"],
+                            resource = call.parameters.getAll("resource")?.joinToString("/")
+                    )
+                } catch (e: ResourceNotFoundError) {
+                    storage.getResourceData(
+                            store = call.parameters["store"],
+                            project = call.parameters["project"],
+                            resource = call.parameters.getAll("resource")?.joinToString("/") { URLEncoder.encode(it, "utf-8") }
+                    )
+                }
 
                 call.response.lastModified(resource.modifiedDate)
                 call.response.header("Accept-Ranges", "bytes")
@@ -79,7 +88,7 @@ fun setupServer(port: Int, storage: StorageBackend, substitution: ParameterSubst
 
                 if (substitution.shouldSubstitute(contentType, resource.resource)) {
                     resource.input.bufferedReader()
-                        .use { call.respondText(substitution.replaceAll(it.readText()), contentType) }
+                            .use { call.respondText(substitution.replaceAll(it.readText()), contentType) }
                 } else {
                     call.respond(object : OutgoingContent.WriteChannelContent() {
                         override val contentType = contentType

@@ -46,7 +46,7 @@ class StorageBackend(configFile: String) {
 
     fun getResourceData(store: String?, project: String?, resource: String?): ResourceData {
         if (store.isNullOrBlank() || project.isNullOrBlank() || resource.isNullOrBlank()) {
-            throw ResourceNotFoundError()
+            throw InvalidRequestError()
         }
 
         if (resource.endsWith(".ovemeta")) {
@@ -57,7 +57,7 @@ class StorageBackend(configFile: String) {
 
         if (!client.bucketExists(project)) {
             logger.error("Project not found: $project")
-            throw ResourceNotFoundError()
+            throw InvalidRequestError()
         }
 
         try {
