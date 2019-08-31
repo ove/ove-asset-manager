@@ -3,6 +3,7 @@ package org.ove.am.proxy
 import java.io.InputStream
 import java.time.ZonedDateTime
 
+class InvalidRequestError : Exception()
 class ResourceNotFoundError : Exception()
 class AccessDeniedError : Exception()
 
