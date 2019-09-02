@@ -62,6 +62,14 @@
                     </div>
 
                     <div class="form-group row">
+                        <label for="video_controller" class="col-3 col-form-label">Video Controller?</label>
+                        <div class="col-9">
+                            <input name="video_controller" id="video_controller" {% if project.video_controller %} checked="checked" {% endif %}
+                                   value="true" type="checkbox" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
                         <label for="tags" class="col-3 col-form-label">Tags</label>
                         <div class="col-9">
                             <select name="tags[]" id="tags" multiple="multiple" class="form-control">
@@ -73,6 +81,14 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="form-group row">
+                        <label for="default_mode" class="col-3 col-form-label">Default Mode</label>
+                        <div class="col-9">
+                            <input name="default_mode" id="default_mode" value="{{ project.default_mode }}" type="text" class="form-control">
+                        </div>
+                    </div>
+
                     <div class="form-group row justify-content-end">
                         <div class="mr-3">
                             <a href="/view/store/{{ store_id }}" class="btn btn-outline-danger mr-1">Close</a>

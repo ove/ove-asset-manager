@@ -2,11 +2,11 @@ import datetime
 from enum import Enum
 from typing import Dict
 
-from common.util import append_slash
+from common.util import append_slash, to_bool
 
 
 class OveProjectMeta:
-    EDITABLE_FIELDS = ['name', 'description', 'tags', 'authors', 'publications', 'thumbnail', 'controller']
+    EDITABLE_FIELDS = ['name', 'description', 'tags', 'authors', 'publications', 'thumbnail', 'controller', 'video_controller', 'default_mode']
 
     def __init__(self, **kwargs):
         self.id = kwargs.get("id", "") or ""
@@ -16,9 +16,11 @@ class OveProjectMeta:
         self.publications = kwargs.get("publications", "") or ""
         self.thumbnail = kwargs.get("thumbnail", "") or ""
         self.controller = kwargs.get("controller", "") or ""
+        self.video_controller = to_bool(kwargs.get("video_controller", False) or False)
         self.permissions = kwargs.get("permissions", "") or ""
         self.tags = kwargs.get("tags", []) or []
         self.url = kwargs.get("url", "") or ""
+        self.default_mode = kwargs.get("default_mode", "") or ""
 
     def to_json(self) -> Dict:
         result = dict(self.__dict__)
@@ -34,8 +36,10 @@ class OveProjectMeta:
             "publications": self.publications,
             "thumbnail": self.thumbnail,
             "controller": self.controller,
+            "video_controller": self.video_controller,
             "tags": self.tags,
             "url": self.url,
+            "default_mode": self.default_mode,
         }
 
 

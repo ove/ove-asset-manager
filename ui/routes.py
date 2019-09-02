@@ -199,6 +199,7 @@ class ProjectEdit:
         for field in OveProjectMeta.EDITABLE_FIELDS:
             project[field] = req.params.get(field, "")
         project["tags"] = _get_tags()
+        project["video_controller"] = to_bool(req.params.get("video_controller", False))
 
         resp.context = {"store_id": store_id, "project_id": project_id, "project": project}
         try:
