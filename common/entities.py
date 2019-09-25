@@ -43,6 +43,14 @@ class OveProjectMeta:
         }
 
 
+class OveProjectAccessMeta:
+    def __init__(self, **kwargs):
+        self.groups = kwargs.get("groups", []) or []
+
+    def to_json(self) -> Dict:
+        return self.__dict__
+
+
 class OveAssetMeta:
     EDITABLE_FIELDS = ['description', 'tags']
 

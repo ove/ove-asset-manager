@@ -1,4 +1,5 @@
 urllib3==1.25.3
 falcon==2.0.0
 minio==4.0.20
+pymongo==3.9.0
 gunicorn==19.9.0
