@@ -59,7 +59,7 @@ class WorkerManager:
         if len(available) > 0:
             # load balancing ^_^
             random.shuffle(available)
-            data = {"store_config": store_config, "project_id": project_id, "asset_id": meta.name, "task_options": task_options}
+            data = {"store_config": store_config, "project_id": project_id, "asset_id": meta.id, "task_options": task_options}
 
             success = False
             for w in available:

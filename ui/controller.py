@@ -64,10 +64,10 @@ class BackendController:
 
     def create_asset(self, store_id: str, project_id: str, asset: Dict) -> Dict:
         self._backend.post("api/{}/{}/create".format(store_id, project_id), data=asset)
-        return self.get_asset(store_id=store_id, project_id=project_id, asset_id=asset.get("name", ""))
+        return self.get_asset(store_id=store_id, project_id=project_id, asset_id=asset.get("id", ""))
 
     def edit_asset(self, store_id: str, project_id: str, asset: Dict) -> Dict:
-        return self._backend.post("/api/{}/{}/meta/{}".format(store_id, project_id, asset.get("name", "")), data=asset)
+        return self._backend.post("/api/{}/{}/meta/{}".format(store_id, project_id, asset.get("id", "")), data=asset)
 
     def upload_asset(self, store_id: str, project_id: str, asset_id: str, filename: str, stream: Any, update: bool = False, create: bool = False) -> None:
         self._backend.upload(api_url="api/{}/{}/upload/{}".format(store_id, project_id, asset_id), stream=stream,

@@ -48,9 +48,9 @@ class FileController:
 
     def create_asset(self, project_id: str, meta: OveAssetMeta, store_id: str = None) -> OveAssetMeta:
         if meta.name in _RESERVED_NAMES:
-            raise AssetExistsError(store_id=store_id, project_id=project_id, asset_id=meta.name)
-        if self._manager.has_asset_meta(store_id=store_id, project_id=project_id, asset_id=meta.name):
-            raise AssetExistsError(store_id=store_id, project_id=project_id, asset_id=meta.name)
+            raise AssetExistsError(store_id=store_id, project_id=project_id, asset_id=meta.id)
+        if self._manager.has_asset_meta(store_id=store_id, project_id=project_id, asset_id=meta.id):
+            raise AssetExistsError(store_id=store_id, project_id=project_id, asset_id=meta.id)
         return self._manager.create_asset(store_id=store_id, project_id=project_id, meta=meta)
 
     def upload_asset(self, project_id: str, asset_id: str, filename: str, meta: OveAssetMeta, upload_filename: str, store_id: str = None,

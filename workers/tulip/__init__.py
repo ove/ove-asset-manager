@@ -86,7 +86,7 @@ class NetworkWorker(BaseWorker):
         }
 
     def process(self, project_id: str, filename: str, meta: OveAssetMeta, options: Dict):
-        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.name, filename)
+        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.id, filename)
 
         with TemporaryDirectory() as input_folder:
             with TemporaryDirectory() as output_folder:
@@ -95,7 +95,7 @@ class NetworkWorker(BaseWorker):
                 network_file = os.path.join(input_folder, filename)
                 open(network_file, 'a').close()
 
-                self._file_controller.download_asset(project_id=project_id, asset_id=meta.name, filename=filename, down_filename=network_file)
+                self._file_controller.download_asset(project_id=project_id, asset_id=meta.id, filename=filename, down_filename=network_file)
 
                 algorithm = options.get('algorithm', "FM^3 (OGDF)")
 
@@ -111,7 +111,7 @@ class NetworkWorker(BaseWorker):
 
                 result_name = options.get('result_name')
                 if not result_name:
-                    result_name = meta.name.split('.')[0] + '.gml'
+                    result_name = meta.id.split('.')[0] + '.gml'
                 tlp.saveGraph(graph, os.path.join(output_folder, result_name))
 
                 with open(os.path.join(output_folder, result_name + ".options"), 'w') as fp:
@@ -123,8 +123,8 @@ class NetworkWorker(BaseWorker):
         base_name = os.path.splitext(os.path.basename(filename))[0]
         meta.index_file = os.path.join(meta.worker_root + self.name, base_name, result_name)
 
-        self._file_controller.set_asset_meta(project_id, meta.name, meta)
-        logging.info("Finished generating %s/%s into the storage ...", project_id, meta.name)
+        self._file_controller.set_asset_meta(project_id=project_id, asset_id=meta.id, meta=meta)
+        logging.info("Finished generating %s/%s into the storage ...", project_id, meta.id)
 
     @staticmethod
     def convert_param(param):

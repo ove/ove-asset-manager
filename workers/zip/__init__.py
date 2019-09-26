@@ -37,7 +37,7 @@ class ZipWorker(BaseWorker):
         }
 
     def process(self, project_id: str, filename: str, meta: OveAssetMeta, options: Dict):
-        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.name, filename)
+        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.id, filename)
 
         index_files = set()
         if options.get("index_file", None):
@@ -47,15 +47,15 @@ class ZipWorker(BaseWorker):
 
         with TemporaryDirectory() as folder:
             with NamedTemporaryFile() as zip_file:
-                self._file_controller.download_asset(project_id=project_id, asset_id=meta.name, filename=filename, down_filename=zip_file.name)
+                self._file_controller.download_asset(project_id=project_id, asset_id=meta.id, filename=filename, down_filename=zip_file.name)
                 ZipFile(zip_file.name).extractall(path=folder)
                 self._file_controller.upload_asset_folder(project_id=project_id, meta=meta, upload_folder=folder, worker_name=self.name)
 
             meta_filename_name = os.path.splitext(os.path.basename(meta.filename))[0]
             meta.index_file = meta.worker_root + self.name + "/" + meta_filename_name + "/" + _guess_index_file(folder, index_files=index_files)
-            self._file_controller.set_asset_meta(project_id, meta.name, meta)
+            self._file_controller.set_asset_meta(project_id, meta.id, meta)
 
-        logging.info("Finished unzipping %s/%s into the storage ...", project_id, meta.name)
+        logging.info("Finished unzipping %s/%s into the storage ...", project_id, meta.id)
 
 
 def _guess_index_file(folder: str, index_files: Set[str]) -> Union[str, None]:

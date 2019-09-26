@@ -6,7 +6,7 @@ from common.util import append_slash, to_bool
 
 
 class OveProjectMeta:
-    EDITABLE_FIELDS = ['name', 'description', 'tags', 'authors', 'publications', 'thumbnail', 'controller', 'video_controller', 'default_mode']
+    EDITABLE_FIELDS = ["name", "description", "tags", "authors", "publications", "thumbnail", "controller", "video_controller", "default_mode"]
 
     def __init__(self, **kwargs):
         self.id = kwargs.get("id", "") or ""
@@ -44,9 +44,10 @@ class OveProjectMeta:
 
 
 class OveAssetMeta:
-    EDITABLE_FIELDS = ['description', 'tags']
+    EDITABLE_FIELDS = ["name", "description", "tags"]
 
     def __init__(self, **kwargs):
+        self.id = kwargs.get("id", "") or ""
         self.name = kwargs.get("name", "") or ""
         self.project = kwargs.get("project", "") or ""
         self.description = kwargs.get("description", "") or ""
@@ -91,7 +92,7 @@ class OveAssetMeta:
 
     @property
     def worker_root(self):
-        return str(self.proxy_url) + self.project + "/" + self.name + "/" + str(self.version) + "/"
+        return str(self.proxy_url) + self.project + "/" + self.id + "/" + str(self.version) + "/"
 
     @property
     def file_location(self):
@@ -99,7 +100,7 @@ class OveAssetMeta:
 
     @property
     def relative_file_path(self):
-        return self.project + "/" + self.name + "/" + self.file_location
+        return self.project + "/" + self.id + "/" + self.file_location
 
     @property
     def proxy_file_path(self):
@@ -112,6 +113,7 @@ class OveAssetMeta:
 
     def to_public_json(self):
         return {
+            "id": self.id,
             "name": self.name,
             "project": self.project,
             "description": self.description,

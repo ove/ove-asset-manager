@@ -26,13 +26,13 @@ class DeepZoomImageWorker(BaseWorker):
         return {}
 
     def process(self, project_id: str, filename: str, meta: OveAssetMeta, options: Dict):
-        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.name, filename)
+        logging.info("Copying %s/%s/%s into the temp place ...", project_id, meta.id, filename)
 
         with TemporaryDirectory() as folder:
             with NamedTemporaryFile() as image_file:
-                self._file_controller.download_asset(project_id=project_id, asset_id=meta.name, filename=filename, down_filename=image_file.name)
+                self._file_controller.download_asset(project_id=project_id, asset_id=meta.id, filename=filename, down_filename=image_file.name)
                 pyvips.Image.new_from_file(image_file.name).dzsave(folder + "/image", suffix=".png")
                 self._file_controller.upload_asset_folder(project_id=project_id, meta=meta, upload_folder=folder, worker_name=self.name)
         meta.index_file = meta.worker_root + self.name + "/" + os.path.splitext(os.path.basename(filename))[0] + "/" + "image.dzi"
-        self._file_controller.set_asset_meta(project_id, meta.name, meta)
-        logging.info("Finished generating %s/%s into the storage ...", project_id, meta.name)
+        self._file_controller.set_asset_meta(project_id=project_id, asset_id=meta.id, meta=meta)
+        logging.info("Finished generating %s/%s into the storage ...", project_id, meta.id)

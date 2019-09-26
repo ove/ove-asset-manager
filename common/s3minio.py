@@ -178,11 +178,11 @@ class S3Manager:
         meta.proxy_url = self._get_proxy_url(store_id)
         try:
             # minio interprets the slash as a directory
-            meta_name = meta.name + S3_SEPARATOR + OVE_META
+            meta_name = meta.id + S3_SEPARATOR + OVE_META
             data, size = _encode_json(meta.to_json())
             client.put_object(project_id, meta_name, data, size)
             meta.created()
-            self.set_asset_meta(project_id, meta.name, meta, store_id)
+            self.set_asset_meta(store_id=store_id, project_id=project_id, asset_id=meta.id, meta=meta)
             return meta
         except ResponseError:
             logging.error("Error while trying to create asset. Error: %s", sys.exc_info()[1])
@@ -271,7 +271,9 @@ class S3Manager:
             meta_name = asset_id + S3_SEPARATOR + OVE_META
             logging.debug('Checking if asset exists')
             obj = _decode_json(client.get_object(project_id, meta_name))
-            return OveAssetMeta(**obj)
+            meta = OveAssetMeta(**obj)
+            meta.id = asset_id
+            return meta
         except:
             if ignore_errors:
                 return None

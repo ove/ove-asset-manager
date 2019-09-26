@@ -13,18 +13,34 @@
         });
     </script>
 
+    {% if create %}
+        <script>
+            $(document).ready(function () {
+                $('#name').keyup(function () {
+                    const asset_id = $('#name').val().toLowerCase().replace(/[^0-9a-z]/gi, '').trim();
+                    $('#id').val(asset_id);
+                });
+            });
+        </script>
+    {% endif %}
+
     {% include 'dialogs/upload-asset-dialog.html' with context %}
 
     <div class="container">
         <div class="card">
             <div class="card-body">
                 <form id="asset-edit" method="post"
-                      action="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ "new" if create else asset.name }}">
+                      action="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ "new" if create else asset.id }}">
+                    <div class="form-group row">
+                        <label for="id" class="col-3 col-form-label">ID</label>
+                        <div class="col-9">
+                            <input name="id" id="id" value="{{ asset.id }}" type="text" class="form-control" required readonly>
+                        </div>
+                    </div>
                     <div class="form-group row">
                         <label for="name" class="col-3 col-form-label">Name</label>
                         <div class="col-9">
-                            <input name="name" id="name" value="{{ asset.name }}"
-                                   type="text" {{ "readonly" if not create }} class="form-control" required>
+                            <input name="name" id="name" value="{{ asset.name }}" type="text" class="form-control" required>
                             <div class="invalid-feedback">Please provide a valid name.</div>
                         </div>
                     </div>
@@ -62,7 +78,7 @@
                         <div class="mr-3">
                             <button type="button" class="btn btn-outline-primary mr-1 {{ "invisible" if create else "visible" }}"
                                     data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                    onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.name }}/upload', false)">
+                                    onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}/upload', false)">
                                 Upload
                             </button>
                             <a href="/view/store/{{ store_id }}/project/{{ project_id }}" class="btn btn-outline-danger mr-1">Close</a>

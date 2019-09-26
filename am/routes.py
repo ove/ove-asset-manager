@@ -172,11 +172,15 @@ class AssetCreate:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        validate_not_null(req.media, 'id')
         validate_not_null(req.media, 'name')
-        validate_no_slashes(req.media, 'name')
-        asset_id = req.media.get('name')
+        validate_no_slashes(req.media, 'id')
 
-        self._controller.create_asset(store_id=store_id, project_id=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
+        asset_id = req.media.get('id')
+        asset_name = req.media.get('name')
+
+        meta = OveAssetMeta(id=asset_id, name=asset_name, project=project_id)
+        self._controller.create_asset(store_id=store_id, project_id=project_id, meta=meta)
 
         resp.media = {'Asset': asset_id}
         resp.status = falcon.HTTP_200
@@ -201,7 +205,7 @@ class AssetUpload:
                                             description="This asset already has a file. If you wish to change this file, please update the asset.")
         except InvalidAssetError:
             if create_asset:
-                meta = self._controller.create_asset(store_id=store_id, project_id=project_id, meta=OveAssetMeta(name=asset_id, project=project_id))
+                meta = self._controller.create_asset(store_id=store_id, project_id=project_id, meta=OveAssetMeta(id=asset_id, name=asset_id, project=project_id))
             else:
                 raise falcon.HTTPBadRequest(title="Asset not found", description="You have not created this asset yet.")
 

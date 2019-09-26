@@ -215,7 +215,7 @@ class AssetEdit:
     @falcon_template.render('asset-edit.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         resp.context = {"store_id": store_id, "project_id": project_id, "asset_id": asset_id, "create": asset_id == "new",
-                        "asset": {"name": asset_id, "project": project_id}}
+                        "asset": {"id": asset_id, "name": asset_id, "project": project_id}}
         if asset_id != "new":
             try:
                 resp.context["asset"] = self._controller.get_asset(store_id=store_id, project_id=project_id, asset_id=asset_id)
@@ -231,7 +231,7 @@ class AssetEdit:
                 result = [result]
             return result
 
-        asset = {"name": req.params.get("name", ""), "project": req.params.get("project", "")}
+        asset = {"id": req.params.get("id", ""), "name": req.params.get("name", ""), "project": req.params.get("project", "")}
         for field in OveAssetMeta.EDITABLE_FIELDS:
             asset[field] = req.params.get(field, "")
         asset["tags"] = _get_tags()
@@ -241,7 +241,7 @@ class AssetEdit:
         if asset_id == "new":
             resp.context["create"] = True
             resp.context["asset"] = self._controller.create_asset(store_id=store_id, project_id=project_id, asset=asset)
-            raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_id, project_id, asset.get("name")))
+            raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_id, project_id, asset.get("id")))
         else:
             resp.context["asset"] = self._controller.edit_asset(store_id=store_id, project_id=project_id, asset=asset)
 
