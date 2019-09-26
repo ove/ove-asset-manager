@@ -70,6 +70,15 @@
                     </div>
 
                     <div class="form-group row">
+                        <label for="html_controller" class="col-3 col-form-label">HTML Controller?</label>
+                        <div class="col-9">
+                            <input name="html_controller" id="html_controller" {% if project.html_controller %} checked="checked" {% endif %}
+                                   value="true" type="checkbox" class="form-control">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
                         <label for="tags" class="col-3 col-form-label">Tags</label>
                         <div class="col-9">
                             <select name="tags[]" id="tags" multiple="multiple" class="form-control">

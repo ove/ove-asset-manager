@@ -6,7 +6,8 @@ from common.util import append_slash, to_bool
 
 
 class OveProjectMeta:
-    EDITABLE_FIELDS = ["name", "description", "tags", "authors", "publications", "thumbnail", "controller", "video_controller", "default_mode"]
+    EDITABLE_FIELDS = ["name", "description", "tags", "authors", "publications", "thumbnail", "controller",
+                       "video_controller", "html_controller", "default_mode"]
 
     def __init__(self, **kwargs):
         self.id = kwargs.get("id", "") or ""
@@ -17,6 +18,7 @@ class OveProjectMeta:
         self.thumbnail = kwargs.get("thumbnail", "") or ""
         self.controller = kwargs.get("controller", "") or ""
         self.video_controller = to_bool(kwargs.get("video_controller", False) or False)
+        self.html_controller = to_bool(kwargs.get("html_controller", False) or False)
         self.permissions = kwargs.get("permissions", "") or ""
         self.tags = kwargs.get("tags", []) or []
         self.url = kwargs.get("url", "") or ""
@@ -37,6 +39,7 @@ class OveProjectMeta:
             "thumbnail": self.thumbnail,
             "controller": self.controller,
             "video_controller": self.video_controller,
+            "html_controller": self.html_controller,
             "tags": self.tags,
             "url": self.url,
             "default_mode": self.default_mode,
