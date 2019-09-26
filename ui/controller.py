@@ -11,6 +11,10 @@ class BackendController:
     def __init__(self, backend_url: str):
         self._backend = BackendClient(backend_url=backend_url)
 
+    @property
+    def backend_url(self) -> str:
+        return self._backend.backend_url
+
     def list_workers(self) -> List:
         return self._backend.get("api/workers") or []
 

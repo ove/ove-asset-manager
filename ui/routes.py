@@ -300,7 +300,7 @@ class BackendDetailsView:
 
     @falcon_template.render('backend-details.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response):
-        resp.context = {"backend_url": self._controller._backend.backend_url}
+        resp.context = {"backend_url": self._controller.backend_url}
 
 
 class UploadApi:
@@ -318,6 +318,18 @@ class UploadApi:
 
         self._controller.upload_asset(store_id=store_id, project_id=project_id, asset_id=asset_id, filename=filename, stream=req.bounded_stream,
                                       update=to_bool(req.params.get("update", "True")), create=create)
+        resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class ObjectEditApi:
+    content_type = 'application/json'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=req.media)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 

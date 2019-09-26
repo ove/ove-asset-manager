@@ -15,8 +15,21 @@
 
         function saveCode() {
             try {
-                document.getElementById("code-field").value = JSON.stringify(window.codeEditor.get());
-                confirmSubmission('object-edit', 'Are you sure you want to save the changes?')
+                bootbox.confirm('Are you sure you want to save the changes?', function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/api/store/{{ store_id }}/project/{{project_id}}/object/{{object_id}}",
+                            contentType: "application/json",
+                            dataType: "json",
+                            data: JSON.stringify(window.codeEditor.get())
+                        }).done(function () {
+                            reportSuccess("Success", "Object saved");
+                        }).catch(function () {
+                            reportError("Error", "An undefined error occurred while attempting to save object");
+                        });
+                    }
+                });
             } catch (e) {
                 reportError("Invalid JSON error", e.toString());
             }
@@ -30,7 +43,6 @@
                       action="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object_id }}">
                     <div class="form-group row">
                         <div id="code-editor" style="height: 600px; width: 100%"></div>
-                        <input id="code-field" name="object" type="hidden">
                     </div>
                     <div class="form-group row">
                         <div class="col-sm-10"></div>
@@ -38,8 +50,7 @@
                             <a href="/view/store/{{ store_id }}/project/{{ project_id }}" class="btn btn-outline-danger">Close</a>
                         </div>
                         <div class="col-sm-1">
-                            <button type="button" class="btn btn-outline-success"
-                                    onclick="saveCode()">
+                            <button type="button" class="btn btn-outline-success" onclick="saveCode()">
                                 {{ "Create" if create else "Save" }}
                             </button>
                         </div>
