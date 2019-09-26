@@ -8,7 +8,7 @@ from minio import Minio
 from minio.error import ResponseError, NoSuchKey
 from urllib3 import HTTPResponse
 
-from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL
+from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL, PROJECT_SECTIONS
 from common.consts import PROJECT_BASIC_TEMPLATE, PROJECT_METADATA_SECTION
 from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, PROJECT_FILE, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
 from common.entities import OveAssetMeta, OveProjectMeta
@@ -103,6 +103,7 @@ class S3Manager:
                         item["creationDate"] = '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date)
                         item["updateDate"] = _last_modified(bucket.name)
                         item["hasProject"] = self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
+                        item["projectType"] = self.project_type(store_id=store_id, project_id=bucket.name)
 
                         result.append(item)
 
@@ -291,6 +292,21 @@ class S3Manager:
             if not ignore_errors:
                 logging.error("Error while trying to set asset meta. Error: %s", sys.exc_info()[1])
                 raise InvalidAssetError(store_id=store_id, project_id=project_id, asset_id=asset_id)
+
+    def project_type(self, store_id: str, project_id: str) -> str:
+        project = self.get_object(store_id=store_id, project_id=project_id, object_id="project", ignore_errors=True)
+        if project:
+            meta = project.get(PROJECT_METADATA_SECTION, None)
+            if meta:
+                controller = meta.get("controller", None)
+                if controller:
+                    return "controller"
+
+            sections = project.get(PROJECT_SECTIONS, [])
+            if len(sections) > 0:
+                return "launcher"
+
+        return "none"
 
     def has_object(self, project_id: str, object_id: str, store_id: str = None) -> bool:
         _validate_object_id(store_id=store_id, project_id=project_id, object_id=object_id)

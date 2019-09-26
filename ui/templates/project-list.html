@@ -72,17 +72,20 @@
         {% for project in projects -%}
             <tr>
                 <td>
-                    {% if project.hasProject %}
-                        <span data-toggle="tooltip" data-placement="top" title="This project has a project.json file">
-                            <i class="fas fa-heartbeat icon-ok"></i>
-                            <span style="display: none;">Y</span> <!-- for sorting only -->
+                    {% if project.projectType == "launcher" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Launcher-based project">
+                            <i class="fas fa-rocket icon-ok"></i>
+                        </span>
+                    {% elif project.projectType == "controller" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Controller-based project">
+                            <i class="fas fa-gamepad icon-ok"></i>
                         </span>
                     {% else %}
-                        <span data-toggle="tooltip" data-placement="top" title="This project does not have a project.json file, yet!">
-                            <i class="fas fa-heart-broken icon-error"></i>
-                            <span style="display: none;">N</span> <!-- for sorting only -->
+                        <span data-toggle="tooltip" data-placement="top" title="This project is not launchable">
+                            <i class="far fa-file icon-error"></i>
                         </span>
                     {% endif %}
+                    <span style="display: none;">{{ project.projectType }}</span> <!-- for sorting only -->
                 </td>
                 <td><a href="/view/store/{{ store_id }}/project/{{ project.id }}">{{ project.name }}</a></td>
                 <td>{{ project.description }}</td>
