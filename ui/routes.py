@@ -200,6 +200,7 @@ class ProjectEdit:
             project[field] = req.params.get(field, "")
         project["tags"] = _get_tags()
         project["video_controller"] = to_bool(req.params.get("video_controller", False))
+        project["html_controller"] = to_bool(req.params.get("html_controller", False))
 
         resp.context = {"store_id": store_id, "project_id": project_id, "project": project}
         try:
