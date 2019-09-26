@@ -39,13 +39,13 @@ class FileController:
         for filename in glob.iglob(append_slash(upload_folder) + '**/*', recursive=True):
             if not os.path.islink(filename) and not os.path.ismount(filename) and os.path.isfile(filename):
                 # note: filename[len(upload_folder):] always starts with /
-                self._manager.upload_asset(project_id=project_id, asset_id=meta.name, upload_filename=filename,
+                self._manager.upload_asset(project_id=project_id, asset_id=meta.id, upload_filename=filename,
                                            filename=prefix + filename[len(upload_folder):])
 
     def lock_asset(self, project_id: str, meta: OveAssetMeta, worker_name: str) -> None:
         if meta.worker is None or len(meta.worker) == 0 or meta.worker == worker_name:
             meta.worker = worker_name
-            return self._manager.set_asset_meta(project_id=project_id, asset_id=meta.name, meta=meta)
+            return self._manager.set_asset_meta(project_id=project_id, asset_id=meta.id, meta=meta)
         else:
             raise WorkerLockError()
 
@@ -53,9 +53,9 @@ class FileController:
         # do not unlock other resources
         if meta.worker == worker_name:
             meta.worker = ""
-            return self._manager.set_asset_meta(project_id=project_id, asset_id=meta.name, meta=meta)
+            return self._manager.set_asset_meta(project_id=project_id, asset_id=meta.id, meta=meta)
 
     def update_asset_status(self, project_id: str, meta: OveAssetMeta, status: WorkerStatus, error_msg: str = "") -> None:
         meta.processing_status = str(status)
         meta.processing_error = error_msg
-        return self._manager.set_asset_meta(project_id=project_id, asset_id=meta.name, meta=meta)
+        return self._manager.set_asset_meta(project_id=project_id, asset_id=meta.id, meta=meta)

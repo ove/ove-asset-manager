@@ -200,6 +200,7 @@ class ProjectEdit:
             project[field] = req.params.get(field, "")
         project["tags"] = _get_tags()
         project["video_controller"] = to_bool(req.params.get("video_controller", False))
+        project["html_controller"] = to_bool(req.params.get("html_controller", False))
 
         resp.context = {"store_id": store_id, "project_id": project_id, "project": project}
         try:
@@ -215,7 +216,7 @@ class AssetEdit:
     @falcon_template.render('asset-edit.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         resp.context = {"store_id": store_id, "project_id": project_id, "asset_id": asset_id, "create": asset_id == "new",
-                        "asset": {"name": asset_id, "project": project_id}}
+                        "asset": {"id": asset_id, "name": asset_id, "project": project_id}}
         if asset_id != "new":
             try:
                 resp.context["asset"] = self._controller.get_asset(store_id=store_id, project_id=project_id, asset_id=asset_id)
@@ -231,7 +232,7 @@ class AssetEdit:
                 result = [result]
             return result
 
-        asset = {"name": req.params.get("name", ""), "project": req.params.get("project", "")}
+        asset = {"id": req.params.get("id", ""), "name": req.params.get("name", ""), "project": req.params.get("project", "")}
         for field in OveAssetMeta.EDITABLE_FIELDS:
             asset[field] = req.params.get(field, "")
         asset["tags"] = _get_tags()
@@ -241,7 +242,7 @@ class AssetEdit:
         if asset_id == "new":
             resp.context["create"] = True
             resp.context["asset"] = self._controller.create_asset(store_id=store_id, project_id=project_id, asset=asset)
-            raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_id, project_id, asset.get("name")))
+            raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_id, project_id, asset.get("id")))
         else:
             resp.context["asset"] = self._controller.edit_asset(store_id=store_id, project_id=project_id, asset=asset)
 
@@ -300,7 +301,7 @@ class BackendDetailsView:
 
     @falcon_template.render('backend-details.html')
     def on_get(self, _: falcon.Request, resp: falcon.Response):
-        resp.context = {"backend_url": self._controller._backend.backend_url}
+        resp.context = {"backend_url": self._controller.backend_url}
 
 
 class UploadApi:
@@ -318,6 +319,18 @@ class UploadApi:
 
         self._controller.upload_asset(store_id=store_id, project_id=project_id, asset_id=asset_id, filename=filename, stream=req.bounded_stream,
                                       update=to_bool(req.params.get("update", "True")), create=create)
+        resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+
+class ObjectEditApi:
+    content_type = 'application/json'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+        self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=req.media)
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 

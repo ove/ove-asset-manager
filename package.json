@@ -2,18 +2,18 @@
   "name": "am-ui-js-dependencies",
   "author": "Ovidiu Serban, o.serban@imperial.ac.uk",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "5.10.1",
+    "@fortawesome/fontawesome-free": "5.11.2",
     "alpaca": "1.5.27",
     "bootbox": "5.3.2",
     "bootstrap": "4.3.1",
     "datatables.net": "1.10.19",
     "datatables.net-bs4": "1.10.19",
-    "filepond": "4.5.0",
-    "handlebars": "4.1.2",
+    "filepond": "4.7.1",
+    "handlebars": "4.3.1",
     "jquery": "3.4.1",
-    "jsoneditor": "6.3.0",
+    "jsoneditor": "7.0.4",
     "jstree": "3.3.8",
-    "select2": "4.0.8",
+    "select2": "4.0.10",
     "underscore": "1.9.1"
   },
   "scripts": {
