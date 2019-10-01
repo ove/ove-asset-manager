@@ -206,8 +206,8 @@ class S3Manager:
             filepath = asset_id + S3_SEPARATOR + filename
             client.fget_object(project_id, filepath, down_filename)
         except ResponseError:
-            logging.error("Error while trying to upload. Error: %s", sys.exc_info()[1])
-            raise ValidationError("Unable to upload asset to remote storage.")
+            logging.error("Error while trying to download. Error: %s", sys.exc_info()[1])
+            raise ValidationError("Unable to download asset from remote storage.")
 
     def has_project_meta(self, project_id: str, store_id: str = None) -> bool:
         client = self._get_connection(store_id)
