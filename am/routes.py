@@ -153,9 +153,6 @@ class ProjectVersion:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        pass
-
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
 
