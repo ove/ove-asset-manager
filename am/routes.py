@@ -169,7 +169,7 @@ class ProjectVersion:
         versions = getattr(meta, 'versions', {})
         if not versions:
             versions = []
-        versions.append(new_version)
+        versions.insert(0, new_version)
         setattr(meta, 'versions', versions)
 
         self._controller.edit_project_meta(store_id=store_id, project_id=project_id, meta=meta)
