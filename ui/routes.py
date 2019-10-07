@@ -323,6 +323,23 @@ class UploadApi:
         resp.status = falcon.HTTP_200
 
 
+class VersionApi:
+    content_type = 'application/x-www-form-urlencoded'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        self._controller.create_project_version(store_id=store_id, project_id=project_id,
+                                                version_name=req.params.get("version_name", ""),
+                                                version_description=req.params.get("version_description", ""))
+
+        resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+        raise falcon.HTTPSeeOther(location="/view/store/{}/project/{}".format(store_id, project_id))
+
+
 class ObjectEditApi:
     content_type = 'application/json'
 

@@ -4,7 +4,7 @@ import falcon
 
 from am.controller import FileController
 from am.managers import WorkerManager
-from am.routes import AssetCreate, AssetList, AssetUpload, WorkerSchedule, WorkersStatusRoute, ObjectInfo
+from am.routes import AssetCreate, AssetList, AssetUpload, WorkerSchedule, WorkersStatusRoute, ObjectInfo, ProjectVersion
 from am.routes import WorkersEdit, StoreList, AssetMetaEdit, ProjectCreate, ProjectList, ObjectEdit, TagEdit, ProjectMetaEdit, FileList
 from common.consts import DEFAULT_CONFIG
 from common.errors import handle_exceptions
@@ -25,6 +25,7 @@ def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -
     app.add_route('/api/list', StoreList(controller=file_controller))
     app.add_route('/api/{store_id}/list', ProjectList(controller=file_controller))
     app.add_route('/api/{store_id}/create', ProjectCreate(controller=file_controller))
+    app.add_route('/api/{store_id}/{project_id}/version', ProjectVersion(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/list', AssetList(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/create', AssetCreate(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/projectMeta', ProjectMetaEdit(controller=file_controller))
