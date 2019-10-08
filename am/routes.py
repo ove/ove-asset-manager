@@ -2,6 +2,7 @@
 # Written using Falcon
 # Author: David Akroyd
 # Contributor: Ovidiu Serban
+import datetime
 from functools import partial
 
 import falcon
@@ -278,6 +279,35 @@ class ProjectAccessMetaEdit:
 
         meta = OveProjectAccessMeta(groups=req.media.get("groups", []))
         self._controller.edit_project_access_meta(store_id=store_id, project_id=project_id, meta=meta)
+
+        resp.media = meta.to_public_json()
+        resp.status = falcon.HTTP_200
+
+
+class ProjectVersion:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
+
+        new_version = {
+            'name': req.media['version_name'],
+            'description': req.media['version_description'],
+            'date_added': str(datetime.datetime.now()),
+            'versions': {}
+        }
+
+        for asset in self._controller.list_assets(project_id=project_id, store_id=store_id):
+            new_version['versions'][asset['id']] = asset['version']
+
+        versions = getattr(meta, 'versions', {})
+        if not versions:
+            versions = []
+        versions.insert(0, new_version)
+        setattr(meta, 'versions', versions)
+
+        self._controller.edit_project_meta(store_id=store_id, project_id=project_id, meta=meta)
 
         resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200

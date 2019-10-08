@@ -20,6 +20,7 @@
     {% include 'dialogs/worker-schedule-dialog.html' with context %}
     {% include 'dialogs/asset-files-dialog.html' with context %}
     {% include 'dialogs/upload-asset-dialog.html' with context %}
+    {% include 'dialogs/tag-version-dialog.html' with context %}
 
     <div class="nav-menu-container">
         <div class="nav-menu-item-fixed btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
@@ -41,6 +42,11 @@
                data-toggle="tooltip" data-placement="top" title="Edit project">
                 <i class="far fa-edit"></i>&nbsp;&nbsp;Edit project
             </a>
+
+            <button type="button" onclick="tagVersionModal('/api/store/{{ store_id }}/project/{{ project_id }}/version', true)" class="btn btn-outline-primary"
+                    data-toggle="tooltip" data-placement="top" title="Tag the current version of each asset" style="margin-left: 5px;">
+                <i class="fas fa-tag"></i> Tag a version
+            </button>
 
             <a href="/view/store/{{ store_id }}/project/{{ project_id }}/access" class="btn btn-outline-primary"
                data-toggle="tooltip" data-placement="top" title="Edit project access">

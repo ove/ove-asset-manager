@@ -116,6 +116,10 @@ class BackendController:
     def set_object(self, store_id: str, project_id: str, object_id: str, object_data: Dict, auth_token: Union[str, None]) -> None:
         return self._backend.put("api/{}/{}/object/{}".format(store_id, project_id, object_id), data=object_data, auth_token=auth_token)
 
+    def create_project_version(self, store_id: str, project_id: str, version_name: str, version_description: str):
+        self._backend.post("api/{}/{}/version".format(store_id, project_id),
+                           data={"version_name": version_name, "version_description": version_description})
+
 
 def _mutate(d: Dict, field: str, value: Any) -> Dict:
     d[field] = value

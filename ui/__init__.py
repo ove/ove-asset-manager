@@ -7,7 +7,7 @@ from common.middleware import CORSComponent
 from common.util import parse_logging_lvl
 from ui.controller import BackendController
 from ui.middleware import ContentTypeValidator, LoginValidator
-from ui.routes import ProjectEdit, BackendDetailsView, ObjectEditApi, LoginView, LogoutView, ProjectAccessEdit
+from ui.routes import ProjectEdit, BackendDetailsView, ObjectEditApi, LoginView, LogoutView, ProjectAccessEdit, VersionApi
 from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions
 from ui.routes import UploadApi, WorkerApi, ObjectEdit, WorkerDocsView, FilesApi
 
@@ -50,6 +50,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/api/store/{store_id}/project/{project_id}/asset/{asset_id}/upload', UploadApi(controller=_controller))
     app.add_route('/api/store/{store_id}/project/{project_id}/asset/{asset_id}/process/{worker_type}', WorkerApi(controller=_controller))
     app.add_route('/api/store/{store_id}/project/{project_id}/asset/{asset_id}/files', FilesApi(controller=_controller))
+    app.add_route('/api/store/{store_id}/project/{project_id}/version', VersionApi(controller=_controller))
 
     # worker docs
     app.add_route('/docs/{worker_doc}', WorkerDocsView(docs_folder=os.getcwd() + "/docs/workers/"))
