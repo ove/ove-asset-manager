@@ -6,65 +6,103 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <ul class="navbar-nav">
-            <li class="navbar-nav">
-                <a class="nav-link {{ "active" if active_page == "workers" }}" href="/view/workers"><i class="fas fa-toolbox"></i>&nbsp;&nbsp;Workers</a>
-            </li>
-            <li class="divider-vertical" style="border-right: 1px solid rgb(123,123,123); border-left: 1px solid #f2f2f2; margin: 0 9px;"></li>
-            <li class="nav-item">
-                <a class="nav-link {{ "active" if not store_id and active_page not in ["workers", "docs"] }}" href="/"><i class="fas fa-home"></i>&nbsp;&nbsp;Home</a>
-            </li>
+        <div class="nav-menu-container">
+            <div class="nav-menu-item-fixed">
+                <ul class="navbar-nav">
+                    {% if store_id %}
+                        {% if auth_user.write_access %}
+                            <li class="nav-item">
+                                <a class="nav-link {{ "active" if not project_id }}" href="/view/store/{{ store_id }}">
+                                    <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
+                                    <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/view/store/{{ store_id }}/index">
+                                    <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
+                                    <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
 
-            {% if store_id %}
-                <li class="nav-item">
-                    <span class="nav-link {{ "active" if not project_id else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ "active" if not project_id }}" href="/view/store/{{ store_id }}">
-                        <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
-                        <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link"  href="/view/store/{{  store_id }}/index">Index</a>
-                </li>
-            {% endif %}
+                    {% if project_id %}
+                        <li class="nav-item">
+                            <span class="nav-link {{ "active" if not asset_id and not object_id else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ "active" if not asset_id and not object_id }}" href="/view/store/{{ store_id }}/project/{{ project_id }}">
+                                <i class="fas fa-list"></i>&nbsp;&nbsp;Project
+                                <span class="badge {{ "badge-primary" if not asset_id and not object_id else "badge-secondary" }}">{{ project_id }}</span>
+                            </a>
+                        </li>
+                    {% endif %}
 
-            {% if project_id %}
-                <li class="nav-item">
-                    <span class="nav-link {{ "active" if not asset_id and not object_id else "disabled" }}"><i class="fas fa-angle-double-right"></i></span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ "active" if not asset_id and not object_id }}" href="/view/store/{{ store_id }}/project/{{ project_id }}">
-                        <i class="fas fa-list"></i>&nbsp;&nbsp;Project
-                        <span class="badge {{ "badge-primary" if not asset_id and not object_id else "badge-secondary" }}">{{ project_id }}</span>
-                    </a>
-                </li>
-            {% endif %}
+                    {% if asset_id %}
+                        <li class="nav-item">
+                            <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset_id }}">
+                                <i class="fas fa-file-alt"></i>&nbsp;&nbsp;Asset
+                                <span class="badge badge-primary">{{ asset_id }}</span>
+                            </a>
+                        </li>
+                    {% endif %}
 
-            {% if asset_id %}
-                <li class="nav-item">
-                    <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset_id }}">
-                        <i class="fas fa-file-alt"></i>&nbsp;&nbsp;Asset
-                        <span class="badge badge-primary">{{ asset_id }}</span>
-                    </a>
-                </li>
-            {% endif %}
-
-            {% if object_id %}
-                <li class="nav-item">
-                    <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object_id }}">
-                        <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Object
-                        <span class="badge badge-primary">{{ object_id }}.json</span>
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
+                    {% if object_id %}
+                        <li class="nav-item">
+                            <span class="nav-link active"><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object_id }}">
+                                <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Object
+                                <span class="badge badge-primary">{{ object_id }}.json</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="nav-menu-item-var"></div>
+            <div class="nav-menu-item-fixed">
+                <ul class="navbar-nav">
+                    {% if auth_user %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="far fa-user-circle"></i>&nbsp;&nbsp;{{ auth_user.user }}
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="card border-light" style="width: 10rem;">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ auth_user.groups|join(', ') }}</h6>
+                                        <br/>
+                                        <p class="card-text">
+                                            {% if auth_user.write_access %}
+                                                <i class="fas fa-user-edit" title="This user has write access"></i>
+                                            {% endif %}
+                                            &nbsp;&nbsp;
+                                            {% if auth_user.admin_access %}
+                                                <i class="fas fa-user-shield" title="This user has admin access"></i>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i>&nbsp;&nbsp;Logout</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ "active" if not store_id and active_page not in ["workers", "docs"] }}" href="/"><i class="fas fa-home"></i>&nbsp;&nbsp;Home</a>
+                        </li>
+                        {% if auth_user.write_access %}
+                            <li class="navbar-nav">
+                                <a class="nav-link {{ "active" if active_page == "workers" }}" href="/view/workers"><i class="fas fa-toolbox"></i>&nbsp;&nbsp;Workers</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
     </div>
 </nav>

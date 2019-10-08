@@ -9,9 +9,9 @@ from minio.error import ResponseError, NoSuchKey
 from urllib3 import HTTPResponse
 
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL, PROJECT_SECTIONS
+from common.consts import DEFAULT_CREDENTIALS_CONFIG, S3_SEPARATOR, OVE_META, PROJECT_FILE, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
 from common.consts import PROJECT_BASIC_TEMPLATE, PROJECT_METADATA_SECTION
-from common.consts import DEFAULT_CONFIG, S3_SEPARATOR, OVE_META, PROJECT_FILE, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
-from common.entities import OveAssetMeta, OveProjectMeta
+from common.entities import OveAssetMeta, OveProjectMeta, OveProjectAccessMeta
 from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError, InvalidProjectError
 from common.filters import DEFAULT_FILTER
 from common.util import append_slash
@@ -26,7 +26,7 @@ class S3Manager:
         self._clients = {}
         self._store_config = {}
 
-    def load(self, config_file: str = DEFAULT_CONFIG):
+    def load(self, config_file: str = DEFAULT_CREDENTIALS_CONFIG):
         try:
             with open(config_file, mode="r") as fin:
                 config = json.load(fin)
@@ -80,7 +80,7 @@ class S3Manager:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
 
     # List the projects in an s3 storage (returning the names)
-    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
+    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None, access_groups: List[str] = None, is_admin: bool = False) -> List[Dict]:
         def _last_modified(project_id) -> str:
             ts = [a.last_modified for a in client.list_objects(project_id, prefix=None, recursive=False)]
             ts = [a for a in ts if a is not None]
@@ -89,6 +89,7 @@ class S3Manager:
             else:
                 return ''
 
+        access_groups = access_groups or []
         client = self._get_connection(store_id)
         try:
             if metadata:
@@ -97,13 +98,14 @@ class S3Manager:
                 result = []
                 for bucket in client.list_buckets():
                     meta = self.get_project_meta(store_id=store_id, project_id=bucket.name, ignore_errors=True)
-                    if result_filter(meta):
+                    if result_filter(meta) and self.has_access(store_id=store_id, project_id=bucket.name, groups=access_groups, is_admin=is_admin):
                         item = meta.to_public_json()
                         item["id"] = bucket.name
                         item["creationDate"] = '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date)
                         item["updateDate"] = _last_modified(bucket.name)
                         item["hasProject"] = self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
                         item["projectType"] = self.project_type(store_id=store_id, project_id=bucket.name)
+                        item["access"] = self.get_project_access_meta(store_id=store_id, project_id=bucket.name).groups
 
                         result.append(item)
 
@@ -112,7 +114,7 @@ class S3Manager:
                 return [{
                     "id": bucket.name,
                     "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
-                } for bucket in client.list_buckets()]
+                } for bucket in client.list_buckets() if self.has_access(store_id=store_id, project_id=bucket.name, groups=access_groups, is_admin=is_admin)]
         except:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
             return []
@@ -255,6 +257,29 @@ class S3Manager:
             if not ignore_errors:
                 logging.error("Error while trying to set project meta. Error: %s", sys.exc_info()[1])
                 raise InvalidProjectError(store_id=store_id, project_id=project_id)
+
+    def get_project_access_meta(self, store_id: str, project_id: str) -> Union[None, OveProjectAccessMeta]:
+        client = self._get_connection(store_id)
+        try:
+            params = _decode_json(client.get_object(project_id, OVE_META))
+            return OveProjectAccessMeta(**params)
+        except:
+            return OveProjectAccessMeta()
+
+    def set_project_access_meta(self, store_id: str, project_id: str, meta: OveProjectAccessMeta) -> None:
+        client = self._get_connection(store_id)
+        try:
+            data, size = _encode_json(meta.to_json())
+            client.put_object(project_id, OVE_META, data, size)
+        except:
+            logging.error("Error while trying to set project meta. Error: %s", sys.exc_info()[1])
+
+    def has_access(self, store_id: str, project_id: str, groups: List[str], is_admin: bool) -> bool:
+        if is_admin:
+            return True
+
+        meta = self.get_project_access_meta(store_id=store_id, project_id=project_id)
+        return any(group in groups for group in meta.groups)
 
     def has_asset_meta(self, project_id: str, asset_id: str, store_id: str = None) -> bool:
         client = self._get_connection(store_id)

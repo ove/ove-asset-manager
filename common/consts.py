@@ -1,4 +1,5 @@
-DEFAULT_CONFIG = "config/credentials.json"
+DEFAULT_CREDENTIALS_CONFIG = "config/credentials.json"
+DEFAULT_AUTH_CONFIG = "config/auth.json"
 
 CONFIG_STORE_DEFAULT = "default"
 CONFIG_STORES = "stores"
@@ -7,6 +8,19 @@ CONFIG_ENDPOINT = "endpoint"
 CONFIG_ACCESS_KEY = "accessKey"
 CONFIG_SECRET_KEY = "secretKey"
 CONFIG_PROXY_URL = "proxyUrl"
+
+CONFIG_AUTH_JWT = "jwt"
+CONFIG_AUTH_JWT_SECRET = "secret"
+CONFIG_AUTH_MONGO = "mongo"
+CONFIG_AUTH_MONGO_HOST = "host"
+CONFIG_AUTH_MONGO_PORT = "port"
+CONFIG_AUTH_MONGO_USER = "user"
+CONFIG_AUTH_MONGO_PASSWORD = "password"
+CONFIG_AUTH_MONGO_DB = "db"
+CONFIG_AUTH_MONGO_COLLECTION = "collection"
+CONFIG_AUTH_MONGO_MECHANISM = "mechanism"
+
+FIELD_AUTH_TOKEN = "AUTH_TOKEN"
 
 OVE_META = ".ovemeta"
 PROJECT_FILE = "project.json"
@@ -20,6 +34,10 @@ S3_SEPARATOR = "/"
 S3_OBJECT_EXTENSION = ".json"
 
 MAX_LIST_ITEMS = 1000
+
+HTTP_IGNORE_METHODS = {'CONNECT', 'HEAD', 'OPTIONS', 'TRACE'}
+HTTP_READ_METHODS = {'GET'}
+HTTP_WRITE_METHODS = {'DELETE', 'PATCH', 'POST', 'PUT'}
 
 # todo; this could be a config file
 OBJECT_TEMPLATE = {
@@ -43,3 +61,5 @@ OBJECT_TEMPLATE = {
         ]
     }
 }
+
+DEFAULT_AUTH_GROUPS = {"groups": ["public"]}

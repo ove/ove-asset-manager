@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Dict
 
 import falcon
 from falcon.response import Response
@@ -28,12 +28,12 @@ class FalconTemplate:
                 return response
         return False
 
-    def _make_template(self, template: str, context: dict, alerts: List):
+    def _make_template(self, template: str, context: dict, alerts: List, auth_user: Dict):
         try:
             template = self._env.get_template(template)
         except TemplateNotFound:
             raise FalconTemplateNotFound('Template {} not found in {} folder'.format(template, self.template_path))
-        return template.render(**context, alerts=alerts)
+        return template.render(**context, alerts=alerts, auth_user=auth_user)
 
     def render(self, template: str):
         def render_template(func):
@@ -49,7 +49,7 @@ class FalconTemplate:
 
                 response.content_type = falcon.MEDIA_HTML
                 response.status = falcon.HTTP_200
-                response.body = self._make_template(template, response.context, response.alerts)
+                response.body = self._make_template(template, response.context, response.alerts, getattr(response, "auth_user", None))
 
             return wrapper
 

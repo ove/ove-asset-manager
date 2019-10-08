@@ -2,15 +2,16 @@ import json
 import logging
 import re
 import sys
+from typing import List, Tuple
 
 import falcon
 import markdown2
 import urllib3
 
-from common.consts import OBJECT_TEMPLATE
+from common.consts import OBJECT_TEMPLATE, FIELD_AUTH_TOKEN, DEFAULT_AUTH_GROUPS
 from common.entities import OveProjectMeta, OveAssetMeta
 from common.errors import ValidationError
-from common.falcon_utils import unquote_filename
+from common.falcon_utils import unquote_filename, auth_token
 from common.util import to_bool, append_slash
 from common.validation import validate_not_null
 from ui.alert_utils import report_error, report_success
@@ -60,6 +61,39 @@ def _handle_exceptions(ex: Exception, resp: falcon.Response):
 falcon_template = FalconTemplate(path="ui/templates/", error_handler=_handle_exceptions)
 
 
+class LoginView:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('login.html')
+    def on_get(self, _req: falcon.Request, _resp: falcon.Response):
+        pass
+
+    @falcon_template.render('login.html')
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req.params, 'user')
+        validate_not_null(req.params, 'password')
+
+        token = self._controller.login(user=req.params.get("user", None), password=req.params.get("password", None))
+        if token:
+            resp.set_cookie(FIELD_AUTH_TOKEN, token)
+            raise falcon.HTTPSeeOther("/")
+        else:
+            raise ValidationError(title="Invalid login", description="Invalid username or password")
+
+
+class LogoutView:
+    @falcon_template.render('login.html')
+    def on_get(self, _: falcon.Request, resp: falcon.Response):
+        resp.unset_cookie(FIELD_AUTH_TOKEN)
+        raise falcon.HTTPSeeOther("/")
+
+    @falcon_template.render('login.html')
+    def on_post(self, _: falcon.Request, resp: falcon.Response):
+        resp.unset_cookie(FIELD_AUTH_TOKEN)
+        raise falcon.HTTPSeeOther("/")
+
+
 class IndexView:
     def __init__(self, controller: BackendController):
         self._controller = controller
@@ -69,7 +103,7 @@ class IndexView:
         if req.params.get("store-name", None):
             raise falcon.HTTPPermanentRedirect("/view/store/" + req.params.get("store-name", None))
         else:
-            resp.context = {"stores": self._controller.list_stores()}
+            resp.context = {"stores": self._controller.list_stores(auth_token=auth_token(req))}
 
 
 class NotFoundView:
@@ -83,10 +117,10 @@ class WorkerView:
         self._controller = controller
 
     @falcon_template.render('worker-list.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response):
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
         resp.context = {"workers": []}
         try:
-            resp.context["workers"] = self._controller.list_workers()
+            resp.context["workers"] = self._controller.list_workers(auth_token=auth_token(req))
         except:
             raise
 
@@ -99,8 +133,8 @@ class WorkerView:
         action = req.params.get("action")
         name = req.params.get("name")
         try:
-            resp.context["workers"] = self._controller.list_workers()
-            self._controller.edit_worker(action=action, name=name)
+            resp.context["workers"] = self._controller.list_workers(auth_token=auth_token(req))
+            self._controller.edit_worker(action=action, name=name, auth_token=auth_token(req))
 
             if action == "reset":
                 report_success(resp=resp, description="Worker status refreshed")
@@ -109,7 +143,7 @@ class WorkerView:
             else:
                 report_error(resp=resp, description="Invalid worker action")
 
-            resp.context["workers"] = self._controller.list_workers()
+            resp.context["workers"] = self._controller.list_workers(auth_token=auth_token(req))
         except:
             raise
 
@@ -119,10 +153,13 @@ class ProjectView:
         self._controller = controller
 
     @falcon_template.render('project-list.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
+        if not getattr(resp, "auth_user", {}).get("write_access", False):
+            raise falcon.HTTPSeeOther('/view/store/{}/index'.format(store_id))
+
         resp.context = {"store_id": store_id, "projects": []}
         try:
-            resp.context["projects"] = self._controller.list_projects(store_id)
+            resp.context["projects"] = self._controller.list_projects(store_id, auth_token=auth_token(req))
         except:
             raise
 
@@ -137,12 +174,13 @@ class ProjectView:
         resp.context = {"store_id": store_id, "project_id": project_id, "project_name": project_name, "assets": [], "workers": {}}
 
         try:
-            self._controller.create_project(store_id=store_id, project_id=project_id, project_name=project_name)
+            self._controller.create_project(store_id=store_id, project_id=project_id, project_name=project_name, auth_token=auth_token(req))
+            self._controller.edit_access_meta(store_id=store_id, project_id=project_id, meta=DEFAULT_AUTH_GROUPS, auth_token=auth_token(req))
             report_success(resp=resp, description="Project created")
         except:
             raise
         finally:
-            resp.context["projects"] = self._controller.list_projects(store_id)
+            resp.context["projects"] = self._controller.list_projects(store_id, auth_token=auth_token(req))
 
         raise falcon.HTTPSeeOther('./%s/project/%s' % (store_id, project_id))
 
@@ -152,10 +190,10 @@ class ProjectIndexView:
         self._controller = controller
 
     @falcon_template.render('project-index.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
         resp.context = {"store_id": store_id, "projects": []}
         try:
-            resp.context["projects"] = self._controller.list_projects(store_id)
+            resp.context["projects"] = self._controller.list_projects(store_id, auth_token=auth_token(req))
         except:
             raise
 
@@ -165,12 +203,13 @@ class AssetView:
         self._controller = controller
 
     @falcon_template.render('asset-list.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        resp.context = {"store_id": store_id, "project_id": project_id, "assets": [], "workers": {}}
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        resp.context = {"store_id": store_id, "project_id": project_id, "assets": [], "workers": {}, "project": {}}
         try:
-            resp.context["assets"] = self._controller.list_assets(store_id=store_id, project_id=project_id)
-            resp.context["workers"] = self._controller.get_worker_types()
-            resp.context["objects"] = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=["project"])
+            resp.context["project"] = self._controller.get_project(store_id=store_id, project_id=project_id, auth_token=auth_token(req))
+            resp.context["assets"] = self._controller.list_assets(store_id=store_id, project_id=project_id, auth_token=auth_token(req))
+            resp.context["workers"] = self._controller.get_worker_types(auth_token=auth_token(req))
+            resp.context["objects"] = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=["project"], auth_token=auth_token(req))
         except:
             raise
 
@@ -180,10 +219,10 @@ class ProjectEdit:
         self._controller = controller
 
     @falcon_template.render('project-edit.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
         resp.context = {"store_id": store_id, "project_id": project_id, "project": {"name": project_id}}
         try:
-            resp.context["project"] = self._controller.get_project(store_id=store_id, project_id=project_id)
+            resp.context["project"] = self._controller.get_project(store_id=store_id, project_id=project_id, auth_token=auth_token(req))
         except:
             raise
 
@@ -204,7 +243,44 @@ class ProjectEdit:
 
         resp.context = {"store_id": store_id, "project_id": project_id, "project": project}
         try:
-            resp.context["project"] = self._controller.edit_project(store_id=store_id, project_id=project_id, project_data=project)
+            resp.context["project"] = self._controller.edit_project(store_id=store_id, project_id=project_id, project_data=project, auth_token=auth_token(req))
+        except:
+            raise
+
+
+def _groups(auth_groups: List[str], project_groups: List[str]) -> List[Tuple[str, bool]]:
+    result = dict()
+    for group in auth_groups:
+        result[group] = group in project_groups
+    return list(result.items())
+
+
+class ProjectAccessEdit:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('project-access-edit.html')
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        resp.context = {"store_id": store_id, "project_id": project_id, "groups": []}
+        try:
+            meta = self._controller.get_access_meta(store_id=store_id, project_id=project_id, auth_token=auth_token(req)) or {}
+            resp.context["groups"] = _groups(auth_groups=self._controller.get_auth_groups(auth_token=auth_token(req)), project_groups=meta.get("groups", []))
+        except:
+            raise
+
+    @falcon_template.render('project-access-edit.html')
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        def _get_groups():
+            result = req.params.get("groups[]", None)
+            if isinstance(result, str):
+                result = [result]
+            return result
+
+        resp.context = {"store_id": store_id, "project_id": project_id, "groups": []}
+        try:
+            meta = {"groups": _get_groups()}
+            meta = self._controller.edit_access_meta(store_id=store_id, project_id=project_id, meta=meta, auth_token=auth_token(req))
+            resp.context["groups"] = _groups(auth_groups=self._controller.get_auth_groups(auth_token=auth_token(req)), project_groups=meta.get("groups", []))
         except:
             raise
 
@@ -214,12 +290,12 @@ class AssetEdit:
         self._controller = controller
 
     @falcon_template.render('asset-edit.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         resp.context = {"store_id": store_id, "project_id": project_id, "asset_id": asset_id, "create": asset_id == "new",
                         "asset": {"id": asset_id, "name": asset_id, "project": project_id}}
         if asset_id != "new":
             try:
-                resp.context["asset"] = self._controller.get_asset(store_id=store_id, project_id=project_id, asset_id=asset_id)
+                resp.context["asset"] = self._controller.get_asset(store_id=store_id, project_id=project_id, asset_id=asset_id, auth_token=auth_token(req))
             except:
                 resp.context["create"] = True
                 raise
@@ -241,10 +317,10 @@ class AssetEdit:
 
         if asset_id == "new":
             resp.context["create"] = True
-            resp.context["asset"] = self._controller.create_asset(store_id=store_id, project_id=project_id, asset=asset)
+            resp.context["asset"] = self._controller.create_asset(store_id=store_id, project_id=project_id, asset=asset, auth_token=auth_token(req))
             raise falcon.HTTPPermanentRedirect(location="/view/store/{}/project/{}/asset/{}".format(store_id, project_id, asset.get("id")))
         else:
-            resp.context["asset"] = self._controller.edit_asset(store_id=store_id, project_id=project_id, asset=asset)
+            resp.context["asset"] = self._controller.edit_asset(store_id=store_id, project_id=project_id, asset=asset, auth_token=auth_token(req))
 
 
 class ObjectEdit:
@@ -252,16 +328,16 @@ class ObjectEdit:
         self._controller = controller
 
     @falcon_template.render('object-edit.html')
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
         default_object = OBJECT_TEMPLATE.get(object_id, {})
 
         resp.context = {"store_id": store_id, "project_id": project_id, "object_id": object_id, "object": default_object, "create": False}
-        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=[object_id])
+        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=[object_id], auth_token=auth_token(req))
         if len(objects) > 0:
             resp.context['file_url'] = objects[0]['index_file']
 
         try:
-            resp.context["object"] = self._controller.get_object(store_id=store_id, project_id=project_id, object_id=object_id)
+            resp.context["object"] = self._controller.get_object(store_id=store_id, project_id=project_id, object_id=object_id, auth_token=auth_token(req))
             resp.context["create"] = False
         except:
             resp.context["create"] = True
@@ -274,9 +350,9 @@ class ObjectEdit:
                         "object": json.loads(req.params.get("object", ""))}
 
         self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id,
-                                    object_data=json.loads(req.params.get("object", "")))
+                                    object_data=json.loads(req.params.get("object", "")), auth_token=auth_token(req))
 
-        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=[object_id])
+        objects = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=[object_id], auth_token=auth_token(req))
         if len(objects) > 0:
             resp.context['file_url'] = objects[0]['index_file']
 
@@ -318,7 +394,7 @@ class UploadApi:
             create = True
 
         self._controller.upload_asset(store_id=store_id, project_id=project_id, asset_id=asset_id, filename=filename, stream=req.bounded_stream,
-                                      update=to_bool(req.params.get("update", "True")), create=create)
+                                      update=to_bool(req.params.get("update", "True")), create=create, auth_token=auth_token(req))
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
@@ -330,7 +406,7 @@ class ObjectEditApi:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, object_id: str):
-        self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=req.media)
+        self._controller.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=req.media, auth_token=auth_token(req))
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
@@ -342,7 +418,7 @@ class WorkerApi:
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str, worker_type: str):
-        self._controller.schedule_worker(store_id=store_id, project_id=project_id, asset_id=asset_id, worker_type=worker_type, parameters=req.media)
+        self._controller.schedule_worker(store_id=store_id, project_id=project_id, asset_id=asset_id, worker_type=worker_type, parameters=req.media, auth_token=auth_token(req))
         resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
@@ -355,5 +431,5 @@ class FilesApi:
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
         resp.media = self._controller.list_files(store_id=store_id, project_id=project_id, asset_id=asset_id,
-                                                 hierarchical=to_bool(req.params.get("hierarchical", False)))
+                                                 hierarchical=to_bool(req.params.get("hierarchical", False)), auth_token=auth_token(req))
         resp.status = falcon.HTTP_200

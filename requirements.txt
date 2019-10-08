@@ -1,3 +1,10 @@
+asn1crypto==0.24.0
+cryptography==2.7
+PyJWT==1.7.1
+argon2-cffi==19.1.0
+cffi==1.12.3
+pycparser==2.19
+passlib==1.7.1
 urllib3==1.25.6
 falcon==2.0.0
 pymongo==3.9.0

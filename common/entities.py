@@ -53,6 +53,9 @@ class OveProjectAccessMeta:
     def to_json(self) -> Dict:
         return self.__dict__
 
+    def to_public_json(self):
+        return {"groups": self.groups}
+
 
 class OveAssetMeta:
     EDITABLE_FIELDS = ["name", "description", "tags"]
@@ -193,3 +196,19 @@ class WorkerType(Enum):
 
     def __str__(self):
         return self.value
+
+
+class DbAccessMeta:
+    EDITABLE_FIELDS = ["groups", "write_access", "admin_access"]
+
+    def __init__(self, **kwargs):
+        self.user = kwargs.get("user", None)
+        self.groups = kwargs.get("groups", []) or []
+        self.write_access = kwargs.get("write_access", False) or False
+        self.admin_access = kwargs.get("admin_access", False) or False
+
+    def to_db(self) -> Dict:
+        return {"user": self.user, "am": {"groups": self.groups, "write_access": self.write_access, "admin_access": self.admin_access}}
+
+    def public_json(self) -> Dict:
+        return {"user": self.user, "groups": self.groups, "write_access": self.write_access, "admin_access": self.admin_access}

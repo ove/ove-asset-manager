@@ -1,0 +1,14 @@
+{
+  "mongo": {
+    "host": "hostname",
+    "port": 27017,
+    "user": "user",
+    "password": "password",
+    "db": "db",
+    "collection": "auth",
+    "mechanism": "SCRAM-SHA-256"
+  },
+  "jwt": {
+    "secret": "secret"
+  }
+}

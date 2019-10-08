@@ -2,8 +2,8 @@
 # Additonally acts as a transformer for multiple s3 APIs including Minio and AWS implementations
 from typing import Dict, Union, Callable, List
 
-from common.consts import DEFAULT_CONFIG
-from common.entities import OveAssetMeta, OveProjectMeta
+from common.consts import DEFAULT_CREDENTIALS_CONFIG
+from common.entities import OveAssetMeta, OveProjectMeta, OveProjectAccessMeta
 from common.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
 from common.s3minio import S3Manager
 
@@ -11,7 +11,7 @@ _RESERVED_NAMES = {"list", "validate", "create", "new"}
 
 
 class FileController:
-    def __init__(self, store_type: str = "s3", config_file: str = DEFAULT_CONFIG):
+    def __init__(self, store_type: str = "s3", config_file: str = DEFAULT_CREDENTIALS_CONFIG):
         if store_type == "s3":
             self._manager = S3Manager()
             self._manager.load(config_file=config_file)
@@ -25,8 +25,8 @@ class FileController:
         return self._manager.list_stores()
 
     # List the projects in an storage (returning the names)
-    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
-        return self._manager.list_projects(store_id=store_id, metadata=metadata, result_filter=result_filter)
+    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None, access_groups: List[str] = None, is_admin: bool = False) -> List[Dict]:
+        return self._manager.list_projects(store_id=store_id, metadata=metadata, result_filter=result_filter, access_groups=access_groups, is_admin=is_admin)
 
     def list_assets(self, project_id: str, store_id: str = None, result_filter: Callable = None) -> List[Dict]:
         return self._manager.list_assets(store_id=store_id, project_id=project_id, result_filter=result_filter)
@@ -72,6 +72,15 @@ class FileController:
     def edit_project_meta(self, project_id: str, meta: OveProjectMeta, store_id: str = None) -> None:
         self._manager.set_project_meta(project_id=project_id, meta=meta, store_id=store_id, ignore_errors=False)
 
+    def get_project_access_meta(self, project_id: str, store_id: str = None) -> OveProjectAccessMeta:
+        return self._manager.get_project_access_meta(store_id=store_id, project_id=project_id)
+
+    def edit_project_access_meta(self, project_id: str, meta: OveProjectAccessMeta, store_id: str = None) -> None:
+        self._manager.set_project_access_meta(project_id=project_id, meta=meta, store_id=store_id)
+
+    def has_access(self, project_id: str, groups: List[str], is_admin: bool, store_id: str = None) -> bool:
+        return self._manager.has_access(store_id=store_id, project_id=project_id, groups=groups, is_admin=is_admin)
+
     def get_asset_meta(self, project_id: str, asset_id: str, store_id: str = None) -> OveAssetMeta:
         return self._manager.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
 
@@ -92,3 +101,6 @@ class FileController:
             raise ObjectExistsError(store_id=store_id, project_id=project_id, object_id=object_id)
 
         return self._manager.set_object(store_id=store_id, project_id=project_id, object_id=object_id, object_data=object_data)
+
+    def project_type(self, store_id: str, project_id: str) -> str:
+        return self._manager.project_type(store_id=store_id, project_id=project_id)

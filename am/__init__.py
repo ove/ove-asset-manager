@@ -4,22 +4,30 @@ import falcon
 
 from am.controller import FileController
 from am.managers import WorkerManager
-from am.routes import AssetCreate, AssetList, AssetUpload, WorkerSchedule, WorkersStatusRoute, ObjectInfo
+from am.middleware import RequireAuthGroups
+from am.routes import AssetCreate, AssetList, AssetUpload, WorkerSchedule, WorkersStatusRoute, ObjectInfo, AuthRoute, UserEdit, UserInfo, GroupsInfo, ProjectAccessMetaEdit
 from am.routes import WorkersEdit, StoreList, AssetMetaEdit, ProjectCreate, ProjectList, ObjectEdit, TagEdit, ProjectMetaEdit, FileList
-from common.consts import DEFAULT_CONFIG
+from common.auth import AuthManager
+from common.consts import DEFAULT_CREDENTIALS_CONFIG, DEFAULT_AUTH_CONFIG
 from common.errors import handle_exceptions
-from common.middleware import RequireJSON, CORSComponent
+from common.middleware import RequireJSON, CORSComponent, AuthMiddleware
 from common.util import parse_logging_lvl
 
 
-def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -> falcon.API:
+def setup_app(logging_level: str = "debug", credentials_config: str = DEFAULT_CREDENTIALS_CONFIG, auth_config: str = DEFAULT_AUTH_CONFIG) -> falcon.API:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
-    file_controller = FileController(config_file=config_file)
+    file_controller = FileController(config_file=credentials_config)
     worker_manager = WorkerManager()
 
-    app = falcon.API(middleware=[RequireJSON(), CORSComponent()])
+    auth = AuthManager(config_file=auth_config)
 
+    app = falcon.API(middleware=[RequireJSON(), CORSComponent(), AuthMiddleware(auth=auth, public_paths={"/api/auth"}), RequireAuthGroups(controller=file_controller)])
+
+    app.add_route('/api/auth', AuthRoute(auth=auth))
+    app.add_route('/api/user', UserEdit(auth=auth))
+    app.add_route('/api/user/groups', GroupsInfo(auth=auth))
+    app.add_route('/api/user/info', UserInfo(auth=auth))
     app.add_route('/api/workers', WorkersEdit(worker_manager=worker_manager))
     app.add_route('/api/workers/status', WorkersStatusRoute(worker_manager=worker_manager))
     app.add_route('/api/list', StoreList(controller=file_controller))
@@ -28,6 +36,7 @@ def setup_app(logging_level: str = "debug", config_file: str = DEFAULT_CONFIG) -
     app.add_route('/api/{store_id}/{project_id}/list', AssetList(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/create', AssetCreate(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/projectMeta', ProjectMetaEdit(controller=file_controller))
+    app.add_route('/api/{store_id}/{project_id}/projectAccessMeta', ProjectAccessMetaEdit(controller=file_controller))
     # had to redo the routes because the falcon parser cannot parse routes with the same prefix
     app.add_route('/api/{store_id}/{project_id}/object/{object_id}', ObjectEdit(controller=file_controller))
     app.add_route('/api/{store_id}/{project_id}/object/{object_id}/info', ObjectInfo(controller=file_controller))

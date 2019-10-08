@@ -11,7 +11,7 @@ cd ${scriptPath}/
 
 [[ ! -z "${SERVICE_LOG_LEVEL}" ]] || SERVICE_LOG_LEVEL="debug"
 [[ ! -z "${SERVICE_CONFIG}" ]] || SERVICE_CONFIG="config/credentials.json"
-
+[[ ! -z "${AUTH_CONFIG}" ]] || AUTH_CONFIG="config/auth.json"
 
 echo "Environment variables:"
 echo "  GUNICORN_PORT=${GUNICORN_PORT}"
@@ -21,9 +21,10 @@ echo "  GUNICORN_THREADS=${GUNICORN_THREADS}"
 echo ""
 echo "  SERVICE_LOG_LEVEL=${SERVICE_LOG_LEVEL}"
 echo "  SERVICE_CONFIG=${SERVICE_CONFIG}"
+echo "  AUTH_CONFIG=${AUTH_CONFIG}"
 echo ""
 
 ## did you activate the virtual environment and install the requirements?
 exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
-        --timeout ${GUNICORN_TIMEOUT} \
-        "am:setup_app(config_file='${SERVICE_CONFIG}', logging_level='${SERVICE_LOG_LEVEL}')"
+  --timeout ${GUNICORN_TIMEOUT} \
+  "am:setup_app(credentials_config='${SERVICE_CONFIG}', auth_config='${AUTH_CONFIG}', logging_level='${SERVICE_LOG_LEVEL}')"
