@@ -22,7 +22,8 @@ def setup_app(logging_level: str = "debug", credentials_config: str = DEFAULT_CR
 
     auth = AuthManager(config_file=auth_config)
 
-    app = falcon.API(middleware=[RequireJSON(), CORSComponent(), AuthMiddleware(auth=auth, public_paths={"/api/auth"}), RequireAuthGroups(controller=file_controller)])
+    public_paths = {"/api/auth", "/api/workers", "/api/workers/status"}
+    app = falcon.API(middleware=[RequireJSON(), CORSComponent(), AuthMiddleware(auth=auth, public_paths=public_paths), RequireAuthGroups(controller=file_controller)])
 
     app.add_route('/api/auth', AuthRoute(auth=auth))
     app.add_route('/api/user', UserEdit(auth=auth))
