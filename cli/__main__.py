@@ -15,9 +15,12 @@ def main():
     parser_user = subparsers.add_parser("user", help="User commands")
     subparsers_user = parser_user.add_subparsers()
 
+    parser_user_add = subparsers_user.add_parser("verify", help="Verify user password")
+    parser_user_add.add_argument("user", type=str, help="Username to add")
+    parser_user_add.set_defaults(function=user.verify)
+
     parser_user_add = subparsers_user.add_parser("add", help="User add command")
     parser_user_add.add_argument("user", type=str, help="Username to add")
-    parser_user_add.add_argument("password", type=str, help="Password")
     parser_user_add.add_argument("--read", dest="read_groups", type=str, nargs="+", default=[], help="Read access groups")
     parser_user_add.add_argument("--write", dest="write_groups", type=str, nargs="+", default=[], help="Write access groups")
     parser_user_add.add_argument('--admin', dest='admin_access', action='store_const', const=True, default=False, help='Admin access')
@@ -25,7 +28,7 @@ def main():
 
     parser_user_edit = subparsers_user.add_parser("edit", help="User edit command")
     parser_user_edit.add_argument("user", type=str, help="Username to edit")
-    parser_user_edit.add_argument("--password", type=str, default=None, help="Password")
+    parser_user_edit.add_argument("--password", dest='reset_password', action='store_const', const=True, default=False, help="Password")
 
     parser_user_edit_read = parser_user_edit.add_mutually_exclusive_group()
     parser_user_edit_read.add_argument("--read", dest="read_groups", type=str, nargs="+", help="Read access groups")

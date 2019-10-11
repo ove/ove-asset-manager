@@ -1,3 +1,4 @@
+import getpass
 from argparse import Namespace
 
 from common.auth import AuthManager
@@ -5,23 +6,59 @@ from common.entities import UserAccessMeta
 from common.util import to_bool
 
 
+def verify(auth: AuthManager, args: Namespace):
+    pswd = getpass.getpass("[{}] password:".format(args.user))
+    user = auth.auth_user(user=args.user, password=pswd)
+    if user:
+        _format_user(user, multi=False)
+    else:
+        print("[Error] Invalid username or password")
+
+
 def add(auth: AuthManager, args: Namespace):
+    pswd = getpass.getpass("[{}] password:".format(args.user))
+    if pswd and len(pswd) >= 8:
+        setattr(args, "password", pswd)
+    else:
+        print("[Error] Passwords should be longer than 8 characters")
+        return
+
     _edit(user=UserAccessMeta(user=args.user), auth=auth, args=args, add_user=True)
 
 
 def edit(auth: AuthManager, args: Namespace):
+    if args.reset_password:
+        pswd = getpass.getpass("[{}] password:".format(args.user))
+        if pswd and len(pswd) >= 8:
+            setattr(args, "password", pswd)
+        else:
+            print("[Error] Passwords should be longer than 8 characters")
+            return
+    else:
+        setattr(args, "password", None)
+
     _edit(user=auth.get_user(user=args.user), auth=auth, args=args, add_user=False)
 
 
 def _edit(user: UserAccessMeta, auth: AuthManager, args: Namespace, add_user: bool):
     if user:
-        for field in UserAccessMeta.EDITABLE_FIELDS:
-            value = getattr(args, field, None)
-            if value is not None:
-                if field == "admin_access":
-                    setattr(user, field, to_bool(value))
-                else:
-                    setattr(user, field, value)
+        value = getattr(args, "admin_access", None)
+        if value is not None:
+            setattr(user, "admin_access", to_bool(value))
+
+        value = getattr(args, "write_groups", None)
+        if value is not None:
+            setattr(user, "write_groups", value)
+
+        # make sure that the read groups contain the write groups as well
+        value = getattr(args, "read_groups", None)
+        if value is not None:
+            value = list(set(value + user.write_groups))
+            setattr(user, "read_groups", value)
+        else:
+            value = list(set(user.read_groups + user.write_groups))
+            setattr(user, "read_groups", value)
+
         if auth.edit_user(access=user, password=args.password, hashed=False, add=add_user):
             _format_user(auth.get_user(user=args.user), multi=False)
         elif add_user:
