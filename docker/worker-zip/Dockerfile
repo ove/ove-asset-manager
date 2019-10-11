@@ -9,11 +9,11 @@ COPY workers/base/ workers/base/
 COPY workers/zip/ workers/zip/
 
 COPY start-worker.sh .
-COPY requirements.txt .
+COPY requirements.worker.txt .
 
 RUN apk add --no-cache bash
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.worker.txt
 
 ENV WORKER_CLASS "workers.zip.ZipWorker"
 ENV GUNICORN_PORT "6090"

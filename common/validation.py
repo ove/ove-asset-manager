@@ -5,7 +5,7 @@ from common.errors import MissingParameterError, InvalidDataError
 
 
 def validate_not_null(data: Dict, field: str):
-    if not data.get(field, None):
+    if not data or not data.get(field, None):
         raise MissingParameterError(name=field)
 
 

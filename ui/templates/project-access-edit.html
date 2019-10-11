@@ -1,0 +1,40 @@
+{% extends "base/base.html" %}
+{% block title %}OVE Asset Manager - Edit Project{% endblock %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#groups').select2({
+                tags: false
+            });
+        });
+    </script>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <form id="project-access-edit" method="post" action="/view/store/{{ store_id }}/project/{{ project_id }}/access">
+                    <div class="form-group row">
+                        <label for="groups" class="col-3 col-form-label">Groups</label>
+                        <div class="col-9">
+                            <select name="groups[]" id="groups" multiple="multiple" class="form-control">
+                                {% for group in groups %}
+                                    <option value="{{ group[0] }}" {% if group[1] %}selected="selected"{% endif %}>{{ group[0] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row justify-content-end">
+                        <div class="mr-3">
+                            <a href="/view/store/{{ store_id }}" class="btn btn-outline-danger mr-1">Close</a>
+                            <button type="button" class="btn btn-outline-success"
+                                    onclick="confirmSubmission('project-access-edit', 'Are you sure you want to save the changes?')">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

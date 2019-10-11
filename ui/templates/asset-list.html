@@ -22,31 +22,48 @@
     {% include 'dialogs/upload-asset-dialog.html' with context %}
     {% include 'dialogs/tag-version-dialog.html' with context %}
 
-    <div class="btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
-        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/new" class="btn btn-outline-primary"
-           data-toggle="tooltip" data-placement="top" title="Create new asset">
-            <i class="fas fa-plus-square"></i>&nbsp;&nbsp;New asset
-        </a>
-        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload & create asset"
-                onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/upload', true)">
-            <i class="fas fa-upload"></i>&nbsp;&nbsp;Upload
-        </button>
+    <div class="nav-menu-container">
+        {% if project.write_access %}
+            <div class="nav-menu-item-fixed btn-group mt-2 mb-4" role="group" aria-label="Toolbar">
+                <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/new" class="btn btn-outline-primary"
+                   data-toggle="tooltip" data-placement="top" title="Create new asset">
+                    <i class="fas fa-plus-square"></i>&nbsp;&nbsp;New asset
+                </a>
+                <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload & create asset"
+                        onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/upload', true)">
+                    <i class="fas fa-upload"></i>&nbsp;&nbsp;Upload
+                </button>
 
-        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/project" class="btn btn-outline-primary"
-           data-toggle="tooltip" data-placement="top" title="Create new project file, if it does not exist" style="margin-left: 5px;">
-            <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Edit project file
-        </a>
+                <a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/project" class="btn btn-outline-primary"
+                   data-toggle="tooltip" data-placement="top" title="Create new project file, if it does not exist" style="margin-left: 5px;">
+                    <i class="fas fa-file-powerpoint"></i>&nbsp;&nbsp;Edit project file
+                </a>
 
-        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/edit" class="btn btn-outline-primary"
-           data-toggle="tooltip" data-placement="top" title="Edit project">
-            <i class="far fa-edit"></i> Edit project
-        </a>
+                <a href="/view/store/{{ store_id }}/project/{{ project_id }}/edit" class="btn btn-outline-primary"
+                   data-toggle="tooltip" data-placement="top" title="Edit project">
+                    <i class="far fa-edit"></i>&nbsp;&nbsp;Edit project
+                </a>
 
-        <button type="button" onclick="tagVersionModal('/api/store/{{ store_id }}/project/{{ project_id }}/version', true)" class="btn btn-outline-primary"
-           data-toggle="tooltip" data-placement="top" title="Tag the current version of each asset" style="margin-left: 5px;">
-            <i class="fas fa-tag"></i> Tag a version
-        </button>
+                <button type="button" onclick="tagVersionModal('/api/store/{{ store_id }}/project/{{ project_id }}/version', true)" class="btn btn-outline-primary"
+                        data-toggle="tooltip" data-placement="top" title="Tag the current version of each asset" style="margin-left: 5px;">
+                    <i class="fas fa-tag"></i> Tag a version
+                </button>
 
+                <a href="/view/store/{{ store_id }}/project/{{ project_id }}/access" class="btn btn-outline-primary"
+                   data-toggle="tooltip" data-placement="top" title="Edit project access">
+                    <i class="fas fa-shield-alt"></i>&nbsp;&nbsp;Edit access controls
+                </a>
+            </div>
+        {% endif %}
+        <div class="nav-menu-item-var"></div>
+        <div class="nav-menu-item-fixed" style="min-height: 40px">
+            {% if project.access %}
+                <i class="fas fa-shield-alt" title="Access groups"></i>&nbsp;&nbsp;
+                {% for tag in project.access %}
+                    <span class="badge badge-info">{{ tag }}</span>&nbsp;&nbsp;
+                {% endfor %}
+            {% endif %}
+        </div>
     </div>
 
     <table id="table" class="table table-striped">
@@ -64,26 +81,40 @@
         <tbody>
         {% for object in objects -%}
             <tr>
-                <td><a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object.name }}">{{ object.name }}.json</a></td>
+                <td>
+                    {% if project.write_access %}
+                        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object.name }}">{{ object.name }}.json</a>
+                    {% else %}
+                        {{ object.name }}.json
+                    {% endif %}
+                </td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td><a href="{{ object.index_file }}" target="_blank">.../{{ object.name }}.json</a></td>
                 <td></td>
                 <td>
-                    <div class="btn-group" role="group" aria-label="Toolbox">
-                        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object.name }}" class="btn btn-outline-primary"
-                           data-toggle="tooltip" data-placement="top" title="Edit project.json file">
-                            <i class="fas fa-file-powerpoint"></i>
-                        </a>
-                    </div>
+                    {% if project.write_access %}
+                        <div class="btn-group" role="group" aria-label="Toolbox">
+                            <a href="/view/store/{{ store_id }}/project/{{ project_id }}/object/{{ object.name }}" class="btn btn-outline-primary"
+                               data-toggle="tooltip" data-placement="top" title="Edit project.json file">
+                                <i class="fas fa-file-powerpoint"></i>
+                            </a>
+                        </div>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
 
         {% for asset in assets -%}
             <tr>
-                <td><a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}">{{ asset.name }}</a></td>
+                <td>
+                    {% if project.write_access %}
+                        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}">{{ asset.name }}</a>
+                    {% else %}
+                        {{ asset.name }}
+                    {% endif %}
+                </td>
                 <td>{{ asset.description }}</td>
                 <td>
                     {% if asset.tags %}
@@ -116,24 +147,26 @@
                     {% endif %}
                 </td>
                 <td>
-                    <div class="btn-group" role="group" aria-label="Toolbox">
-                        <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}" class="btn btn-outline-primary"
-                           data-toggle="tooltip" data-placement="top" title="Edit asset">
-                            <i class="far fa-edit"></i>
-                        </a>
-                        <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="File list"
-                                onclick="showAssetFilesModal('{{ asset.id }}')">
-                            <i class="far fa-list-alt"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
-                                onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}/upload', false, '{{ asset.id }}')">
-                            <i class="fas fa-upload"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"
-                                onclick="showProcessModal('{{ asset.id }}')">
-                            <i class="fas fa-paint-roller"></i>
-                        </button>
-                    </div>
+                    {% if project.write_access %}
+                        <div class="btn-group" role="group" aria-label="Toolbox">
+                            <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}" class="btn btn-outline-primary"
+                               data-toggle="tooltip" data-placement="top" title="Edit asset">
+                                <i class="far fa-edit"></i>
+                            </a>
+                            <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="File list"
+                                    onclick="showAssetFilesModal('{{ asset.id }}')">
+                                <i class="far fa-list-alt"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
+                                    onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}/upload', false, '{{ asset.id }}')">
+                                <i class="fas fa-upload"></i>
+                            </button>
+                            <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"
+                                    onclick="showProcessModal('{{ asset.id }}')">
+                                <i class="fas fa-paint-roller"></i>
+                            </button>
+                        </div>
+                    {% endif %}
                 </td>
             </tr>
         {%- endfor %}

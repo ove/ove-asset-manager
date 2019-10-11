@@ -6,10 +6,12 @@ WORKDIR /code
 COPY common/ common/
 COPY am/ am/
 COPY start-am.sh .
-COPY requirements.txt .
+COPY requirements.am.txt .
 
-RUN apk add --no-cache bash
-
-RUN pip install -r requirements.txt
+RUN apk add --no-cache bash && \
+    apk add --no-cache --virtual build-base && \
+    apk add --no-cache libffi-dev libressl-dev && \
+    pip install -r requirements.am.txt && \
+    apk del build-base
 
 CMD ["./start-am.sh"]

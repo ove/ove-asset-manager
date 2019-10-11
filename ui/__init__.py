@@ -6,9 +6,9 @@ import falcon
 from common.middleware import CORSComponent
 from common.util import parse_logging_lvl
 from ui.controller import BackendController
-from ui.middleware import ContentTypeValidator
-from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, \
-    handle_api_exceptions, ProjectEdit, BackendDetailsView, ObjectEditApi, VersionApi
+from ui.middleware import ContentTypeValidator, LoginValidator
+from ui.routes import ProjectEdit, BackendDetailsView, ObjectEditApi, LoginView, LogoutView, ProjectAccessEdit, VersionApi
+from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, WorkerView, AssetEdit, NotFoundView, handle_api_exceptions
 from ui.routes import UploadApi, WorkerApi, ObjectEdit, WorkerDocsView, FilesApi
 
 
@@ -16,8 +16,9 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
     _controller = BackendController(backend_url=backend_url)
-    app = falcon.API(middleware=[ContentTypeValidator(), CORSComponent()])
+    app = falcon.API(middleware=[ContentTypeValidator(), CORSComponent(), LoginValidator(login_path="/login", backend=_controller)])
     app.req_options.auto_parse_form_urlencoded = True
+    app.resp_options.secure_cookies_by_default = False
 
     app.add_static_route("/favicon.ico", os.getcwd() + "/ui/static/favicon.ico", downloadable=True)
     app.add_static_route("/css", os.getcwd() + "/ui/static/css/", downloadable=True)
@@ -29,6 +30,8 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_static_route("/vendors/webfonts", os.getcwd() + "/ui/static/vendors/webfonts/", downloadable=True)
 
     # view/edit routes
+    app.add_route('/login', LoginView(controller=_controller))
+    app.add_route('/logout', LogoutView())
     app.add_route('/', IndexView(controller=_controller))
     app.add_route('/404', NotFoundView())
     app.add_route('/view/workers/', WorkerView(controller=_controller))
@@ -36,6 +39,7 @@ def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:
     app.add_route('/view/store/{store_id}/index', ProjectIndexView(controller=_controller))
     app.add_route('/view/store/{store_id}/project/{project_id}/', AssetView(controller=_controller))
     app.add_route('/view/store/{store_id}/project/{project_id}/edit', ProjectEdit(controller=_controller))
+    app.add_route('/view/store/{store_id}/project/{project_id}/access', ProjectAccessEdit(controller=_controller))
     app.add_route('/view/store/{store_id}/project/{project_id}/asset/{asset_id}', AssetEdit(controller=_controller))
     app.add_route('/view/store/{store_id}/project/{project_id}/object/{object_id}', ObjectEdit(controller=_controller))
     app.add_route('/view/backend', BackendDetailsView(controller=_controller))

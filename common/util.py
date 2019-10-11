@@ -1,6 +1,6 @@
 import logging
 from importlib import import_module
-from typing import Callable
+from typing import Callable, Set
 
 from common.errors import ValidationError
 
@@ -46,3 +46,7 @@ def dynamic_import(full_class_path: str) -> Callable:
     module_object = import_module(abs_module_path)
     target_class = getattr(module_object, class_name)
     return target_class
+
+
+def is_public(path: str, public_paths: Set[str]) -> bool:
+    return any(path.startswith(item) for item in public_paths)

@@ -1,9 +1,10 @@
 import tempfile
 import urllib
-from typing import Callable
+from typing import Callable, Union
 
 import falcon
 
+from common.consts import FIELD_AUTH_TOKEN
 from common.util import is_empty_str
 
 
@@ -30,3 +31,8 @@ def save_filename(save_fn: Callable, req: falcon.Request):
         cache.write(req.stream.read(req.content_length or 0))
         cache.flush()
         save_fn(upload_filename=cache.name)
+
+
+def auth_token(req: falcon.Request) -> Union[str, None]:
+    tokens = req.get_cookie_values(FIELD_AUTH_TOKEN)
+    return tokens[0] if tokens else None

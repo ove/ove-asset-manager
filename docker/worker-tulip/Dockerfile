@@ -9,12 +9,12 @@ COPY workers/base/ workers/base/
 COPY workers/tulip/ workers/tulip/
 
 COPY start-worker.sh .
-COPY requirements.txt .
+COPY requirements.worker.txt .
 
 RUN apt-get update && \
     apt-get install -y binutils && \
     apt-get install -y build-essential && \
-    pip install -r requirements.txt && \
+    pip install -r requirements.worker.txt && \
     pip install tulip-python && \
     apt-get remove -y build-essential && \
     apt-get autoremove -y

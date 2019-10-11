@@ -120,3 +120,17 @@ body {
 .jstree-icon {
     padding: 4px;
 }
+
+.nav-menu-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.nav-menu-item-fixed {
+    flex-grow: 0;
+}
+
+.nav-menu-item-var {
+    flex-grow: 1;
+}

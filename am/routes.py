@@ -2,22 +2,125 @@
 # Written using Falcon
 # Author: David Akroyd
 # Contributor: Ovidiu Serban
+import datetime
 from functools import partial
+from typing import List
 
 import falcon
-import datetime
 
 from am.controller import FileController
 from am.managers import WorkerManager
-from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerData
-from common.errors import InvalidAssetError, ValidationError
+from common.auth import AuthManager
+from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerData, UserAccessMeta, OveProjectAccessMeta
+from common.errors import InvalidAssetError, ValidationError, MissingParameterError
 from common.falcon_utils import unquote_filename, save_filename
 from common.filters import build_meta_filter, DEFAULT_FILTER
 from common.util import to_bool
 from common.validation import validate_not_null, validate_no_slashes, validate_list
 
 
+class AuthRoute:
+    internal_group_validation = True
+
+    def __init__(self, auth: AuthManager):
+        self._auth = auth
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req.media, 'user')
+        validate_not_null(req.media, 'password')
+
+        token = self._auth.auth_token(user=req.media.get("user"), password=req.media.get("password"))
+        resp.media = {"token": token}
+        resp.status = falcon.HTTP_200 if token else falcon.HTTP_401
+
+
+class UserEdit:
+    internal_group_validation = True
+
+    def __init__(self, auth: AuthManager):
+        self._auth = auth
+
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        _validate_is_admin(req)
+
+        user = req.params.get("user", None)
+        resp.media = self._auth.get_user(user).public_json() if user else [user.public_json() for user in self._auth.get_users()]
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        _validate_is_admin(req)
+
+        validate_not_null(req.media, 'user')
+        validate_not_null(req.media, 'password')
+
+        data = UserAccessMeta(**req.media)
+
+        self._auth.edit_user(access=data, password=req.media.get("password"), add=True)
+        resp.media = {"result": "OK"}
+        resp.status = falcon.HTTP_200
+
+    def on_patch(self, req: falcon.Request, resp: falcon.Response):
+        _validate_is_admin(req)
+
+        validate_not_null(req.media, 'user')
+
+        data = self._auth.get_user(user=req.media.get("user"))
+        if not data:
+            raise ValidationError(title="Invalid user", description="User not found")
+
+        for field in UserAccessMeta.EDITABLE_FIELDS:
+            if req.media.get(field, None):
+                setattr(data, field, req.media.get(field))
+
+        self._auth.edit_user(access=data)
+        resp.media = {"result": "OK"}
+        resp.status = falcon.HTTP_200
+
+    def on_delete(self, req: falcon.Request, resp: falcon.Response):
+        _validate_is_admin(req)
+
+        validate_not_null(req.media, 'user')
+
+        self._auth.remove_user(user=req.media.get("user"))
+        resp.media = {"result": "OK"}
+        resp.status = falcon.HTTP_200
+
+
+def _validate_is_admin(req: falcon.Request):
+    if not getattr(req, "user_access", UserAccessMeta()).admin_access:
+        raise falcon.HTTPUnauthorized(title='Access token required for ADMIN operation',
+                                      description='Please provide a valid access token as part of the request.')
+
+
+class GroupsInfo:
+    internal_group_validation = True
+
+    def __init__(self, auth: AuthManager):
+        self._auth = auth
+
+    def on_get(self, _req: falcon.Request, resp: falcon.Response):
+        resp.media = self._auth.get_groups()
+        resp.status = falcon.HTTP_200
+
+
+class UserInfo:
+    internal_group_validation = True
+
+    def __init__(self, auth: AuthManager):
+        self._auth = auth
+
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        access = getattr(req, "user_access", None)
+        if not access:
+            raise MissingParameterError(name="user")
+
+        resp.media = self._auth.get_user(access.user).public_json()
+        resp.status = falcon.HTTP_200
+
+
 class StoreList:
+    internal_group_validation = True
+
     def __init__(self, controller: FileController):
         self._controller = controller
 
@@ -27,6 +130,8 @@ class StoreList:
 
 
 class WorkersEdit:
+    internal_group_validation = True
+
     def __init__(self, worker_manager: WorkerManager):
         self._worker_manager = worker_manager
 
@@ -58,6 +163,8 @@ class WorkersEdit:
 
 
 class WorkersStatusRoute:
+    internal_group_validation = True
+
     def __init__(self, worker_manager: WorkerManager):
         self._worker_manager = worker_manager
 
@@ -73,6 +180,8 @@ class WorkersStatusRoute:
 
 
 class WorkerSchedule:
+    internal_group_validation = True
+
     def __init__(self, controller: FileController, worker_manager: WorkerManager):
         self._controller = controller
         self._worker_manager = worker_manager
@@ -90,32 +199,50 @@ class WorkerSchedule:
 
 
 class ProjectList:
+    internal_group_validation = True
+
     def __init__(self, controller: FileController):
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
         results_filter = build_meta_filter(req.params, default_filter=None)
-        if results_filter:
-            # if you use a result filter the metadata is required
-            metadata = True
-        else:
-            metadata = to_bool(req.params.get("metadata", False))
+        metadata = True if results_filter else to_bool(req.params.get("metadata", False))
 
-        resp.media = self._controller.list_projects(store_id=store_id, metadata=metadata, result_filter=results_filter)
+        resp.media = self._controller.list_projects(store_id=store_id, metadata=metadata, result_filter=results_filter,
+                                                    access=getattr(req, "user_access", UserAccessMeta()))
         resp.status = falcon.HTTP_200
 
 
+def _has_create_access(is_admin: bool, access_groups: List[str], project_groups: List[str]) -> bool:
+    if is_admin:
+        return True
+
+    if access_groups is None or len(access_groups) == 0:
+        return False
+
+    return any(group in access_groups for group in project_groups)
+
+
 class ProjectCreate:
+    internal_group_validation = True
+
     def __init__(self, controller: FileController):
         self._controller = controller
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
         validate_not_null(req.media, 'id')
         validate_not_null(req.media, 'name')
+        validate_not_null(req.media, 'groups')
+
         project_id = req.media.get('id')
         project_name = req.media.get('name')
+        project_groups = req.media.get('groups')
+
+        access = getattr(req, "user_access", UserAccessMeta())
+        _has_create_access(is_admin=access.admin_access, access_groups=access.write_groups, project_groups=project_groups)
 
         self._controller.create_project(store_id=store_id, project_id=project_id)
+        self._controller.edit_project_access_meta(store_id=store_id, project_id=project_id, meta=OveProjectAccessMeta(groups=project_groups))
 
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
         meta.name = project_name
@@ -129,9 +256,18 @@ class ProjectMetaEdit:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        access = getattr(req, "user_access", None)
+
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
-        resp.media = meta.to_public_json()
+        item = meta.to_public_json()
+        item["hasProject"] = self._controller.has_object(store_id=store_id, project_id=project_id, object_id="project")
+        item["projectType"] = self._controller.project_type(store_id=store_id, project_id=project_id)
+        item["access"] = self._controller.get_project_access_meta(store_id=store_id, project_id=project_id).groups
+        item["read_access"] = True
+        item["write_access"] = self._controller.has_access(store_id=store_id, project_id=project_id, groups=access.write_groups, is_admin=access.admin_access)
+
+        resp.media = item
         resp.status = falcon.HTTP_200
 
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
@@ -144,6 +280,26 @@ class ProjectMetaEdit:
                 setattr(meta, field, req.media.get(field))
 
         self._controller.edit_project_meta(store_id=store_id, project_id=project_id, meta=meta)
+
+        resp.media = meta.to_public_json()
+        resp.status = falcon.HTTP_200
+
+
+class ProjectAccessMetaEdit:
+    def __init__(self, controller: FileController):
+        self._controller = controller
+
+    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        resp.media = self._controller.get_project_access_meta(store_id=store_id, project_id=project_id).to_public_json()
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        _validate_is_admin(req)
+
+        validate_not_null(req.media, 'groups')
+
+        meta = OveProjectAccessMeta(groups=req.media.get("groups", []))
+        self._controller.edit_project_access_meta(store_id=store_id, project_id=project_id, meta=meta)
 
         resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
@@ -176,6 +332,7 @@ class ProjectVersion:
 
         resp.media = meta.to_public_json()
         resp.status = falcon.HTTP_200
+
 
 class AssetList:
     def __init__(self, controller: FileController):

@@ -8,7 +8,7 @@
                 autoWidth: false,
                 pageLength: 10,
                 order: [1, 'asc'],
-                columns: [{width: 20}, {width: "15%"}, null, null, {width: "15%"}, {width: "10%"}, {width: "10%"}, {width: 20, orderable: false}]
+                columns: [{width: 20}, {width: "15%"}, null, null, {width: "15%"}, {width: "10%"}, {width: "10%"}, {width: "10%"}, {width: 20, orderable: false}]
             });
 
             $('#project_name').keypress(function (event) {
@@ -25,35 +25,37 @@
         });
     </script>
 
-    <form id="project-create" action="/view/store/{{ store_id }}" method="post">
-        <div class="form-row mt-2">
-            <div class="col-md-2">
-                <div class="form-group">
-                    <label for="project_name" class="sr-only">Project</label>
-                    <input type="text" class="form-control" id="project_name" name="project_name" placeholder="Name of new project" required>
-                    <div class="invalid-feedback">Please provide a valid project name.</div>
+    {% if auth_user.write_groups %}
+        <form id="project-create" action="/view/store/{{ store_id }}" method="post">
+            <div class="form-row mt-2">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="project_name" class="sr-only">Project</label>
+                        <input type="text" class="form-control" id="project_name" name="project_name" placeholder="Name of new project" required>
+                        <div class="invalid-feedback">Please provide a valid project name.</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-md-2">
-                <div class="form-group">
-                    <label for="project_id_visible" class="sr-only">Project</label>
-                    <input type="text" class="form-control" id="project_id_visible" name="project_id_visible" placeholder="Project ID" required readonly disabled>
-                    <input type="hidden" id="project_id" name="project_id" placeholder="Project ID">
-                    <div class="invalid-feedback">Please provide a valid project id.</div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="project_id_visible" class="sr-only">Project</label>
+                        <input type="text" class="form-control" id="project_id_visible" name="project_id_visible" placeholder="Project ID" required readonly disabled>
+                        <input type="hidden" id="project_id" name="project_id" placeholder="Project ID">
+                        <div class="invalid-feedback">Please provide a valid project id.</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-md-1">
-                <button type="button" class="btn btn-primary"
-                        data-toggle="tooltip" data-placement="top" title="Create new project"
-                        onclick="confirmSubmission('project-create', 'Are you sure you want to create the project?')">
-                    <i class="fas fa-folder-plus"></i>
-                </button>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-primary"
+                            data-toggle="tooltip" data-placement="top" title="Create new project"
+                            onclick="confirmSubmission('project-create', 'Are you sure you want to create the project?')">
+                        <i class="fas fa-folder-plus"></i>
+                    </button>
+                </div>
+                <div class="col-md-7"></div>
             </div>
-            <div class="col-md-7"></div>
-        </div>
-    </form>
+        </form>
+    {% endif %}
 
     <table id="table" class="table table-striped">
         <thead class="thead-dark">
@@ -65,6 +67,7 @@
             <th scope="col">Tags</th>
             <th scope="col">Created</th>
             <th scope="col">Last Updated</th>
+            <th scope="col">Access</th>
             <th scope="col"></th>
         </tr>
         </thead>
@@ -100,20 +103,32 @@
                 <td>{{ project.creationDate }}</td>
                 <td>{{ project.updateDate }}</td>
                 <td>
+                    {% if project.access %}
+                        {% for tag in project.access %}
+                            <span class="badge badge-info">{{ tag }}</span>&nbsp;&nbsp;
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>
                     <div class="btn-group" role="group" aria-label="Toolbox">
                         <a href="/view/store/{{ store_id }}/project/{{ project.id }}" class="btn btn-outline-primary"
                            data-toggle="tooltip" data-placement="top" title="List assets in project">
                             <i class="fas fa-folder-open"></i>
                         </a>
-                        <a href="/view/store/{{ store_id }}/project/{{ project.id }}/edit" class="btn btn-outline-primary"
-                           data-toggle="tooltip" data-placement="top" title="Edit project">
-                            <i class="far fa-edit"></i>
-                        </a>
-                        <a href="/view/store/{{ store_id }}/project/{{ project.id }}/object/project" class="btn btn-outline-primary"
-                           data-toggle="tooltip" data-placement="top" title="Edit project file">
-                            <i class="fas fa-file-powerpoint"></i>
-                        </a>
-
+                        {% if project.write_access %}
+                            <a href="/view/store/{{ store_id }}/project/{{ project.id }}/edit" class="btn btn-outline-primary"
+                               data-toggle="tooltip" data-placement="top" title="Edit project">
+                                <i class="far fa-edit"></i>
+                            </a>
+                            <a href="/view/store/{{ store_id }}/project/{{ project.id }}/object/project" class="btn btn-outline-primary"
+                               data-toggle="tooltip" data-placement="top" title="Edit project file">
+                                <i class="fas fa-file-powerpoint"></i>
+                            </a>
+                            <a href="/view/store/{{ store_id }}/project/{{ project.id }}/access" class="btn btn-outline-primary"
+                               data-toggle="tooltip" data-placement="top" title="Edit access controls">
+                                <i class="fas fa-shield-alt"></i>
+                            </a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
