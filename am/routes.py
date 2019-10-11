@@ -4,13 +4,14 @@
 # Contributor: Ovidiu Serban
 import datetime
 from functools import partial
+from typing import List
 
 import falcon
 
 from am.controller import FileController
 from am.managers import WorkerManager
 from common.auth import AuthManager
-from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerData, DbAccessMeta, OveProjectAccessMeta
+from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerData, UserAccessMeta, OveProjectAccessMeta
 from common.errors import InvalidAssetError, ValidationError, MissingParameterError
 from common.falcon_utils import unquote_filename, save_filename
 from common.filters import build_meta_filter, DEFAULT_FILTER
@@ -52,7 +53,7 @@ class UserEdit:
         validate_not_null(req.media, 'user')
         validate_not_null(req.media, 'password')
 
-        data = DbAccessMeta(**req.media)
+        data = UserAccessMeta(**req.media)
 
         self._auth.edit_user(access=data, password=req.media.get("password"), add=True)
         resp.media = {"result": "OK"}
@@ -67,7 +68,7 @@ class UserEdit:
         if not data:
             raise ValidationError(title="Invalid user", description="User not found")
 
-        for field in DbAccessMeta.EDITABLE_FIELDS:
+        for field in UserAccessMeta.EDITABLE_FIELDS:
             if req.media.get(field, None):
                 setattr(data, field, req.media.get(field))
 
@@ -86,7 +87,7 @@ class UserEdit:
 
 
 def _validate_is_admin(req: falcon.Request):
-    if not getattr(req, "auth_admin_access", False):
+    if not getattr(req, "user_access", UserAccessMeta()).admin_access:
         raise falcon.HTTPUnauthorized(title='Access token required for ADMIN operation',
                                       description='Please provide a valid access token as part of the request.')
 
@@ -109,11 +110,11 @@ class UserInfo:
         self._auth = auth
 
     def on_get(self, req: falcon.Request, resp: falcon.Response):
-        user = getattr(req, "auth_user", None)
-        if not user:
+        access = getattr(req, "user_access", None)
+        if not access:
             raise MissingParameterError(name="user")
 
-        resp.media = self._auth.get_user(user).public_json()
+        resp.media = self._auth.get_user(access.user).public_json()
         resp.status = falcon.HTTP_200
 
 
@@ -208,9 +209,18 @@ class ProjectList:
         metadata = True if results_filter else to_bool(req.params.get("metadata", False))
 
         resp.media = self._controller.list_projects(store_id=store_id, metadata=metadata, result_filter=results_filter,
-                                                    access_groups=getattr(req, "auth_groups", []),
-                                                    is_admin=getattr(req, "auth_admin_access", False))
+                                                    access=getattr(req, "user_access", UserAccessMeta()))
         resp.status = falcon.HTTP_200
+
+
+def _has_create_access(is_admin: bool, access_groups: List[str], project_groups: List[str]) -> bool:
+    if is_admin:
+        return True
+
+    if access_groups is None or len(access_groups) == 0:
+        return False
+
+    return any(group in access_groups for group in project_groups)
 
 
 class ProjectCreate:
@@ -222,10 +232,17 @@ class ProjectCreate:
     def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str):
         validate_not_null(req.media, 'id')
         validate_not_null(req.media, 'name')
+        validate_not_null(req.media, 'groups')
+
         project_id = req.media.get('id')
         project_name = req.media.get('name')
+        project_groups = req.media.get('groups')
+
+        access = getattr(req, "user_access", UserAccessMeta())
+        _has_create_access(is_admin=access.admin_access, access_groups=access.write_groups, project_groups=project_groups)
 
         self._controller.create_project(store_id=store_id, project_id=project_id)
+        self._controller.edit_project_access_meta(store_id=store_id, project_id=project_id, meta=OveProjectAccessMeta(groups=project_groups))
 
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
         meta.name = project_name
@@ -239,12 +256,16 @@ class ProjectMetaEdit:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
+        access = getattr(req, "user_access", None)
+
         meta = self._controller.get_project_meta(store_id=store_id, project_id=project_id)
         item = meta.to_public_json()
         item["hasProject"] = self._controller.has_object(store_id=store_id, project_id=project_id, object_id="project")
         item["projectType"] = self._controller.project_type(store_id=store_id, project_id=project_id)
         item["access"] = self._controller.get_project_access_meta(store_id=store_id, project_id=project_id).groups
+        item["read_access"] = True
+        item["write_access"] = self._controller.has_access(store_id=store_id, project_id=project_id, groups=access.write_groups, is_admin=access.admin_access)
 
         resp.media = item
         resp.status = falcon.HTTP_200

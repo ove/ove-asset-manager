@@ -5,7 +5,7 @@ import falcon
 
 from common.auth import AuthManager
 from common.consts import FIELD_AUTH_TOKEN
-from common.entities import DbAccessMeta
+from common.entities import UserAccessMeta
 from common.util import is_public
 
 HTTP_IGNORE_METHODS = {'CONNECT', 'HEAD', 'OPTIONS', 'TRACE'}
@@ -59,20 +59,16 @@ class AuthMiddleware:
         token = self.auth.decode_token(_get_token(req, field=FIELD_AUTH_TOKEN))
         _check_access(method=req.method, token=token)
 
-        req.auth_user = token.user
-        req.auth_groups = token.groups or []
-        req.auth_write_access = token.write_access
-        req.auth_admin_access = token.admin_access
+        req.user_access = UserAccessMeta(user=token.user, read_groups=token.read_groups or [],
+                                         write_groups=token.write_groups or [], admin_access=token.admin_access or False)
 
 
-def _check_access(method: str, token: Union[DbAccessMeta, None]):
+def _check_access(method: str, token: Union[UserAccessMeta, None]):
     if method in HTTP_IGNORE_METHODS:
         return
-    elif method in HTTP_READ_METHODS and not token:
-        raise falcon.HTTPUnauthorized(title='Access token required for READ operation',
-                                      description='Please provide a valid access token as part of the request.')
-    elif method in HTTP_WRITE_METHODS and not (token and token.write_access):
-        raise falcon.HTTPUnauthorized(title='Access token required for WRITE operation',
+
+    if not token:
+        raise falcon.HTTPUnauthorized(title='Access token required',
                                       description='Please provide a valid access token as part of the request.')
 
 

@@ -11,7 +11,7 @@ from urllib3 import HTTPResponse
 from common.consts import CONFIG_STORE_DEFAULT, CONFIG_STORE_NAME, CONFIG_STORES, CONFIG_ENDPOINT, CONFIG_ACCESS_KEY, CONFIG_SECRET_KEY, CONFIG_PROXY_URL, PROJECT_SECTIONS
 from common.consts import DEFAULT_CREDENTIALS_CONFIG, S3_SEPARATOR, OVE_META, PROJECT_FILE, S3_OBJECT_EXTENSION, MAX_LIST_ITEMS
 from common.consts import PROJECT_BASIC_TEMPLATE, PROJECT_METADATA_SECTION
-from common.entities import OveAssetMeta, OveProjectMeta, OveProjectAccessMeta
+from common.entities import OveAssetMeta, OveProjectMeta, OveProjectAccessMeta, UserAccessMeta
 from common.errors import ValidationError, InvalidStoreError, InvalidAssetError, InvalidObjectError, StreamNotFoundError, InvalidProjectError
 from common.filters import DEFAULT_FILTER
 from common.util import append_slash
@@ -80,7 +80,7 @@ class S3Manager:
         return [store for store in self._clients.keys() if store != _DEFAULT_LABEL]
 
     # List the projects in an s3 storage (returning the names)
-    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None, access_groups: List[str] = None, is_admin: bool = False) -> List[Dict]:
+    def list_projects(self, access: UserAccessMeta, store_id: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
         def _last_modified(project_id) -> str:
             ts = [a.last_modified for a in client.list_objects(project_id, prefix=None, recursive=False)]
             ts = [a for a in ts if a is not None]
@@ -89,7 +89,6 @@ class S3Manager:
             else:
                 return ''
 
-        access_groups = access_groups or []
         client = self._get_connection(store_id)
         try:
             if metadata:
@@ -98,7 +97,7 @@ class S3Manager:
                 result = []
                 for bucket in client.list_buckets():
                     meta = self.get_project_meta(store_id=store_id, project_id=bucket.name, ignore_errors=True)
-                    if result_filter(meta) and self.has_access(store_id=store_id, project_id=bucket.name, groups=access_groups, is_admin=is_admin):
+                    if result_filter(meta) and self.has_access(store_id=store_id, project_id=bucket.name, groups=access.read_groups, is_admin=access.admin_access):
                         item = meta.to_public_json()
                         item["id"] = bucket.name
                         item["creationDate"] = '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date)
@@ -106,6 +105,8 @@ class S3Manager:
                         item["hasProject"] = self.has_object(store_id=store_id, project_id=bucket.name, object_id="project")
                         item["projectType"] = self.project_type(store_id=store_id, project_id=bucket.name)
                         item["access"] = self.get_project_access_meta(store_id=store_id, project_id=bucket.name).groups
+                        item["read_access"] = True
+                        item["write_access"] = self.has_access(store_id=store_id, project_id=bucket.name, groups=access.write_groups, is_admin=access.admin_access)
 
                         result.append(item)
 
@@ -114,7 +115,7 @@ class S3Manager:
                 return [{
                     "id": bucket.name,
                     "creationDate": '{0:%Y-%m-%d %H:%M:%S}'.format(bucket.creation_date),
-                } for bucket in client.list_buckets() if self.has_access(store_id=store_id, project_id=bucket.name, groups=access_groups, is_admin=is_admin)]
+                } for bucket in client.list_buckets() if self.has_access(store_id=store_id, project_id=bucket.name, groups=access.read_groups, is_admin=access.admin_access)]
         except:
             logging.error("Error while trying to list store. Error: %s", sys.exc_info()[1])
             return []
@@ -277,6 +278,9 @@ class S3Manager:
     def has_access(self, store_id: str, project_id: str, groups: List[str], is_admin: bool) -> bool:
         if is_admin:
             return True
+
+        if groups is None or len(groups) == 0:
+            return False
 
         meta = self.get_project_access_meta(store_id=store_id, project_id=project_id)
         return any(group in groups for group in meta.groups)

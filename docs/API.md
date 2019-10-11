@@ -30,7 +30,9 @@ This API is designed to allow you to perform the majority of necessary file oper
     - **Data Params:** `Requires JSON body`
     
     `{
-    "name":"project_id"
+    "id":"project_id",
+    "name":"project_name"
+    "groups":["group1", "group2"]
     }`
     - **Response:**
         - **Success**: <br />

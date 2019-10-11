@@ -202,17 +202,17 @@ class WorkerType(Enum):
         return self.value
 
 
-class DbAccessMeta:
-    EDITABLE_FIELDS = ["groups", "write_access", "admin_access"]
+class UserAccessMeta:
+    EDITABLE_FIELDS = ["read_groups", "write_groups", "admin_access"]
 
     def __init__(self, **kwargs):
         self.user = kwargs.get("user", None)
-        self.groups = kwargs.get("groups", []) or []
-        self.write_access = kwargs.get("write_access", False) or False
+        self.read_groups = kwargs.get("read_groups", []) or []
+        self.write_groups = kwargs.get("write_groups", []) or []
         self.admin_access = kwargs.get("admin_access", False) or False
 
     def to_db(self) -> Dict:
-        return {"user": self.user, "am": {"groups": self.groups, "write_access": self.write_access, "admin_access": self.admin_access}}
+        return {"user": self.user, "am": {"read_groups": self.read_groups, "write_groups": self.write_groups, "admin_access": self.admin_access}}
 
     def public_json(self) -> Dict:
-        return {"user": self.user, "groups": self.groups, "write_access": self.write_access, "admin_access": self.admin_access}
+        return {"user": self.user, "read_groups": self.read_groups, "write_groups": self.write_groups, "admin_access": self.admin_access}

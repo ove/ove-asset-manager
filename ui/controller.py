@@ -49,8 +49,8 @@ class BackendController:
     def list_projects(self, store_id: str, auth_token: Union[str, None]) -> List:
         return self._backend.get("api/{}/list".format(store_id), params={"metadata": True}, auth_token=auth_token)
 
-    def create_project(self, store_id: str, project_id: str, project_name: str, auth_token: Union[str, None]) -> None:
-        self._backend.post("api/{}/create".format(store_id), data={"id": project_id, "name": project_name}, auth_token=auth_token)
+    def create_project(self, store_id: str, project_id: str, project_name: str, groups: List[str], auth_token: Union[str, None]) -> None:
+        self._backend.post("api/{}/create".format(store_id), data={"id": project_id, "name": project_name, "groups": groups}, auth_token=auth_token)
 
     def get_project(self, store_id: str, project_id: str, auth_token: Union[str, None]) -> Dict:
         return self._backend.get("/api/{}/{}/projectMeta".format(store_id, project_id), auth_token=auth_token)

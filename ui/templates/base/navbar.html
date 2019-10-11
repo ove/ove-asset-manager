@@ -10,21 +10,12 @@
             <div class="nav-menu-item-fixed">
                 <ul class="navbar-nav">
                     {% if store_id %}
-                        {% if auth_user.write_access %}
-                            <li class="nav-item">
-                                <a class="nav-link {{ "active" if not project_id }}" href="/view/store/{{ store_id }}">
-                                    <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
-                                    <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link active" href="/view/store/{{ store_id }}/index">
-                                    <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
-                                    <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
-                                </a>
-                            </li>
-                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ "active" if not project_id }}" href="/view/store/{{ store_id }}">
+                                <i class="fas fa-hdd"></i>&nbsp;&nbsp;Store
+                                <span class="badge {{ "badge-primary" if not project_id else "badge-secondary" }}">{{ store_id }}</span>
+                            </a>
+                        </li>
                     {% endif %}
 
                     {% if project_id %}
@@ -73,19 +64,28 @@
                                 <i class="far fa-user-circle"></i>&nbsp;&nbsp;{{ auth_user.user }}
                             </a>
                             <div class="dropdown-menu">
-                                <div class="card border-light" style="width: 10rem;">
+                                <div class="card border-light" style="width: 11rem;">
                                     <div class="card-body">
-                                        <h6 class="card-subtitle mb-2 text-muted">{{ auth_user.groups|join(', ') }}</h6>
-                                        <br/>
-                                        <p class="card-text">
-                                            {% if auth_user.write_access %}
-                                                <i class="fas fa-user-edit" title="This user has write access"></i>
-                                            {% endif %}
+                                        <h6 class="card-subtitle mb-2 text-muted">
+                                            <i class="fas fa-glasses" title="Read access"></i>
                                             &nbsp;&nbsp;
-                                            {% if auth_user.admin_access %}
+                                            {{ auth_user.read_groups|join(', ') }}
+                                        </h6>
+                                        {% if auth_user.write_groups %}
+                                            <br/>
+                                            <h6 class="card-subtitle mb-2 text-muted">
+                                                <i class="far fa-edit" title="Write access"></i>
+                                                &nbsp;&nbsp;
+                                                {{ auth_user.write_groups|join(', ') }}
+                                            </h6>
+
+                                        {% endif %}
+                                        {% if auth_user.admin_access %}
+                                            <br/>
+                                            <p class="card-text">
                                                 <i class="fas fa-user-shield" title="This user has admin access"></i>
-                                            {% endif %}
-                                        </p>
+                                            </p>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="dropdown-divider"></div>

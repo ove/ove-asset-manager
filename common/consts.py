@@ -61,5 +61,3 @@ OBJECT_TEMPLATE = {
         ]
     }
 }
-
-DEFAULT_AUTH_GROUPS = {"groups": ["public"]}

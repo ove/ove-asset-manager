@@ -3,7 +3,7 @@
 from typing import Dict, Union, Callable, List
 
 from common.consts import DEFAULT_CREDENTIALS_CONFIG
-from common.entities import OveAssetMeta, OveProjectMeta, OveProjectAccessMeta
+from common.entities import OveAssetMeta, OveProjectMeta, OveProjectAccessMeta, UserAccessMeta
 from common.errors import AssetExistsError, ObjectExistsError, ProjectExistsError
 from common.s3minio import S3Manager
 
@@ -25,8 +25,8 @@ class FileController:
         return self._manager.list_stores()
 
     # List the projects in an storage (returning the names)
-    def list_projects(self, store_id: str = None, metadata: bool = False, result_filter: Callable = None, access_groups: List[str] = None, is_admin: bool = False) -> List[Dict]:
-        return self._manager.list_projects(store_id=store_id, metadata=metadata, result_filter=result_filter, access_groups=access_groups, is_admin=is_admin)
+    def list_projects(self, access: UserAccessMeta, store_id: str = None, metadata: bool = False, result_filter: Callable = None) -> List[Dict]:
+        return self._manager.list_projects(store_id=store_id, metadata=metadata, result_filter=result_filter, access=access)
 
     def list_assets(self, project_id: str, store_id: str = None, result_filter: Callable = None) -> List[Dict]:
         return self._manager.list_assets(store_id=store_id, project_id=project_id, result_filter=result_filter)

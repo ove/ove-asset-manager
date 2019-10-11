@@ -8,7 +8,7 @@ import falcon
 import markdown2
 import urllib3
 
-from common.consts import OBJECT_TEMPLATE, FIELD_AUTH_TOKEN, DEFAULT_AUTH_GROUPS
+from common.consts import OBJECT_TEMPLATE, FIELD_AUTH_TOKEN
 from common.entities import OveProjectMeta, OveAssetMeta
 from common.errors import ValidationError
 from common.falcon_utils import unquote_filename, auth_token
@@ -154,9 +154,6 @@ class ProjectView:
 
     @falcon_template.render('project-list.html')
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str):
-        if not getattr(resp, "auth_user", {}).get("write_access", False):
-            raise falcon.HTTPSeeOther('/view/store/{}/index'.format(store_id))
-
         resp.context = {"store_id": store_id, "projects": []}
         try:
             resp.context["projects"] = self._controller.list_projects(store_id, auth_token=auth_token(req))
@@ -174,8 +171,9 @@ class ProjectView:
         resp.context = {"store_id": store_id, "project_id": project_id, "project_name": project_name, "assets": [], "workers": {}}
 
         try:
-            self._controller.create_project(store_id=store_id, project_id=project_id, project_name=project_name, auth_token=auth_token(req))
-            self._controller.edit_access_meta(store_id=store_id, project_id=project_id, meta=DEFAULT_AUTH_GROUPS, auth_token=auth_token(req))
+            access = getattr(resp, "auth_user", {})
+            self._controller.create_project(store_id=store_id, project_id=project_id, project_name=project_name,
+                                            groups=access.get("write_groups", []), auth_token=auth_token(req))
             report_success(resp=resp, description="Project created")
         except:
             raise

@@ -12,7 +12,7 @@ from pymongo.errors import CollectionInvalid
 from common.consts import CONFIG_AUTH_MONGO, CONFIG_AUTH_MONGO_HOST, CONFIG_AUTH_MONGO_PORT, CONFIG_AUTH_MONGO_USER, CONFIG_AUTH_MONGO_PASSWORD
 from common.consts import CONFIG_AUTH_MONGO_COLLECTION, CONFIG_AUTH_MONGO_DB, CONFIG_AUTH_MONGO_MECHANISM
 from common.consts import DEFAULT_AUTH_CONFIG, CONFIG_AUTH_JWT, CONFIG_AUTH_JWT_SECRET
-from common.entities import DbAccessMeta
+from common.entities import UserAccessMeta
 from common.util import to_bool
 
 VALIDATION = {"$jsonSchema": {
@@ -29,18 +29,21 @@ VALIDATION = {"$jsonSchema": {
         },
         "am": {
             "bsonType": "object",
-            "required": ["groups", "write_access"],
+            "required": ["read_groups", "write_groups", "admin_access"],
             "properties": {
-                "groups": {
+                "read_groups": {
                     "bsonType": "array",
                     "items": {
                         "bsonType": "string",
                     },
-                    "description": "access groups, required"
+                    "description": "read access groups, required"
                 },
-                "write_access": {
-                    "bsonType": "bool",
-                    "description": "has write access? required"
+                "write_groups": {
+                    "bsonType": "array",
+                    "items": {
+                        "bsonType": "string",
+                    },
+                    "description": "write access groups, required"
                 },
                 "admin_access": {
                     "bsonType": "bool",
@@ -81,7 +84,7 @@ class AuthManager:
         except:
             logging.error("Error while trying to load auth config. Error: %s", sys.exc_info()[1])
 
-    def edit_user(self, access: DbAccessMeta, password: str = None, hashed: bool = False, add: bool = False) -> bool:
+    def edit_user(self, access: UserAccessMeta, password: str = None, hashed: bool = False, add: bool = False) -> bool:
         db = access.to_db()
         if password:
             db["password"] = password if hashed else argon2.hash(password)
@@ -99,26 +102,29 @@ class AuthManager:
 
     def get_groups(self) -> List[str]:
         try:
-            return self._auth_collection.distinct("am.groups")
+            result = set()
+            result.update(self._auth_collection.distinct("am.read_groups"))
+            result.update(self._auth_collection.distinct("am.write_groups"))
+            return list(result)
         except:
             logging.error("Get groups Error: %s", sys.exc_info()[1])
             return []
 
-    def get_users(self) -> List[DbAccessMeta]:
+    def get_users(self) -> List[UserAccessMeta]:
         try:
             return [self._from_db(doc) for doc in self._auth_collection.find()]
         except:
             logging.error("Get Users Error: %s", sys.exc_info()[1])
             return []
 
-    def get_user(self, user: str) -> Union[DbAccessMeta, None]:
+    def get_user(self, user: str) -> Union[UserAccessMeta, None]:
         try:
             return self._from_db(self._auth_collection.find_one({"user": user}))
         except:
             logging.error("Get user(%s) Error: %s", user, sys.exc_info()[1])
             return None
 
-    def auth_user(self, user: str, password: str) -> Union[DbAccessMeta, None]:
+    def auth_user(self, user: str, password: str) -> Union[UserAccessMeta, None]:
         try:
             auth = self._auth_collection.find_one({"user": user})
             return self._from_db(auth) if argon2.verify(password, auth.get("password", None)) else None
@@ -130,7 +136,7 @@ class AuthManager:
         auth = self.auth_user(user=user, password=password)
         return jwt.encode(payload=auth.public_json(), key=self.jwt_secret, algorithm="HS256").decode("utf-8") if auth else None
 
-    def decode_token(self, token: str) -> Union[DbAccessMeta, None]:
+    def decode_token(self, token: str) -> Union[UserAccessMeta, None]:
         if not token:
             return None
 
@@ -154,14 +160,12 @@ class AuthManager:
         self._client.close()
 
     @staticmethod
-    def _from_db(doc: Dict) -> DbAccessMeta:
+    def _from_db(doc: Dict) -> UserAccessMeta:
         am = doc.get("am", {}) or {}
-        return DbAccessMeta(user=doc.get("user", None), groups=am.get("groups", []) or [],
-                            write_access=to_bool(am.get("write_access", False)),
-                            admin_access=to_bool(am.get("admin_access", False)))
+        return UserAccessMeta(user=doc.get("user", None), admin_access=to_bool(am.get("admin_access", False)),
+                              read_groups=am.get("read_groups", []) or [], write_groups=am.get("write_groups", []) or [])
 
     @staticmethod
-    def _from_public(doc: Dict) -> DbAccessMeta:
-        return DbAccessMeta(user=doc.get("user", None), groups=doc.get("groups", []) or [],
-                            write_access=to_bool(doc.get("write_access", False)),
-                            admin_access=to_bool(doc.get("admin_access", False)))
+    def _from_public(doc: Dict) -> UserAccessMeta:
+        return UserAccessMeta(user=doc.get("user", None), admin_access=to_bool(doc.get("admin_access", False)),
+                              read_groups=doc.get("read_groups", []) or [], write_groups=doc.get("write_groups", []) or [])
