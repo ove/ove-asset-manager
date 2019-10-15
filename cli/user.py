@@ -77,12 +77,13 @@ def remove(auth: AuthManager, args: Namespace):
 
 
 def info_user(auth: AuthManager, args: Namespace):
-    _format_user(auth.get_user(user=args.username), multi=False)
+    if args.username:
+        users = [auth.get_user(user=args.username)]
+    else:
+        users = auth.get_users()
 
-
-def list_users(auth: AuthManager, _args: Namespace):
     first = True
-    for user in auth.get_users():
+    for user in users:
         _format_user(user, multi=not first)
         first = False
 
