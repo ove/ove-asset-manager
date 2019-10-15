@@ -7,7 +7,7 @@ from common.consts import DEFAULT_AUTH_CONFIG
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="AssetManager CLI")
+    parser = argparse.ArgumentParser(prog="am-cli")
     parser.add_argument("--config", default=DEFAULT_AUTH_CONFIG, type=str, help="Auth config file")
 
     subparsers = parser.add_subparsers()
