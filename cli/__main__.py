@@ -45,7 +45,7 @@ def main():
     parser_user_remove.add_argument("username", type=str, help="Username to remove")
     parser_user_remove.set_defaults(function=user.remove)
 
-    parser_user_info = subparsers_user.add_parser("info", help="List information about specific user, or all users")
+    parser_user_info = subparsers_user.add_parser("info", help="List permissions for specific user, or all users")
     parser_user_info.add_argument("username", type=str, nargs='?', default='', help="Username to list info about")
     parser_user_info.set_defaults(function=user.info_user)
 
