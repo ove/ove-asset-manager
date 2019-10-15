@@ -16,28 +16,42 @@ def verify(auth: AuthManager, args: Namespace):
 
 
 def add(auth: AuthManager, args: Namespace):
-    pswd = getpass.getpass("[{}] password:".format(args.username))
-    if pswd and len(pswd) >= 8:
-        setattr(args, "password", pswd)
-    else:
-        print("[Error] Passwords should be longer than 8 characters")
-        return
+    password = get_password_input(args.username)
 
-    _edit(user=UserAccessMeta(user=args.username), auth=auth, args=args, add_user=True)
+    if password:
+        setattr(args, "password", password)
+        _edit(user=UserAccessMeta(user=args.user), auth=auth, args=args, add_user=True)
 
 
 def edit(auth: AuthManager, args: Namespace):
     if args.reset_password:
-        pswd = getpass.getpass("[{}] password:".format(args.username))
-        if pswd and len(pswd) >= 8:
-            setattr(args, "password", pswd)
-        else:
-            print("[Error] Passwords should be longer than 8 characters")
+        password = get_password_input(args.username)
+        if not password:
             return
+
+        setattr(args, "password", password)
     else:
         setattr(args, "password", None)
 
     _edit(user=auth.get_user(user=args.username), auth=auth, args=args, add_user=False)
+
+
+def get_password_input(user):
+    valid_password = False
+    while not valid_password:
+        print()
+        pass1 = getpass.getpass("New password for [{}]:".format(user))
+        pass2 = getpass.getpass("Type the password again:")
+
+        if pass1 != pass2:
+            valid_password = False
+            continue
+
+        if pass1 and len(pass1) >= 8:
+            return pass1
+        else:
+            print("[Error] Passwords should be longer than 8 characters")
+            return
 
 
 def _edit(user: UserAccessMeta, auth: AuthManager, args: Namespace, add_user: bool):
