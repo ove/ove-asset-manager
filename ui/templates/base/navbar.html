@@ -67,7 +67,7 @@
                                 <div class="card border-light" style="width: 11rem;">
                                     <div class="card-body">
                                         <h6 class="card-subtitle mb-2 text-muted">
-                                            <i class="fas fa-glasses" title="Read access"></i>
+                                            <i class="fas fa-eye" title="Read access"></i>
                                             &nbsp;&nbsp;
                                             {{ auth_user.read_groups|join(', ') }}
                                         </h6>
@@ -80,15 +80,22 @@
                                             </h6>
 
                                         {% endif %}
-                                        {% if auth_user.admin_access %}
-                                            <br/>
-                                            <p class="card-text">
-                                                <i class="fas fa-user-shield" title="This user has admin access"></i>
-                                            </p>
-                                        {% endif %}
                                     </div>
                                 </div>
-                                <div class="dropdown-divider"></div>
+
+                                {% if auth_user.admin_access %}
+                                    <div class="card border-light" style="width: 11rem;">
+                                        <div class="card-body">
+
+                                            <h6 class="card-subtitle mb-2 text-muted">
+                                                <i class="fas fa-user-shield" title="This user has admin access"></i>
+
+                                                Administrator
+                                            </h6>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
                                 <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i>&nbsp;&nbsp;Logout</a>
                             </div>
                         </li>
