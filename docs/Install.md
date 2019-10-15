@@ -130,7 +130,7 @@ virtualenv -p python3 env && source env/bin/activate
 The terminal should display something like **env** at the beginning of the line, indicating that the virtual environment is active. You can then safely install the dependencies within the same virtual environment:
 
 ```bash
-pip install -r requirements.txt && pip install -r requirements.ui.txt
+pip install -r requirements.am.txt && pip install -r requirements.ui.txt
 ```
 
 If you wish to install the Deep Zoom Worker, then `pyvips` needs to be installed in the virtual environment as well. Please check the [install guide](https://libvips.github.io/pyvips/README.html#install) for details on how to install the library and the system bindings.
