@@ -16,7 +16,7 @@ def main():
     subparsers_user = parser_user.add_subparsers()
 
     parser_user_add = subparsers_user.add_parser("verify", help="Verify user password")
-    parser_user_add.add_argument("user", type=str, help="Username to add")
+    parser_user_add.add_argument("user", type=str, help="Username to verify")
     parser_user_add.set_defaults(function=user.verify)
 
     parser_user_add = subparsers_user.add_parser("add", help="User add command")
@@ -42,11 +42,11 @@ def main():
     parser_user_edit.set_defaults(function=user.edit)
 
     parser_user_remove = subparsers_user.add_parser("remove", help="User remove command")
-    parser_user_remove.add_argument("user", type=str, help="Username to add")
+    parser_user_remove.add_argument("user", type=str, help="Username to remove")
     parser_user_remove.set_defaults(function=user.remove)
 
     parser_user_info = subparsers_user.add_parser("info", help="User info command")
-    parser_user_info.add_argument("user", type=str, help="Username to add")
+    parser_user_info.add_argument("user", type=str, help="Username to list info about")
     parser_user_info.set_defaults(function=user.info_user)
 
     parser_user_list = subparsers_user.add_parser("list", help="User list command")
