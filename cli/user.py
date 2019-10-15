@@ -41,7 +41,7 @@ def get_password_input(user):
     while not valid_password:
         print()
         pass1 = getpass.getpass("New password for [{}]:".format(user))
-        pass2 = getpass.getpass("Type the password again:".format(user))
+        pass2 = getpass.getpass("Type the password again:")
 
         if pass1 != pass2:
             valid_password = False
