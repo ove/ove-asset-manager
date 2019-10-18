@@ -28,6 +28,9 @@ class BackendController:
     def list_workers(self, auth_token: Union[str, None]) -> List:
         return self._backend.get("api/workers", auth_token=auth_token) or []
 
+    def list_tasks(self, auth_token: Union[str, None]) -> List:
+        return self._backend.get("api/workers/queue", auth_token=auth_token) or []
+
     def get_worker_types(self, auth_token: Union[str, None]) -> List:
         return list({w['type']: {
             'type': w['type'],
@@ -42,6 +45,12 @@ class BackendController:
             self._backend.post("api/workers/status", data={"name": name}, auth_token=auth_token)
         elif action == "delete":
             self._backend.delete("api/workers", data={"name": name}, auth_token=auth_token)
+
+    def edit_task(self, action: str, task_id: str, auth_token: Union[str, None]) -> None:
+        if action == "reset":
+            self._backend.patch("api/workers/queue", data={"task_id": task_id}, auth_token=auth_token)
+        elif action == "cancel":
+            self._backend.delete("api/workers/queue", data={"task_id": task_id}, auth_token=auth_token)
 
     def list_stores(self, auth_token: Union[str, None]) -> List:
         return self._backend.get("api/list", auth_token=auth_token) or []
@@ -98,7 +107,8 @@ class BackendController:
                              params={"filename": filename, "update": update, "create": create}, auth_token=auth_token)
 
     def schedule_worker(self, store_id: str, project_id: str, asset_id: str, worker_type: str, parameters: Dict, auth_token: Union[str, None]):
-        self._backend.post("api/{}/{}/process/{}".format(store_id, project_id, asset_id), data={"worker_type": worker_type, "parameters": parameters}, auth_token=auth_token)
+        data = {"store_id": store_id, "project_id": project_id, "asset_id": asset_id, "worker_type": worker_type, "parameters": parameters}
+        self._backend.post("api/workers/queue", data=data, auth_token=auth_token)
 
     def check_objects(self, store_id: str, project_id: str, object_ids: List[str], auth_token: Union[str, None]) -> List[Dict]:
         return [self.get_object_info(store_id=store_id, project_id=project_id, object_id=item, auth_token=auth_token)

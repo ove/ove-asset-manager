@@ -1,0 +1,102 @@
+{% extends "base/base.html" %}
+{% block title %}OVE Asset Manager - Worker list{% endblock %}
+
+{% set active_page = "workers" %}
+
+{% block content %}
+    <script>
+        $(document).ready(function () {
+            $('#table').DataTable({
+                autoWidth: false,
+                pageLength: 10,
+                order: [0, 'asc'],
+                columns: [
+                    {width: "5%"}, {width: "5%"}, {width: "5%"}, {width: "5%"},
+                    {width: "5%"}, {width: "5%"}, {width: "5%"}, {width: "5%"},
+                    {width: "5%"}, {width: "5%"}, {width: "5%"}, {width: "5%"},
+                    {width: "15%", orderable: false}
+                ],
+            });
+        });
+    </script>
+
+    <table id="table" class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Created</th>
+            <th scope="col">Started</th>
+            <th scope="col">Ended</th>
+            <th scope="col">Priority</th>
+            <th scope="col">Username</th>
+            <th scope="col">StoreID</th>
+            <th scope="col">ProjectID</th>
+            <th scope="col">AssetID</th>
+            <th scope="col">Worker Type</th>
+            <th scope="col">Worker Name</th>
+            <th scope="col">Status</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in tasks -%}
+            <tr>
+                <td>{{ task._id }}</td>
+                <td>{{ task.createdOn }}</td>
+                <td>{{ task.startTime }}</td>
+                <td>{{ task.endTime }}</td>
+                <td>{{ task.priority }}</td>
+                <td>{{ task.username }}</td>
+                <td>{{ task.storeID }}</td>
+                <td>{{ task.projectID }}</td>
+                <td>{{ task.assetID }}</td>
+                <td>{{ task.workerType }}</td>
+                <td>{{ task.workerName }}</td>
+                <td>
+                    {% if task.status == "new" %}
+                        <span data-toggle="tooltip" data-placement="top" title="New">
+                            <i class="far fa-file icon-ok"></i>
+                        </span>
+                    {% elif task.status == "done" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Done">
+                            <i class="fas fa-check-circle icon-success"></i>
+                        </span>
+                    {% elif task.status == "processing" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Task is being processed">
+                            <i class="fas fa-spinner fa-spin icon-ok"></i>
+                        </span>
+                    {% elif task.status == "canceled" %}
+                        <span data-toggle="tooltip" data-placement="top" title="Cancelled">
+                            <i class="far fa-times-circle icon-error"></i>
+                        </span>
+                    {% elif task.status == "error" %}
+                        <span data-toggle="tooltip" data-placement="top" title="{{ task.error }}">
+                            <i class="fas fa-exclamation-circle icon-error"></i>
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Toolbar" style="float: right;">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Reset task"
+                                onclick="confirmSubmission('reset-{{ task._id }}', 'Are you sure you want to reset {{ task._id }}?')">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <form id="reset-{{ task._id }}" action="" method="post">
+                            <input type="hidden" name="action" value="reset">
+                            <input type="hidden" name="task_id" value="{{ task._id }}">
+                        </form>
+                        <form id="delete-{{ task._id }}" action="" method="post">
+                            <input type="hidden" name="action" value="cancel">
+                            <input type="hidden" name="task_id" value="{{ task._id }}">
+                        </form>
+                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Cancel task"
+                                onclick="confirmSubmission('delete-{{ task._id }}', 'Are you sure you want to cancel {{ task._id }}?')">
+                            <i class="far fa-times-circle"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        {%- endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,111 +1,237 @@
+import datetime
 import json
 import logging
-import random
+import os
 import sys
-from typing import List, Dict
+from typing import Dict, Tuple
 
-import urllib3
+from bson import ObjectId
+from pymongo import MongoClient, ASCENDING
+from pymongo.collection import Collection
+from pymongo.errors import CollectionInvalid
+from tzlocal import get_localzone
 
-from common.entities import WorkerData, OveAssetMeta, WorkerStatus
-from common.errors import MissingParameterError, WorkerCallbackError, WorkerUnavailableError, WorkerExistsError, WorkerNotFoundError
+from am import FileController
+from common.consts import *
+from common.entities import OveAssetMeta, TaskStatus, UserAccessMeta
+from common.errors import MissingParameterError, WorkerNotFoundError
 from common.util import is_empty_str
+
+VALIDATION_WORKER = {"$jsonSchema": {
+    "bsonType": "object",
+    "required": ["name", "type", "description", "extensions", "status", "docs"],
+    "properties": {
+        "name": {
+            "bsonType": "string",
+            "description": "name, required"
+        },
+        "type": {
+            "bsonType": "string",
+            "description": "worker type, required"
+        },
+        "description": {
+            "bsonType": "string",
+            "description": "worker type, required"
+        },
+        "extensions": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string",
+            },
+            "description": "accepted extensions, required"
+        },
+        "status": {
+            "bsonType": "string",
+            "description": "worker status, required"
+        },
+        "docs": {
+            "bsonType": "string",
+            "description": "worker docs, required"
+        },
+        "parameters": {
+            "bsonType": "object"
+        }
+    }
+}}
+
+VALIDATION_QUEUE = {"$jsonSchema": {
+    "bsonType": "object",
+    "required": ["storeID", "projectID", "assetID", "workerType", "username"],
+    "properties": {
+        "startTime": {
+            "bsonType": "date",
+            "description": "Start time optional"
+        },
+        "endTime": {
+            "bsonType": "date",
+            "description": "End time optional"
+        },
+        "createdOn": {
+            "bsonType": "date",
+            "description": "Created date optional"
+        },
+        "priority": {
+            "bsonType": "int",
+            "description": "Priority optional"
+        },
+        "storeID": {
+            "bsonType": "string",
+            "description": "Store ID, required"
+        },
+        "projectID": {
+            "bsonType": "string",
+            "description": "Project ID, required"
+        },
+        "assetID": {
+            "bsonType": "string",
+            "description": "Asset ID, required"
+        },
+        "workerType": {
+            "bsonType": "string",
+            "description": "worker type, required"
+        },
+        "workerName": {
+            "bsonType": "string",
+            "description": "worker type, required"
+        },
+        "username": {
+            "bsonType": "string",
+            "description": "username, required"
+        },
+        "filename": {
+            "bsonType": "string",
+            "description": "filename"
+        },
+        "extension": {
+            "bsonType": "string",
+            "description": "extension"
+        },
+        "taskOptions": {
+            "bsonType": "object"
+        },
+        "credentials": {
+            "bsonType": "object"
+        },
+        "status": {
+            "bsonType": "string",
+            "description": "Status message"
+        },
+        "error": {
+            "bsonType": "string",
+            "description": "Error message, if any"
+        },
+    }
+}}
 
 
 class WorkerManager:
-    def __init__(self):
-        self._http = urllib3.PoolManager()
-        self._workers = []
+    def __init__(self, controller: FileController, config_file: str = DEFAULT_WORKER_CONFIG):
+        self._client = None
+        self._worker_collection = None
+        self._worker_queue = None
 
-    def add_worker(self, worker: WorkerData):
-        _validate_field(worker, "name")
-        _validate_field(worker, "callback")
-        _validate_field(worker, "status_callback")
+        self._controller = controller
 
-        if worker.name in self._workers:
-            raise WorkerExistsError()
+        self.load(config_file=config_file)
 
-        if not self._validate_callback(worker.callback):
-            raise WorkerCallbackError(url=worker.callback)
+    def load(self, config_file: str = DEFAULT_WORKER_CONFIG):
+        try:
+            with open(config_file, mode="r") as fin:
+                config = json.load(fin)
 
-        if not self._validate_callback(worker.status_callback):
-            raise WorkerCallbackError(url=worker.status_callback)
+                mongo_config = config.get(CONFIG_MONGO, {}) or {}
+                self._client = MongoClient(host=mongo_config.get(CONFIG_MONGO_HOST),
+                                           port=mongo_config.get(CONFIG_MONGO_PORT),
+                                           username=mongo_config.get(CONFIG_MONGO_USER),
+                                           password=mongo_config.get(CONFIG_MONGO_PASSWORD),
+                                           authSource=mongo_config.get(CONFIG_MONGO_DB),
+                                           authMechanism=mongo_config.get(CONFIG_MONGO_MECHANISM))
+                self._worker_collection = self.setup(db_name=mongo_config.get(CONFIG_MONGO_DB),
+                                                     collection_name=mongo_config.get(CONFIG_MONGO_WORKER_COLLECTION),
+                                                     validator=VALIDATION_WORKER, index=("name", ASCENDING))
+                self._worker_queue = self.setup(db_name=mongo_config.get(CONFIG_MONGO_DB),
+                                                collection_name=mongo_config.get(CONFIG_MONGO_QUEUE_COLLECTION),
+                                                validator=VALIDATION_QUEUE)
+                logging.info("Loaded worker config...")
+        except:
+            logging.error("Error while trying to load worker config. Error: %s", sys.exc_info()[1])
 
-        self._workers.append(worker)
-
-    def remove_worker(self, name: str):
-        if name in self._workers:
-            self._workers = [w for w in self._workers if w.name != name]
+    def remove_worker(self, name: str) -> bool:
+        result = self._worker_collection.delete_many({"name": name})
+        if result.deleted_count > 0:
+            return True
         else:
             raise WorkerNotFoundError()
 
     def worker_info(self, name: str = None):
-        return [w.to_public_json() for w in self._workers if name is None or name == w.name]
+        return [w for w in self._worker_collection.find({"name": name} if name else {}, {"_id": 0})]
 
     def worker_status(self, name: str = None):
-        return {w.name: str(w.status) for w in self._workers if name is None or name == w.name}
+        return {w.get("name", ""): w.get("status", "") for w in self._worker_collection.find({"name": name} if name else {})}
 
-    def update(self, name: str, status: WorkerStatus, error_msg: str = ""):
-        for w in self._workers:
-            if w.name == name:
-                w.status = status
-                w.error_msg = error_msg
+    def worker_queue(self, user: UserAccessMeta):
+        def has_access(d: Dict) -> bool:
+            return self._controller.has_access(store_id=d.get("storeID", ""), project_id=d.get("projectID", ""), groups=user.write_groups, is_admin=user.admin_access)
 
-    def schedule_process(self, project_id: str, meta: OveAssetMeta, worker_type: str, store_config: Dict, task_options: Dict):
+        return [_format(w) for w in self._worker_queue.find({}, {"credentials": 0}) if has_access(w)]
+
+    def schedule_task(self, store_id: str, project_id: str, meta: OveAssetMeta, worker_type: str, username: str, store_config: Dict, task_options: Dict, priority: int):
         filename = task_options.get("filename", meta.filename)
         if filename is None or len(filename) == 0:
             filename = meta.filename
 
-        available = self._find_workers(filename=filename, worker_type=worker_type, workers=self._workers)
-        if len(available) > 0:
-            # load balancing ^_^
-            random.shuffle(available)
-            data = {"store_config": store_config, "project_id": project_id, "asset_id": meta.id, "task_options": task_options}
+        extension = os.path.splitext(filename)[1] if filename else ""
 
-            success = False
-            for w in available:
-                if self._schedule_callback(w.callback, data=data):
-                    w.status = WorkerStatus.PROCESSING
-                    success = True
-                    break
+        self._worker_queue.insert_one({"createdOn": datetime.datetime.utcnow(), "priority": priority, "status": str(TaskStatus.NEW), "username": username,
+                                       "storeID": store_id, "projectID": project_id, "assetID": meta.id, "filename": filename, "extension": extension,
+                                       "workerType": worker_type, "taskOptions": task_options, "credentials": store_config})
 
-            if not success:
-                raise WorkerUnavailableError(filename=filename)
+    def cancel_task(self, task_id: str, user: UserAccessMeta) -> bool:
+        task = self._worker_queue.find_one({"_id": ObjectId(task_id)})
+        if task and self._controller.has_access(store_id=task.get("storeID", ""), project_id=task.get("projectID", ""), groups=user.write_groups, is_admin=user.admin_access):
+            task_diff = {"status": str(TaskStatus.CANCELED), "startTime": datetime.datetime.utcnow(), "endTime": datetime.datetime.utcnow()}
+            self._worker_queue.find_one_and_update({"_id": ObjectId(task_id)}, {"$set": task_diff})
+            return True
         else:
-            raise WorkerUnavailableError(filename=filename)
+            return False
 
-    def reset_worker_status(self, name: str = None):
-        for worker in self._workers:
-            if name is None or worker.name == name:
-                self._schedule_callback(worker.status_callback, {})
+    def reset_task(self, task_id: str, user: UserAccessMeta):
+        task = self._worker_queue.find_one({"_id": ObjectId(task_id)})
+        if task and self._controller.has_access(store_id=task.get("storeID", ""), project_id=task.get("projectID", ""), groups=user.write_groups, is_admin=user.admin_access):
+            self._worker_queue.find_one_and_update({"_id": ObjectId(task_id)}, {"$set": {"status": str(TaskStatus.NEW)}, "$unset": {"startTime": "", "endTime": ""}})
+            return True
+        else:
+            return False
 
-    def _validate_callback(self, callback: str) -> bool:
+    def setup(self, db_name: str, collection_name: str, validator: Dict, index: Tuple = None) -> Collection:
+        db = self._client[db_name]
         try:
-            response = self._http.request(method="HEAD", url=callback, headers={'Content-Type': 'application/json'})
-            return 200 <= response.status < 300
-        except:
-            logging.error("Callback not reachable. Url = '%s'. Error: %s", callback, sys.exc_info()[1])
-            return False
+            collection = db.create_collection(collection_name, validator=validator)
+            if index:
+                collection.create_index([index], unique=True)
+            return collection
+        except CollectionInvalid:
+            return db[collection_name]
 
-    def _schedule_callback(self, callback: str, data: Dict) -> bool:
-        try:
-            response = self._http.request(method="POST", url=callback, body=json.dumps(data).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            if 200 <= response.status < 300:
-                return True
-            else:
-                logging.error("Callback error. Url = '%s'. Status Code: %s. Error: %s", callback, response.status, response.data)
-        except:
-            logging.error("Callback not reachable. Url = '%s'. Error: %s", callback, sys.exc_info()[1])
-            return False
-
-    def _find_workers(self, filename: str, worker_type: str, workers: List[WorkerData]) -> List[WorkerData]:
-        def is_valid(w: WorkerData) -> bool:
-            if w.type == worker_type and any([filename.lower().endswith(ext) for ext in w.extensions]):
-                return self._validate_callback(w.callback)
-            return False
-
-        return [w for w in workers if is_valid(w)]
+    def close(self):
+        self._client.close()
 
 
 def _validate_field(data, field: str):
     if is_empty_str(getattr(data, field, None)):
         raise MissingParameterError(field)
+
+
+_DATE_FIELDS = ["startTime", "endTime", "createdOn"]
+_LOCAL_TIMEZONE = get_localzone()
+
+
+def _format(d: Dict) -> Dict:
+    if "_id" in d:
+        d["_id"] = str(d["_id"])
+
+    for field in _DATE_FIELDS:
+        if field in d:
+            d[field] = '{0:%Y-%m-%d %H:%M:%S}'.format(d[field].astimezone(_LOCAL_TIMEZONE))
+
+    return d
