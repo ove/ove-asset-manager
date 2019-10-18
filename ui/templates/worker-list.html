@@ -60,22 +60,14 @@
                 </td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Toolbar" style="float: right;">
-                        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Reset error state"
-                                onclick="document.getElementById('refresh-{{ worker.name }}').submit();">
-                            <i class="fas fa-sync"></i>
-                        </button>
-                        <form id="refresh-{{ worker.name }}" action="" method="post">
-                            <input type="hidden" name="action" value="reset">
-                            <input type="hidden" name="name" value="{{ worker.name }}">
-                        </form>
-                        <form id="delete-{{ worker.name }}" action="" method="post">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="name" value="{{ worker.name }}">
-                        </form>
                         <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Unregister worker"
                                 onclick="confirmSubmission('delete-{{ worker.name }}', 'Are you sure you want to remove {{ worker.name }}?')">
                             <i class="fas fa-trash-alt"></i>
                         </button>
+                        <form id="delete-{{ worker.name }}" action="" method="post">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="name" value="{{ worker.name }}">
+                        </form>
                         <a class="btn btn-outline-primary" href="/docs/{{ worker.docs }}"><i class="fas fa-book"></i></a>
                     </div>
                 </td>

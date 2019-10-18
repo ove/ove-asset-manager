@@ -148,6 +148,42 @@ class WorkerView:
             raise
 
 
+class WorkerQueueView:
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    @falcon_template.render('worker-queue.html')
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        resp.context = {"tasks": []}
+        try:
+            resp.context["tasks"] = self._controller.list_tasks(auth_token=auth_token(req))
+        except:
+            raise
+
+    @falcon_template.render('worker-queue.html')
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        resp.context = {"tasks": []}
+
+        validate_not_null(req.params, "task_id")
+        validate_not_null(req.params, "action")
+        action = req.params.get("action")
+        task_id = req.params.get("task_id")
+        try:
+            resp.context["tasks"] = self._controller.list_tasks(auth_token=auth_token(req))
+            self._controller.edit_task(action=action, task_id=task_id, auth_token=auth_token(req))
+
+            if action == "reset":
+                report_success(resp=resp, description="Task status reset")
+            elif action == "cancel":
+                report_success(resp=resp, description="Task cancelled")
+            else:
+                report_error(resp=resp, description="Invalid task action")
+
+            resp.context["tasks"] = self._controller.list_tasks(auth_token=auth_token(req))
+        except:
+            raise
+
+
 class ProjectView:
     def __init__(self, controller: BackendController):
         self._controller = controller

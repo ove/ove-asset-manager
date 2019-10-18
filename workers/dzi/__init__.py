@@ -5,13 +5,13 @@ from typing import Dict, List
 
 import pyvips
 
-from common.entities import OveAssetMeta, WorkerType
+from common.entities import OveAssetMeta
 from workers.base import BaseWorker
 
 
 class DeepZoomImageWorker(BaseWorker):
     def worker_type(self) -> str:
-        return WorkerType.DZ_IMAGE.value
+        return "dz-image"
 
     def extensions(self) -> List:
         return [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".gif"]

@@ -5,14 +5,14 @@ from tempfile import TemporaryDirectory, NamedTemporaryFile
 from typing import Dict, List, Union, Set
 from zipfile import ZipFile
 
-from common.entities import OveAssetMeta, WorkerType
+from common.entities import OveAssetMeta
 from common.util import append_slash
 from workers.base import BaseWorker
 
 
 class ZipWorker(BaseWorker):
     def worker_type(self) -> str:
-        return WorkerType.EXTRACT.value
+        return "extract"
 
     def extensions(self) -> List:
         return [".zip"]

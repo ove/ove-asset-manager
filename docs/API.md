@@ -248,71 +248,12 @@ This API is designed to allow you to perform the majority of necessary file oper
         **Content:** `{title="Asset exists", description="..."}`
 ----
 
-- **/api/{store_id}/{project_id}/process/{asset_id}**
-    - `POST`: _Schedule a worker processing task on the selected asset_
-    - **Data Params:** `{"worker_type": "...",}`
-    - **Response:**
-        - **Success**: <br />
-        **HTTP Code:** 200 <br />
-        **Content:** `{"Status": "OK"}`  
-        - **Store not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Store not found", description="..."}`
-        - **Project not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Project not found", description="..."}`
-        - **Asset not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Asset not found", description="..."}`
-        - **Worker not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Worker not found", description="..."}`
-----
-
 - **/api/workers**
     - `GET`: _Worker list_
     - **Response:**
         - **Success**: <br />
         **HTTP Code:** 200 <br />
         **Content:** `['worker1', ...]` 
-    - `POST`: _Register worker_
-    - **Data Params:** `{
-            "name": "...",
-            "type": "...",
-            "description": "...",
-            "extensions": "...",
-            "status": "...",
-            "callback": "...",
-            "status_callback": "...",
-            "parameters": "...",
-            "docs": "..."
-        }` 
-    - **Response:**
-        - **Success**: <br />
-        **HTTP Code:** 200 <br />
-        **Content:** `{
-            "name": "...",
-            "type": "...",
-            "description": "...",
-            "extensions": "...",
-            "status": "...",
-            "callback": "...",
-            "status_callback": "...",
-            "parameters": "...",
-            "docs": "..."
-        }` 
-        - **Worker already exists**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Worker already exists", description="..."}`
-    - `PATCH`: _Update the status of a worker_
-    - **Data Params:** `{ name: "...", status: "..." }`
-    - **Response:**
-        - **Success**: <br />
-        **HTTP Code:** 200 <br />
-        **Content:** `{ 'Status': 'OK' }` 
-        - **Worker not found**: <br />
-        **HTTP Code:** 400 Bad Request <br />
-        **Content:** `{title="Worker not found", description="..."}`
     - `DELETE`: _Unregister a worker_
     - **Data Params:** `{ name: "..." }`
     - **Response:**
@@ -322,4 +263,35 @@ This API is designed to allow you to perform the majority of necessary file oper
         - **Worker not found**: <br />
         **HTTP Code:** 400 Bad Request <br />
         **Content:** `{title="Worker not found", description="..."}`    
+----
+
+- **/api/workers/queue**
+    - `GET`: _Get current worker queue_
+    - **Response:**
+        - **Success**: <br />
+        **HTTP Code:** 200 <br />
+        **Content:** `[{task metadata}]`  
+    - `POST`: _Schedule worker task_
+    - **Data Params:** `{
+            "worker_type": "...",
+            "store_id": "...",
+            "project_id": "...",
+            "asset_id": "...",
+        }` 
+    - **Response:**
+        - **Success**: <br />
+        **HTTP Code:** 200 <br />
+        **Content:** `{ 'Status': 'OK' }` 
+    - `DELETE`: _Cancel task_
+    - **Data Params:** `{ task_id: "..." }`
+    - **Response:**
+        - **Success**: <br />
+        **HTTP Code:** 200 <br />
+        **Content:** `{ 'Status': 'OK' }` 
+    - `PATCH`: _Reset task status_
+    - **Data Params:** `{ task_id: "..." }`
+    - **Response:**
+        - **Success**: <br />
+        **HTTP Code:** 200 <br />
+        **Content:** `{ 'Status': 'OK' }` 
 ----

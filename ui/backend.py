@@ -25,6 +25,9 @@ class BackendClient:
     def post(self, api_url: str, auth_token: Union[str, None], data: Dict = None, params: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
         return self.request(method="POST", api_url=api_url, data=data, params=params, headers=headers, auth_token=auth_token)
 
+    def patch(self, api_url: str, auth_token: Union[str, None], data: Dict = None, params: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
+        return self.request(method="PATCH", api_url=api_url, data=data, params=params, headers=headers, auth_token=auth_token)
+
     def put(self, api_url: str, auth_token: Union[str, None], data: Dict = None, params: Dict = None, headers: Dict = None) -> Union[Dict, List, None]:
         return self.request(method="PUT", api_url=api_url, data=data, params=params, headers=headers, auth_token=auth_token)
 

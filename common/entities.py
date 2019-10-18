@@ -85,13 +85,8 @@ class OveAssetMeta:
         self.processing_error = kwargs.get("processing_error", "") or ""
 
     def update(self):
-        self.history.append({
-            "Type": "Updated",
-            "Time": str(datetime.datetime.today()),
-            "Version": len(self.history)
-        })
+        self.upload()
         self.version = int(self.history[-1]["Version"])
-        self.index_file = self.proxy_file_path
 
     def upload(self):
         self.history.append({
@@ -100,6 +95,8 @@ class OveAssetMeta:
             "Version": len(self.history)
         })
         self.index_file = self.proxy_file_path
+        self.processing_status = ""
+        self.processing_error = ""
 
     def created(self):
         self.history = [{
@@ -185,18 +182,18 @@ class WorkerData:
 class WorkerStatus(Enum):
     READY = "ready"
     PROCESSING = "processing"
-    DONE = "done"
     ERROR = "error"
 
     def __str__(self):
         return self.value
 
 
-# Provided for convenience
-class WorkerType(Enum):
-    DZ_IMAGE = "dz-image"
-    EXTRACT = "extract"
-    TULIP = "tulip"
+class TaskStatus(Enum):
+    NEW = "new"
+    PROCESSING = "processing"
+    CANCELED = "canceled"
+    DONE = "done"
+    ERROR = "error"
 
     def __str__(self):
         return self.value

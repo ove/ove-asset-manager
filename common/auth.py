@@ -9,8 +9,8 @@ from pymongo import MongoClient, ASCENDING
 from pymongo.collection import Collection
 from pymongo.errors import CollectionInvalid
 
-from common.consts import CONFIG_AUTH_MONGO, CONFIG_AUTH_MONGO_HOST, CONFIG_AUTH_MONGO_PORT, CONFIG_AUTH_MONGO_USER, CONFIG_AUTH_MONGO_PASSWORD
-from common.consts import CONFIG_AUTH_MONGO_COLLECTION, CONFIG_AUTH_MONGO_DB, CONFIG_AUTH_MONGO_MECHANISM
+from common.consts import CONFIG_MONGO, CONFIG_MONGO_HOST, CONFIG_MONGO_PORT, CONFIG_MONGO_USER, CONFIG_MONGO_PASSWORD
+from common.consts import CONFIG_MONGO_AUTH_COLLECTION, CONFIG_MONGO_DB, CONFIG_MONGO_MECHANISM
 from common.consts import DEFAULT_AUTH_CONFIG, CONFIG_AUTH_JWT, CONFIG_AUTH_JWT_SECRET
 from common.entities import UserAccessMeta
 from common.util import to_bool
@@ -71,15 +71,15 @@ class AuthManager:
                 jwt_config = config.get(CONFIG_AUTH_JWT, {}) or {}
                 self.jwt_secret = jwt_config.get(CONFIG_AUTH_JWT_SECRET, None)
 
-                mongo_config = config.get(CONFIG_AUTH_MONGO, {}) or {}
-                self._client = MongoClient(host=mongo_config.get(CONFIG_AUTH_MONGO_HOST),
-                                           port=mongo_config.get(CONFIG_AUTH_MONGO_PORT),
-                                           username=mongo_config.get(CONFIG_AUTH_MONGO_USER),
-                                           password=mongo_config.get(CONFIG_AUTH_MONGO_PASSWORD),
-                                           authSource=mongo_config.get(CONFIG_AUTH_MONGO_DB),
-                                           authMechanism=mongo_config.get(CONFIG_AUTH_MONGO_MECHANISM))
-                self._auth_collection = self.setup(db_name=mongo_config.get(CONFIG_AUTH_MONGO_DB),
-                                                   collection_name=mongo_config.get(CONFIG_AUTH_MONGO_COLLECTION))
+                mongo_config = config.get(CONFIG_MONGO, {}) or {}
+                self._client = MongoClient(host=mongo_config.get(CONFIG_MONGO_HOST),
+                                           port=mongo_config.get(CONFIG_MONGO_PORT),
+                                           username=mongo_config.get(CONFIG_MONGO_USER),
+                                           password=mongo_config.get(CONFIG_MONGO_PASSWORD),
+                                           authSource=mongo_config.get(CONFIG_MONGO_DB),
+                                           authMechanism=mongo_config.get(CONFIG_MONGO_MECHANISM))
+                self._auth_collection = self.setup(db_name=mongo_config.get(CONFIG_MONGO_DB),
+                                                   collection_name=mongo_config.get(CONFIG_MONGO_AUTH_COLLECTION))
                 logging.info("Loaded auth config...")
         except:
             logging.error("Error while trying to load auth config. Error: %s", sys.exc_info()[1])

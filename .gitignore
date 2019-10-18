@@ -12,6 +12,7 @@ venv/
 
 config/credentials.json
 config/auth.json
+config/worker.json
 config/environment.properties
 
 ui/static/vendors/

@@ -11,7 +11,7 @@ import falcon
 from am.controller import FileController
 from am.managers import WorkerManager
 from common.auth import AuthManager
-from common.entities import OveAssetMeta, OveProjectMeta, WorkerStatus, WorkerData, UserAccessMeta, OveProjectAccessMeta
+from common.entities import OveAssetMeta, OveProjectMeta, UserAccessMeta, OveProjectAccessMeta
 from common.errors import InvalidAssetError, ValidationError, MissingParameterError
 from common.falcon_utils import unquote_filename, save_filename
 from common.filters import build_meta_filter, DEFAULT_FILTER
@@ -136,29 +136,18 @@ class WorkersEdit:
         self._worker_manager = worker_manager
 
     def on_get(self, req: falcon.Request, resp: falcon.Response):
+        _validate_is_admin(req)
+
         resp.media = self._worker_manager.worker_info(name=req.params.get("name", None))
         resp.status = falcon.HTTP_200
 
-    def on_post(self, req: falcon.Request, resp: falcon.Response):
-        worker = WorkerData(**req.media)
-        self._worker_manager.add_worker(worker)
-
-        resp.media = worker.to_public_json()
-        resp.status = falcon.HTTP_200
-
     def on_delete(self, req: falcon.Request, resp: falcon.Response):
+        _validate_is_admin(req)
+
         validate_not_null(req.media, 'name')
         self._worker_manager.remove_worker(name=req.media.get('name'))
 
         resp.media = {"status": "OK"}
-        resp.status = falcon.HTTP_200
-
-    def on_patch(self, req: falcon.Request, resp: falcon.Response):
-        validate_not_null(req.media, 'name')
-        validate_not_null(req.media, 'status')
-        self._worker_manager.update(name=req.media.get("name"), status=WorkerStatus(req.media.get("status")), error_msg=req.media.get("error_msg", ""))
-
-        resp.media = {'Status': 'OK'}
         resp.status = falcon.HTTP_200
 
 
@@ -172,29 +161,57 @@ class WorkersStatusRoute:
         resp.media = self._worker_manager.worker_status(name=req.params.get("name", None))
         resp.status = falcon.HTTP_200
 
-    def on_post(self, req: falcon.Request, resp: falcon.Response):
-        self._worker_manager.reset_worker_status(name=req.params.get("name", None))
 
-        resp.media = self._worker_manager.worker_status(name=req.params.get("name", None))
-        resp.status = falcon.HTTP_200
-
-
-class WorkerSchedule:
+class WorkerQueue:
     internal_group_validation = True
 
     def __init__(self, controller: FileController, worker_manager: WorkerManager):
         self._controller = controller
         self._worker_manager = worker_manager
 
-    def on_post(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+    def on_get(self, req: falcon.Request, resp: falcon.Response):
+        resp.media = self._worker_manager.worker_queue(user=getattr(req, "user_access", UserAccessMeta()))
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req.media, 'store_id')
+        validate_not_null(req.media, 'project_id')
+        validate_not_null(req.media, 'asset_id')
         validate_not_null(req.media, 'worker_type')
 
+        user = getattr(req, "user_access", UserAccessMeta())
+        store_id = req.media.get("store_id")
+        project_id = req.media.get("project_id")
+        asset_id = req.media.get("asset_id")
+        worker_type = req.media.get("worker_type")
+
+        if not self._controller.has_access(store_id=store_id, project_id=project_id, groups=user.write_groups, is_admin=user.admin_access):
+            raise falcon.HTTPUnauthorized(title="Unable to process asset", description="Insufficient write access to process asset")
+
+        store_config = self._controller.get_store_config(store_id=store_id)
+        task_options = req.media.get("parameters", dict())
+        priority = req.media.get("priority", 1)
+
         meta = self._controller.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
-        self._worker_manager.schedule_process(project_id=project_id, meta=meta, worker_type=req.media.get("worker_type"),
-                                              store_config=self._controller.get_store_config(store_id=store_id),
-                                              task_options=req.media.get("parameters", dict()))
+        user = getattr(req, "user_access", UserAccessMeta())
+        self._worker_manager.schedule_task(store_id=store_id, project_id=project_id, meta=meta, worker_type=worker_type,
+                                           username=user.user, store_config=store_config, task_options=task_options, priority=priority)
 
         resp.media = {'Status': 'OK'}
+        resp.status = falcon.HTTP_200
+
+    def on_delete(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req.media, 'task_id')
+        self._worker_manager.cancel_task(task_id=req.media.get('task_id'), user=getattr(req, "user_access", UserAccessMeta()))
+
+        resp.media = {"status": "OK"}
+        resp.status = falcon.HTTP_200
+
+    def on_patch(self, req: falcon.Request, resp: falcon.Response):
+        validate_not_null(req.media, 'task_id')
+        self._worker_manager.reset_task(task_id=req.media.get('task_id'), user=getattr(req, "user_access", UserAccessMeta()))
+
+        resp.media = {"status": "OK"}
         resp.status = falcon.HTTP_200
 
 

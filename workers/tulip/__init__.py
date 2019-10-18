@@ -6,13 +6,13 @@ from typing import Dict, List
 
 from tulip import tlp
 
-from common.entities import OveAssetMeta, WorkerType
+from common.entities import OveAssetMeta
 from workers.base import BaseWorker
 
 
 class NetworkWorker(BaseWorker):
     def worker_type(self) -> str:
-        return WorkerType.TULIP.value
+        return "tulip"
 
     def extensions(self) -> List:
         return ['.tlp', '.tlp.gz', '.tlpz', '.tlpb', '.tlpb.gz', '.tlpbz', '.json', '.gexf', '.net', '.paj', '.gml',
