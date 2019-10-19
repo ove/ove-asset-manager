@@ -13,7 +13,7 @@ COPY requirements.worker.txt .
 
 RUN apk add --no-cache bash
 
-RUN pip install -r requirements.worker.txt
+RUN pip install --upgrade pip && pip install -r requirements.worker.txt
 
 ENV WORKER_CLASS "workers.zip.ZipWorker"
 ENV GUNICORN_PORT "6090"

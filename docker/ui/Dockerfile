@@ -23,6 +23,6 @@ COPY requirements.ui.txt .
 
 RUN apk add --no-cache bash
 
-RUN pip install -r requirements.ui.txt
+RUN pip install --upgrade pip && pip install -r requirements.ui.txt
 
 CMD ["./start-ui.sh"]

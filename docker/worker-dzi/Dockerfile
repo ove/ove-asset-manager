@@ -16,7 +16,9 @@ COPY requirements.worker.txt .
 RUN apk add --no-cache bash
 
 RUN apk --no-cache add --virtual build-base && \
-    pip install -r requirements.worker.txt && pip install pyvips==${PYVIPS_VERSION} && \
+    pip install --upgrade pip && \
+    pip install -r requirements.worker.txt && \
+    pip install pyvips==${PYVIPS_VERSION} && \
     apk del build-base
 
 ENV WORKER_CLASS "workers.dzi.DeepZoomImageWorker"
