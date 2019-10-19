@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 
-scriptPath=$(dirname "$(readlink -f "$0")")
-cd ${scriptPath}/
+if [[ "$OSTYPE" == *darwin* ]]; then
+  if command -v greadlink >/dev/null 2>&1; then
+    scriptPath=$(dirname "$(greadlink -f "$0")")
+  else
+    echo "greadlink command not found"
+    exit 1
+  fi
+else
+  scriptPath=$(dirname "$(readlink -f "$0")")
+fi
+cd "${scriptPath}/" || exit 1
 
 function display_help() {
   echo "Start worker for ove-asset-manager"
@@ -52,6 +61,8 @@ done
 # for MacOs and BSD-like systems
 [[ ! -z "${WORKER_NAME}" ]] || WORKER_NAME=$(echo $(cat /dev/urandom | base64 | tr -dc "[:alnum:]" | head -c10))
 
+[[ ! -z "${WORKER_CONFIG}" ]] || WORKER_CONFIG="config/worker.json"
+
 # For testing purpose this can be used, otherwise the next line should be commented
 # [[ ! -z "${WORKER_CLASS}" ]] || WORKER_CLASS="workers.dzi.DeepZoomImageWorker"
 
@@ -65,7 +76,9 @@ echo "  SERVICE_LOG_LEVEL=${SERVICE_LOG_LEVEL}"
 echo "  WORKER_NAME=${WORKER_NAME}"
 echo "  WORKER_CLASS=${WORKER_CLASS}"
 echo ""
+echo "  WORKER_CONFIG=${WORKER_CONFIG}"
+echo ""
 
 ## did you activate the virtual environment and install the requirements?
 exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
-  "workers.base:setup_worker(logging_level='${SERVICE_LOG_LEVEL}', worker_name='${WORKER_NAME}', worker_class='${WORKER_CLASS}')"
+  "workers.base:setup_worker(logging_level='${SERVICE_LOG_LEVEL}', worker_name='${WORKER_NAME}', worker_class='${WORKER_CLASS}', config_file='${WORKER_CONFIG}')"

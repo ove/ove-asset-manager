@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 
-scriptPath=$(dirname "$(readlink -f "$0")")
-cd ${scriptPath}/
+if [[ "$OSTYPE" == *darwin* ]]; then
+  if command -v greadlink >/dev/null 2>&1; then
+    scriptPath=$(dirname "$(greadlink -f "$0")")
+  else
+    echo "greadlink command not found"
+    exit 1
+  fi
+else
+  scriptPath=$(dirname "$(readlink -f "$0")")
+fi
+cd "${scriptPath}/" || exit 1
 
 [[ ! -z "${GUNICORN_PORT}" ]] || GUNICORN_PORT="6060"
 [[ ! -z "${GUNICORN_HOST}" ]] || GUNICORN_HOST="0.0.0.0"
@@ -27,4 +36,4 @@ echo ""
 
 ## did you activate the virtual environment and install the requirements?
 exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
-        "ui:setup_ui(logging_level='${SERVICE_LOG_LEVEL}', backend_url='http://${SERVICE_AM_HOSTNAME}:${SERVICE_AM_PORT}/')"
+  "ui:setup_ui(logging_level='${SERVICE_LOG_LEVEL}', backend_url='http://${SERVICE_AM_HOSTNAME}:${SERVICE_AM_PORT}/')"
