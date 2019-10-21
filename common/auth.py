@@ -3,17 +3,19 @@ import logging
 import sys
 from typing import Dict, Union, List
 
+import falcon
 import jwt
 from passlib.hash import argon2
 from pymongo import MongoClient, ASCENDING
 from pymongo.collection import Collection
 from pymongo.errors import CollectionInvalid
 
-from common.consts import CONFIG_MONGO, CONFIG_MONGO_HOST, CONFIG_MONGO_PORT, CONFIG_MONGO_USER, CONFIG_MONGO_PASSWORD
+from common.consts import CONFIG_MONGO, CONFIG_MONGO_HOST, CONFIG_MONGO_PORT, CONFIG_MONGO_USER, CONFIG_MONGO_PASSWORD, FIELD_AUTH_TOKEN
 from common.consts import CONFIG_MONGO_AUTH_COLLECTION, CONFIG_MONGO_DB, CONFIG_MONGO_MECHANISM
 from common.consts import DEFAULT_AUTH_CONFIG, CONFIG_AUTH_JWT, CONFIG_AUTH_JWT_SECRET
+from common.consts import HTTP_IGNORE_METHODS
 from common.entities import UserAccessMeta
-from common.util import to_bool
+from common.util import to_bool, is_public
 
 VALIDATION = {"$jsonSchema": {
     "bsonType": "object",
@@ -169,3 +171,42 @@ class AuthManager:
     def _from_public(doc: Dict) -> UserAccessMeta:
         return UserAccessMeta(user=doc.get("user", None), admin_access=to_bool(doc.get("admin_access", False)),
                               read_groups=doc.get("read_groups", []) or [], write_groups=doc.get("write_groups", []) or [])
+
+
+class AuthMiddleware:
+    def __init__(self, auth: AuthManager, public_paths: set = None):
+        self.auth = auth
+        self.public_paths = public_paths if public_paths else set()
+
+    def process_request(self, req: falcon.Request, _resp: falcon.Response):
+        if is_public(req.path, self.public_paths):
+            logging.debug("This is a public resource which does not need a valid token")
+            return
+
+        token = self.auth.decode_token(_get_token(req, field=FIELD_AUTH_TOKEN))
+        _check_access(method=req.method, token=token)
+
+        req.user_access = UserAccessMeta(user=token.user, read_groups=token.read_groups or [],
+                                         write_groups=token.write_groups or [], admin_access=token.admin_access or False)
+
+
+def _check_access(method: str, token: Union[UserAccessMeta, None]):
+    if method in HTTP_IGNORE_METHODS:
+        return
+
+    if not token:
+        raise falcon.HTTPUnauthorized(title='Access token required',
+                                      description='Please provide a valid access token as part of the request.')
+
+
+def _get_token(req: falcon.Request, field: str) -> Union[str, None]:
+    token = req.get_header(field, None)
+    if token is not None:
+        return token
+
+    token = req.params.get(field, None)
+    if token is not None:
+        return token
+
+    # Because every time you lose something, you always find it in the very last place you would look.
+    return req.cookies.get(field, None)

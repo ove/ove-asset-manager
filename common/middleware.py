@@ -1,16 +1,6 @@
-import logging
-from typing import Union
-
 import falcon
 
-from common.auth import AuthManager
-from common.consts import FIELD_AUTH_TOKEN
-from common.entities import UserAccessMeta
-from common.util import is_public
-
-HTTP_IGNORE_METHODS = {'CONNECT', 'HEAD', 'OPTIONS', 'TRACE'}
-HTTP_READ_METHODS = {'GET'}
-HTTP_WRITE_METHODS = {'DELETE', 'PATCH', 'POST', 'PUT'}
+from common.consts import HTTP_WRITE_METHODS
 
 
 class RequireJSON:
@@ -44,42 +34,3 @@ class CORSComponent:
                 ('Access-Control-Allow-Headers', allow_headers),
                 ('Access-Control-Max-Age', '86400'),  # 24 hours
             ))
-
-
-class AuthMiddleware:
-    def __init__(self, auth: AuthManager, public_paths: set = None):
-        self.auth = auth
-        self.public_paths = public_paths if public_paths else set()
-
-    def process_request(self, req: falcon.Request, _resp: falcon.Response):
-        if is_public(req.path, self.public_paths):
-            logging.debug("This is a public resource which does not need a valid token")
-            return
-
-        token = self.auth.decode_token(_get_token(req, field=FIELD_AUTH_TOKEN))
-        _check_access(method=req.method, token=token)
-
-        req.user_access = UserAccessMeta(user=token.user, read_groups=token.read_groups or [],
-                                         write_groups=token.write_groups or [], admin_access=token.admin_access or False)
-
-
-def _check_access(method: str, token: Union[UserAccessMeta, None]):
-    if method in HTTP_IGNORE_METHODS:
-        return
-
-    if not token:
-        raise falcon.HTTPUnauthorized(title='Access token required',
-                                      description='Please provide a valid access token as part of the request.')
-
-
-def _get_token(req: falcon.Request, field: str) -> Union[str, None]:
-    token = req.get_header(field, None)
-    if token is not None:
-        return token
-
-    token = req.params.get(field, None)
-    if token is not None:
-        return token
-
-    # Because every time you lose something, you always find it in the very last place you would look.
-    return req.cookies.get(field, None)

@@ -7,10 +7,10 @@ from am.managers import WorkerManager
 from am.middleware import RequireAuthGroups
 from am.routes import AssetCreate, AssetList, AssetUpload, WorkersStatusRoute, ObjectInfo, AuthRoute, UserEdit, UserInfo, GroupsInfo, ProjectAccessMetaEdit, WorkerQueue
 from am.routes import WorkersEdit, StoreList, AssetMetaEdit, ProjectCreate, ProjectList, ObjectEdit, TagEdit, ProjectMetaEdit, FileList, ProjectVersion
-from common.auth import AuthManager
+from common.auth import AuthManager, AuthMiddleware
 from common.consts import DEFAULT_CREDENTIALS_CONFIG, DEFAULT_AUTH_CONFIG, DEFAULT_WORKER_CONFIG
 from common.errors import handle_exceptions
-from common.middleware import RequireJSON, CORSComponent, AuthMiddleware
+from common.middleware import RequireJSON, CORSComponent
 from common.util import parse_logging_lvl
 
 

@@ -3,8 +3,8 @@ from typing import Set
 
 import falcon
 
+from common.consts import HTTP_WRITE_METHODS
 from common.falcon_utils import auth_token
-from common.middleware import HTTP_WRITE_METHODS
 from common.util import is_public
 from ui import BackendController
 
