@@ -24,6 +24,7 @@ def main():
     parser_user_add.add_argument("--read", dest="read_groups", type=str, nargs="+", default=[], help="Read access groups")
     parser_user_add.add_argument("--write", dest="write_groups", type=str, nargs="+", default=[], help="Write access groups")
     parser_user_add.add_argument('--admin', dest='admin_access', action='store_const', const=True, default=False, help='Admin access')
+    parser_user_add.add_argument('--ignore', dest='ignore', action='store_const', const=True, default=False, help='Ignore validation')
     parser_user_add.set_defaults(function=user.add)
 
     parser_user_edit = subparsers_user.add_parser("edit", help="Edit user")
@@ -39,6 +40,7 @@ def main():
     parser_user_edit_write.add_argument("--nowrite", dest="write_groups", action='store_const', const=[], help="Remove all write access groups")
 
     parser_user_edit.add_argument('--admin', dest='admin_access', type=str, help='Admin access (y or n)')
+    parser_user_edit.add_argument('--ignore', dest='ignore', action='store_const', const=True, default=False, help='Ignore validation')
     parser_user_edit.set_defaults(function=user.edit)
 
     parser_user_remove = subparsers_user.add_parser("remove", help="Remove user")

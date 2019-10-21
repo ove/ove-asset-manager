@@ -16,16 +16,16 @@ def verify(auth: AuthManager, args: Namespace):
 
 
 def add(auth: AuthManager, args: Namespace):
-    password = get_password_input(args.username)
+    password = get_password_input(args.username, args.ignore)
 
     if password:
         setattr(args, "password", password)
-        _edit(user=UserAccessMeta(user=args.user), auth=auth, args=args, add_user=True)
+        _edit(user=UserAccessMeta(user=args.username), auth=auth, args=args, add_user=True)
 
 
 def edit(auth: AuthManager, args: Namespace):
     if args.reset_password:
-        password = get_password_input(args.username)
+        password = get_password_input(args.username, args.ignore)
         if not password:
             return
 
@@ -36,7 +36,7 @@ def edit(auth: AuthManager, args: Namespace):
     _edit(user=auth.get_user(user=args.username), auth=auth, args=args, add_user=False)
 
 
-def get_password_input(user):
+def get_password_input(user: str, ignore_validation: bool):
     valid_password = False
     while not valid_password:
         print()
@@ -47,7 +47,7 @@ def get_password_input(user):
             valid_password = False
             continue
 
-        if pass1 and len(pass1) >= 8:
+        if pass1 and (ignore_validation or len(pass1) >= 8):
             return pass1
         else:
             print("[Error] Passwords should be longer than 8 characters")
