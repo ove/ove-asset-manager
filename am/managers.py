@@ -9,7 +9,6 @@ from bson import ObjectId
 from pymongo import MongoClient, ASCENDING
 from pymongo.collection import Collection
 from pymongo.errors import CollectionInvalid
-from pytz import timezone
 
 from am import FileController
 from common.consts import *
@@ -224,7 +223,6 @@ def _validate_field(data, field: str):
 
 
 _DATE_FIELDS = ["startTime", "endTime", "createdOn"]
-_LOCAL_TIMEZONE = timezone('Europe/London')
 
 
 def _format(d: Dict) -> Dict:
@@ -233,6 +231,6 @@ def _format(d: Dict) -> Dict:
 
     for field in _DATE_FIELDS:
         if field in d:
-            d[field] = '{0:%Y-%m-%d %H:%M:%S}'.format(d[field].astimezone(_LOCAL_TIMEZONE))
+            d[field] = '{0:%Y-%m-%d %H:%M:%S}'.format(d[field])
 
     return d
