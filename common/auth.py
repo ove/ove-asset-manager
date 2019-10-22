@@ -159,7 +159,8 @@ class AuthManager:
             return db[collection_name]
 
     def close(self):
-        self._client.close()
+        if self._client:
+            self._client.close()
 
     @staticmethod
     def _from_db(doc: Dict) -> UserAccessMeta:

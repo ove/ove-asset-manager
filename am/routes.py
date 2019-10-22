@@ -136,8 +136,6 @@ class WorkersEdit:
         self._worker_manager = worker_manager
 
     def on_get(self, req: falcon.Request, resp: falcon.Response):
-        _validate_is_admin(req)
-
         resp.media = self._worker_manager.worker_info(name=req.params.get("name", None))
         resp.status = falcon.HTTP_200
 

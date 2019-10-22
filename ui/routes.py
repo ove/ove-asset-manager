@@ -238,7 +238,7 @@ class AssetView:
 
     @falcon_template.render('asset-list.html')
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str):
-        resp.context = {"store_id": store_id, "project_id": project_id, "assets": [], "workers": {}, "project": {}}
+        resp.context = {"store_id": store_id, "project_id": project_id, "assets": [], "workers": [], "project": {}}
         try:
             resp.context["project"] = self._controller.get_project(store_id=store_id, project_id=project_id, auth_token=auth_token(req))
             resp.context["assets"] = self._controller.list_assets(store_id=store_id, project_id=project_id, auth_token=auth_token(req))

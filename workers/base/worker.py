@@ -58,7 +58,8 @@ class BaseWorker(ABC):
 
     def close(self):
         self.running = False
-        self._client.close()
+        if self._client:
+            self._client.close()
 
     @property
     def name(self) -> str:
@@ -108,8 +109,15 @@ class BaseWorker(ABC):
         except:
             logging.error("Failed to unregister worker. %s", sys.exc_info()[1])
 
+    def terminate_worker(self):
+        self.worker_process.terminate()
+
     def worker_loop(self, config_file: str = DEFAULT_WORKER_CONFIG):
         self.load(config_file=config_file)
+
+        if not self._client or not self._worker_queue:
+            logging.error("Mongo connection not initialised. Worker queue is not running ...")
+            return
 
         _filter = {"status": str(TaskStatus.NEW), "workerType": self.worker_type(), "extension": {"$in": self.extensions()}}
         _update = {"$set": {"status": str(TaskStatus.PROCESSING)}}

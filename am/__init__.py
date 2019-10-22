@@ -1,3 +1,4 @@
+import atexit
 import logging
 
 import falcon
@@ -49,5 +50,8 @@ def setup_app(logging_level: str = "debug", credentials_config: str = DEFAULT_CR
     app.add_route('/api/{store_id}/{project_id}/tags/{asset_id}', TagEdit(controller=file_controller))
 
     app.add_error_handler(Exception, handle_exceptions)
+
+    atexit.register(auth.close)
+    atexit.register(worker_manager.close)
 
     return app

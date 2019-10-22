@@ -214,7 +214,8 @@ class WorkerManager:
             return db[collection_name]
 
     def close(self):
-        self._client.close()
+        if self._client:
+            self._client.close()
 
 
 def _validate_field(data, field: str):
