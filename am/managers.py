@@ -122,6 +122,8 @@ VALIDATION_QUEUE = {"$jsonSchema": {
     }
 }}
 
+_TTL_EXPIRATION_SECONDS = 2 * 24 * 60 * 60  # 2 days
+
 
 class WorkerManager:
     def __init__(self, controller: FileController, config_file: str = DEFAULT_WORKER_CONFIG):
@@ -147,10 +149,10 @@ class WorkerManager:
                                            authMechanism=mongo_config.get(CONFIG_MONGO_MECHANISM))
                 self._worker_collection = self.setup(db_name=mongo_config.get(CONFIG_MONGO_DB),
                                                      collection_name=mongo_config.get(CONFIG_MONGO_WORKER_COLLECTION),
-                                                     validator=VALIDATION_WORKER, index=("name", ASCENDING))
+                                                     validator=VALIDATION_WORKER, unique_index=("name", ASCENDING))
                 self._worker_queue = self.setup(db_name=mongo_config.get(CONFIG_MONGO_DB),
                                                 collection_name=mongo_config.get(CONFIG_MONGO_QUEUE_COLLECTION),
-                                                validator=VALIDATION_QUEUE)
+                                                validator=VALIDATION_QUEUE, ttl_index="endTime")
                 logging.info("Loaded worker config...")
         except:
             logging.error("Error while trying to load worker config. Error: %s", sys.exc_info()[1])
@@ -202,12 +204,16 @@ class WorkerManager:
         else:
             return False
 
-    def setup(self, db_name: str, collection_name: str, validator: Dict, index: Tuple = None) -> Collection:
+    def setup(self, db_name: str, collection_name: str, validator: Dict, unique_index: Tuple = None, ttl_index: str = None) -> Collection:
         db = self._client[db_name]
         try:
             collection = db.create_collection(collection_name, validator=validator)
-            if index:
-                collection.create_index([index], unique=True)
+            if unique_index:
+                collection.create_index([unique_index], unique=True)
+
+            if ttl_index:
+                collection.create_index(ttl_index, expireAfterSeconds=_TTL_EXPIRATION_SECONDS)
+
             return collection
         except CollectionInvalid:
             return db[collection_name]
