@@ -47,9 +47,9 @@
                 <td>{{ task.endTime }}</td>
                 <td>{{ task.priority }}</td>
                 <td>{{ task.username }}</td>
-                <td>{{ task.storeID }}</td>
-                <td>{{ task.projectID }}</td>
-                <td>{{ task.assetID }}</td>
+                <td><a href="/view/store/{{ task.storeID }}">{{ task.storeID }}</a></td>
+                <td><a href="/view/store/{{ task.storeID }}/project/{{ task.projectID }}">{{ task.projectID }}</a></td>
+                <td><a href="/view/store/{{ task.storeID }}/project/{{ task.projectID }}/asset/{{ task.assetID }}">{{ task.assetID }}</a></td>
                 <td>{{ task.workerType }}</td>
                 <td>{{ task.workerName }}</td>
                 <td>
