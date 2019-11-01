@@ -15,7 +15,7 @@
                 autoWidth: false,
                 pageLength: 10,
                 order: [1, 'asc'],
-                columns: [{width: 20}, {width: "15%"}, null, null, {width: "15%"}, {width: "10%"}, {width: "10%"}, {width: "10%"}, {width: 20, orderable: false}]
+                columns: [{width: 20}, {width: "15%"}, null, null, {width: "15%"}, {width: "10%"}, {width: "10%"}, {width: "10%"}, {width: "5%"}, {width: 20, orderable: false}]
             });
 
             $('#project_name').keypress(function (event) {
@@ -75,6 +75,7 @@
             <th scope="col">Created</th>
             <th scope="col">Last Updated</th>
             <th scope="col">Access <i class="fas fa-shield-alt"></i></th>
+            <th scope="col">Presenter Notes</th>
             <th scope="col"></th>
         </tr>
         </thead>
@@ -116,6 +117,15 @@
                         {% endfor %}
                     {% endif %}
                 </td>
+                <td>
+                    {% if project.presenter_notes %}
+                        <span style="display: none;">Yes - has notes</span> <!-- for sorting only -->
+                        <span data-toggle="tooltip" data-placement="top" title="Notes or script for presenters"><a href="{{ project.presenter_notes }}"> <i class="fas fa-file-alt"></i> </a></span>
+                    {% else %}
+                        <span style="display: none;">No - has no notes</span> <!-- for sorting only -->
+                    {% endif %}
+                </td>
+
                 <td>
                     <div class="btn-group" role="group" aria-label="Toolbox">
                         <a href="/view/store/{{ store_id }}/project/{{ project.id }}" class="btn btn-outline-primary"

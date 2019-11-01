@@ -7,7 +7,7 @@ from common.util import append_slash, to_bool
 
 class OveProjectMeta:
     EDITABLE_FIELDS = ["name", "description", "tags", "authors", "publications", "notes", "thumbnail", "controller",
-                       "video_controller", "html_controller", "default_mode", "versions"]
+                       "video_controller", "html_controller", "default_mode", "versions", "presenter_notes"]
 
     def __init__(self, **kwargs):
         self.id = kwargs.get("id", "") or ""
@@ -25,6 +25,7 @@ class OveProjectMeta:
         self.url = kwargs.get("url", "") or ""
         self.default_mode = kwargs.get("default_mode", "") or ""
         self.versions = kwargs.get("versions", "") or ""
+        self.presenter_notes = kwargs.get("presenter_notes", "") or ""
 
     def to_json(self) -> Dict:
         result = dict(self.__dict__)
@@ -46,7 +47,8 @@ class OveProjectMeta:
             "tags": self.tags,
             "url": self.url,
             "default_mode": self.default_mode,
-            "versions": self.versions
+            "versions": self.versions,
+            "presenter_notes": self.presenter_notes
         }
 
 

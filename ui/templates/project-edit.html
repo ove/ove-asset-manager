@@ -43,6 +43,12 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label for="presenter_notes" class="col-3 col-form-label">Presenter Notes Link</label>
+                        <div class="col-9">
+                            <input name="presenter_notes" id="presenter_notes" value="{{ project.presenter_notes }}" type="text" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label for="publications" class="col-3 col-form-label">Publications</label>
                         <div class="col-9">
                             <textarea name="publications" id="publications" class="form-control" rows="2">{{ project.publications }}</textarea>
