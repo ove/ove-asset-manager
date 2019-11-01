@@ -7,6 +7,13 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
+                stateSave: true,
+                stateSaveCallback: function (settings, data) {
+                    localStorage.setItem('DataTables_worker_queue', JSON.stringify(data))
+                },
+                stateLoadCallback: function () {
+                    return JSON.parse(localStorage.getItem('DataTables_worker_queue'))
+                },
                 autoWidth: false,
                 pageLength: 10,
                 order: [0, 'asc'],

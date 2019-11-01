@@ -138,11 +138,12 @@ class S3Manager:
 
         # List the assets in an s3 bucket
 
-    def list_files(self, project_id: str, asset_id: str, store_id: str = None) -> List[Dict]:
+    def list_files(self, project_id: str, asset_id: str, store_id: str = None, version: str = None) -> List[Dict]:
         client = self._get_connection(store_id)
         try:
             meta = self.get_asset_meta(store_id=store_id, project_id=project_id, asset_id=asset_id)
-            prefix = asset_id + "/" + str(meta.version) + "/"
+            version = version or str(meta.version)
+            prefix = asset_id + "/" + version + "/"
 
             result = []
             for a in client.list_objects(project_id, prefix=prefix, recursive=True):

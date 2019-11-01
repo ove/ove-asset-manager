@@ -5,6 +5,13 @@
     <script>
         $(document).ready(function () {
             $('#table').DataTable({
+                stateSave: true,
+                stateSaveCallback: function (settings, data) {
+                    localStorage.setItem('DataTables_asset_list', JSON.stringify(data))
+                },
+                stateLoadCallback: function () {
+                    return JSON.parse(localStorage.getItem('DataTables_asset_list'))
+                },
                 autoWidth: false,
                 pageLength: 25,
                 order: [1, 'asc'],

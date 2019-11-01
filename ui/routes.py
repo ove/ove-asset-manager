@@ -481,6 +481,17 @@ class FilesApi:
         self._controller = controller
 
     def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        resp.media = self._controller.list_files(store_id=store_id, project_id=project_id, asset_id=asset_id,
+        resp.media = self._controller.list_files(store_id=store_id, project_id=project_id, asset_id=asset_id, version=req.params.get("version", None),
                                                  hierarchical=to_bool(req.params.get("hierarchical", False)), auth_token=auth_token(req))
+        resp.status = falcon.HTTP_200
+
+
+class MetaApi:
+    content_type = 'application/json'
+
+    def __init__(self, controller: BackendController):
+        self._controller = controller
+
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        resp.media = self._controller.get_asset(store_id=store_id, project_id=project_id, asset_id=asset_id, auth_token=auth_token(req))
         resp.status = falcon.HTTP_200

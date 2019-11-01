@@ -31,8 +31,8 @@ class FileController:
     def list_assets(self, project_id: str, store_id: str = None, result_filter: Callable = None) -> List[Dict]:
         return self._manager.list_assets(store_id=store_id, project_id=project_id, result_filter=result_filter)
 
-    def list_files(self, project_id: str, asset_id: str, store_id: str = None) -> List[Dict]:
-        return self._manager.list_files(store_id=store_id, project_id=project_id, asset_id=asset_id)
+    def list_files(self, project_id: str, asset_id: str, store_id: str = None, version: str = None) -> List[Dict]:
+        return self._manager.list_files(store_id=store_id, project_id=project_id, asset_id=asset_id, version=version)
 
     def create_project(self, project_id: str, store_id: str = None) -> None:
         # To avoid confusion, we reserve certain names for projects

@@ -79,8 +79,12 @@ class BackendController:
     def list_assets(self, store_id: str, project_id: str, auth_token: Union[str, None]) -> List:
         return [_mutate(d, "short_index", basename(d.get("index_file", ""))) for d in self._backend.get("api/{}/{}/list".format(store_id, project_id), auth_token=auth_token)]
 
-    def list_files(self, store_id: str, project_id: str, asset_id: str, auth_token: Union[str, None], hierarchical: bool = False) -> List[Dict]:
-        files = self._backend.get("api/{}/{}/files/{}".format(store_id, project_id, asset_id), auth_token=auth_token)
+    def list_files(self, store_id: str, project_id: str, asset_id: str, auth_token: Union[str, None], hierarchical: bool = False, version: str = None) -> List[Dict]:
+        params = {}
+        if version:
+            params["version"] = version
+
+        files = self._backend.get("api/{}/{}/files/{}".format(store_id, project_id, asset_id), params=params, auth_token=auth_token)
 
         if hierarchical:
             file_tree = []

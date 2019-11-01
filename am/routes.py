@@ -363,8 +363,8 @@ class FileList:
     def __init__(self, controller: FileController):
         self._controller = controller
 
-    def on_get(self, _: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
-        resp.media = self._controller.list_files(project_id=project_id, store_id=store_id, asset_id=asset_id)
+    def on_get(self, req: falcon.Request, resp: falcon.Response, store_id: str, project_id: str, asset_id: str):
+        resp.media = self._controller.list_files(project_id=project_id, store_id=store_id, asset_id=asset_id, version=req.params.get("version", None))
         resp.status = falcon.HTTP_200
 
 
