@@ -244,6 +244,7 @@ class AssetView:
             resp.context["assets"] = self._controller.list_assets(store_id=store_id, project_id=project_id, auth_token=auth_token(req))
             resp.context["workers"] = self._controller.get_worker_types(auth_token=auth_token(req))
             resp.context["objects"] = self._controller.check_objects(store_id=store_id, project_id=project_id, object_ids=["project"], auth_token=auth_token(req))
+            resp.context["launcher_url"] = self._controller.launcher_url
         except:
             raise
 

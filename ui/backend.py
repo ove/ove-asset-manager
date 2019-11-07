@@ -11,8 +11,9 @@ from common.util import append_slash
 
 
 class BackendClient:
-    def __init__(self, backend_url: str):
+    def __init__(self, backend_url: str, launcher_url: str):
         self.backend_url = append_slash(backend_url)
+        self.launcher_url = launcher_url
         self._http = urllib3.PoolManager(headers={"Content-Type": "application/json", "Keep-Alive": "timeout=5, max=1000"})
 
     def head(self, api_url: str, auth_token: Union[str, None], headers: Dict = None) -> bool:

@@ -8,12 +8,16 @@ _RESERVED_NAMES = {"list", "validate", "create"}
 
 
 class BackendController:
-    def __init__(self, backend_url: str):
-        self._backend = BackendClient(backend_url=backend_url)
+    def __init__(self, backend_url: str, launcher_url: str):
+        self._backend = BackendClient(backend_url=backend_url, launcher_url=launcher_url)
 
     @property
     def backend_url(self) -> str:
         return self._backend.backend_url
+
+    @property
+    def launcher_url(self) -> str:
+        return self._backend.launcher_url
 
     def login(self, user: str, password: str) -> Union[str, None]:
         try:

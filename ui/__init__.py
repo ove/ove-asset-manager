@@ -12,10 +12,10 @@ from ui.routes import ProjectView, ProjectIndexView, IndexView, AssetView, Worke
 from ui.routes import UploadApi, WorkerApi, ObjectEdit, WorkerDocsView, FilesApi
 
 
-def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:6080") -> falcon.API:
+def setup_ui(logging_level: str = "debug", backend_url: str = "http://localhost:6080", launcher_url: str = "http://localhost:9080/ui/launcher") -> falcon.API:
     logging.basicConfig(level=parse_logging_lvl(logging_level), format='[%(asctime)s] [%(levelname)s] %(message)s')
 
-    _controller = BackendController(backend_url=backend_url)
+    _controller = BackendController(backend_url=backend_url, launcher_url=launcher_url)
     app = falcon.API(middleware=[ContentTypeValidator(), CORSComponent(), LoginValidator(login_path="/login", backend=_controller)])
     app.req_options.auto_parse_form_urlencoded = True
     app.resp_options.secure_cookies_by_default = False
