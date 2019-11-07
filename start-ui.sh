@@ -23,6 +23,8 @@ cd "${scriptPath}/" || exit 1
 [[ ! -z "${SERVICE_AM_HOSTNAME}" ]] || SERVICE_AM_HOSTNAME=$(hostname)
 [[ ! -z "${SERVICE_AM_PORT}" ]] || SERVICE_AM_PORT="6080"
 
+[[ ! -z "${LAUNCHER_URL}" ]] || LAUNCHER_URL=$(hostname)
+
 echo "Environment variables:"
 echo "  GUNICORN_PORT=${GUNICORN_PORT}"
 echo "  GUNICORN_HOST=${GUNICORN_HOST}"
@@ -32,8 +34,9 @@ echo ""
 echo "  SERVICE_LOG_LEVEL=${SERVICE_LOG_LEVEL}"
 echo "  SERVICE_AM_HOSTNAME=${SERVICE_AM_HOSTNAME}"
 echo "  SERVICE_AM_PORT=${SERVICE_AM_PORT}"
+echo "  LAUNCHER_URL=${LAUNCHER_URL}"
 echo ""
 
 ## did you activate the virtual environment and install the requirements?
 exec gunicorn --bind "${GUNICORN_HOST}:${GUNICORN_PORT}" --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} \
-  "ui:setup_ui(logging_level='${SERVICE_LOG_LEVEL}', backend_url='http://${SERVICE_AM_HOSTNAME}:${SERVICE_AM_PORT}/')"
+  "ui:setup_ui(logging_level='${SERVICE_LOG_LEVEL}', backend_url='http://${SERVICE_AM_HOSTNAME}:${SERVICE_AM_PORT}/', launcher_url='${LAUNCHER_URL}')"

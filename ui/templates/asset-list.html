@@ -154,26 +154,37 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if project.write_access %}
-                        <div class="btn-group" role="group" aria-label="Toolbox">
-                            <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}" class="btn btn-outline-primary"
+                    <div class="btn-group" role="group" aria-label="Toolbox">
+
+                        {% if project.write_access %}
+                            <a href="/view/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}"
+                               class="btn btn-outline-primary"
                                data-toggle="tooltip" data-placement="top" title="Edit asset">
                                 <i class="far fa-edit"></i>
                             </a>
-                            <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="File list"
+                            <button class="btn btn-outline-primary" type="button" data-toggle="tooltip"
+                                    data-placement="top" title="File list"
                                     onclick="showAssetFilesModal('{{ asset.id }}')">
                                 <i class="far fa-list-alt"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Upload into asset"
+                            <button type="button" class="btn btn-outline-primary" data-toggle="tooltip"
+                                    data-placement="top" title="Upload into asset"
                                     onclick="showUploadModal('/api/store/{{ store_id }}/project/{{ project_id }}/asset/{{ asset.id }}/upload', false, '{{ asset.id }}')">
                                 <i class="fas fa-upload"></i>
                             </button>
-                            <button class="btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Process asset"
+                            <button class="btn btn-outline-primary" type="button" data-toggle="tooltip"
+                                    data-placement="top" title="Process asset"
                                     onclick="showProcessModal('{{ asset.id }}')">
                                 <i class="fas fa-paint-roller"></i>
                             </button>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+
+                        <a href="{{ launcher_url }}?url={{ asset.index_file }}" class="btn btn-outline-primary"
+                           data-toggle="tooltip" data-placement="top" title="Launch index file with OVE Loader">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+
                 </td>
             </tr>
         {%- endfor %}
