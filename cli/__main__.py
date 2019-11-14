@@ -39,7 +39,10 @@ def main():
     parser_user_edit_write.add_argument("--write", dest="write_groups", type=str, nargs="+", help="Write access groups")
     parser_user_edit_write.add_argument("--nowrite", dest="write_groups", action='store_const', const=[], help="Remove all write access groups")
 
-    parser_user_edit.add_argument('--admin', dest='admin_access', type=str, help='Admin access (y or n)')
+    parser_user_edit_admin = parser_user_edit.add_mutually_exclusive_group()
+    parser_user_edit_admin.add_argument('--admin', dest='admin_access', action='store_const', const=True, help='Grant Admin access')
+    parser_user_edit_admin.add_argument('--noadmin', dest='admin_access', action='store_const', const=False, help='Remove Admin access')
+
     parser_user_edit.add_argument('--ignore', dest='ignore', action='store_const', const=True, default=False, help='Ignore validation')
     parser_user_edit.set_defaults(function=user.edit)
 
