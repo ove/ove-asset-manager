@@ -14,7 +14,7 @@ class DeepZoomImageWorker(BaseWorker):
         return "dz-image"
 
     def extensions(self) -> List:
-        return [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".gif"]
+        return [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".gif", ".ndpi"]
 
     def description(self) -> str:
         return "Converts large images into a Deep Zoom Tiled Image (DZI)"
