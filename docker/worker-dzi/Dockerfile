@@ -1,7 +1,7 @@
-FROM ovehub/alpine-pypy-vips:8.8.0
-LABEL maintainer="david.akroyd07@imperial.ac.uk"
+FROM ovehub/alpine-pypy-vips:8.8.3
+LABEL maintainer="o.serban@imperial.ac.uk"
 
-ARG PYVIPS_VERSION=2.1.6
+ARG PYVIPS_VERSION=2.1.8
 
 WORKDIR /code
 
