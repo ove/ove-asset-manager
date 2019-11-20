@@ -44,8 +44,7 @@ def dynamic_import(full_class_path: str) -> Callable:
 
     abs_module_path, class_name = full_class_path.rsplit(".", maxsplit=1)
     module_object = import_module(abs_module_path)
-    target_class = getattr(module_object, class_name)
-    return target_class
+    return getattr(module_object, class_name)
 
 
 def is_public(path: str, public_paths: Set[str]) -> bool:

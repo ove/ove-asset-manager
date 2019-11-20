@@ -402,7 +402,7 @@ class S3Manager:
 
 # Helpers
 def _validate_object_id(store_id: str, project_id: str, object_id: str) -> None:
-    if not object_id or not object_id.isalnum():
+    if not (object_id and object_id.isalnum()):
         raise InvalidObjectError(store_id=store_id, project_id=project_id, object_id=object_id)
 
 

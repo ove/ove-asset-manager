@@ -5,7 +5,7 @@ from common.errors import MissingParameterError, InvalidDataError
 
 
 def validate_not_null(data: Dict, field: str):
-    if not data or not data.get(field, None):
+    if not (data and data.get(field, None)):
         raise MissingParameterError(name=field)
 
 
@@ -15,5 +15,5 @@ def validate_no_slashes(data: Dict, field: str):
 
 
 def validate_list(data: Any):
-    if not isinstance(data, list) or not all(isinstance(elem, str) for elem in data):
+    if not (isinstance(data, list) and all(isinstance(elem, str) for elem in data)):
         raise InvalidDataError()

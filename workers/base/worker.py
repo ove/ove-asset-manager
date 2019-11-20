@@ -115,7 +115,7 @@ class BaseWorker(ABC):
     def worker_loop(self, config_file: str = DEFAULT_WORKER_CONFIG):
         self.load(config_file=config_file)
 
-        if not self._client or not self._worker_queue:
+        if not (self._client and self._worker_queue):
             logging.error("Mongo connection not initialised. Worker queue is not running ...")
             return
 

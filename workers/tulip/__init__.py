@@ -51,7 +51,7 @@ class NetworkWorker(BaseWorker):
                     field_name = algorithm + "_" + field
 
                     default = str(default_params[field])
-                    if default == 'True' or default == 'False':
+                    if default in ['True', 'False']:
                         input_type = 'checkbox'
                         data_type = 'boolean'
                     else:
@@ -67,7 +67,7 @@ class NetworkWorker(BaseWorker):
                     dependencies[field_name] = ['algorithm']
                     options['fields'][field_name] = {'type': input_type}
                     options[field_name] = {'type': input_type, 'dependencies': {'algorithm': algorithm}}
-                    if default == 'True' or default == 'False':
+                    if default in ['True', 'False']:
                         options[field_name]['rightLabel'] = 'Enabled'
 
         options['result_name'] = {

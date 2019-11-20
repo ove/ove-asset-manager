@@ -66,12 +66,8 @@ def _edit(user: UserAccessMeta, auth: AuthManager, args: Namespace, add_user: bo
 
         # make sure that the read groups contain the write groups as well
         value = getattr(args, "read_groups", None)
-        if value is not None:
-            value = list(set(value + user.write_groups))
-            setattr(user, "read_groups", value)
-        else:
-            value = list(set(user.read_groups + user.write_groups))
-            setattr(user, "read_groups", value)
+        value = list(set(value + user.write_groups)) if value is not None else list(set(user.read_groups + user.write_groups))
+        setattr(user, "read_groups", value)
 
         if auth.edit_user(access=user, password=args.password, hashed=False, add=add_user):
             _format_user(auth.get_user(user=args.username), multi=False)

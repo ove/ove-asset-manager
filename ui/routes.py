@@ -284,10 +284,7 @@ class ProjectEdit:
 
 
 def _groups(auth_groups: List[str], project_groups: List[str]) -> List[Tuple[str, bool]]:
-    result = dict()
-    for group in auth_groups:
-        result[group] = group in project_groups
-    return list(result.items())
+    return list({group: group in project_groups for group in auth_groups}.items())
 
 
 class ProjectAccessEdit:
