@@ -1,6 +1,6 @@
 # Administering users
 
-The OVE Asset Manager allows limited guest access, but creating and editing projects, or viewing projects that are not public require users to log in.
+The OVE Asset Manager allows limited guest access, but users must log in before they can create new projects, edit projects, or view projects that are not public.
 
 Projects can be added to *access groups* by clicking on the shield icon on the table of projects, or by clicking the "Edit access controls" button on the table of assets.
 Each user account has a list of groups for which it has read access, and a list of groups for which it has write access.
@@ -40,4 +40,4 @@ You can grant admin rights with `--admin`, or remove admin rights using `--noadm
 
 ## Removing a user
 
-A user account can be removed with the command `./am-cli.sh user remove <username>`.
+A user's account can be removed with the command `./am-cli.sh user remove <username>`.
