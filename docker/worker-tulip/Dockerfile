@@ -11,7 +11,8 @@ COPY workers/tulip/ workers/tulip/
 COPY start-worker.sh .
 COPY requirements.worker.txt .
 
-RUN apt-get update && apt-get upgrade && \
+RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y binutils && \
     apt-get install -y build-essential && \
     pip install --upgrade pip && \
