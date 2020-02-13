@@ -283,6 +283,7 @@ class S3Manager:
         if groups is None or len(groups) == 0:
             return False
 
+        # test
         meta = self.get_project_access_meta(store_id=store_id, project_id=project_id)
         return any(group in groups for group in meta.groups)
 
