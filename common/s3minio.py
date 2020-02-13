@@ -280,7 +280,7 @@ class S3Manager:
         if is_admin:
             return True
 
-        if groups is None or len(groups) == 0:
+        if groups is None or not groups:
             return False
 
         # test
