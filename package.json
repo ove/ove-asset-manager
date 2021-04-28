@@ -14,7 +14,7 @@
     "jsoneditor": "7.5.0",
     "jstree": "3.3.9",
     "select2": "4.0.13",
-    "underscore": "1.9.2"
+    "underscore": "1.13.1"
   },
   "scripts": {
     "postinstall": "npm run move-assets",
