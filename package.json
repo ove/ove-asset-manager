@@ -7,7 +7,7 @@
     "bootbox": "5.5.2",
     "bootstrap": "4.6.0",
     "datatables.net": "1.10.20",
-    "datatables.net-bs4": "1.10.20",
+    "datatables.net-bs4": "1.10.24",
     "filepond": "4.7.4",
     "handlebars": "4.7.3",
     "jquery": "3.4.1",
