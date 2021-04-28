@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.9-slim
 LABEL maintainer="j.scott-brown@imperial.ac.uk"
 
 WORKDIR /code
