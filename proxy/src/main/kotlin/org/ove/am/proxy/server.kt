@@ -17,7 +17,7 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import kotlinx.coroutines.io.ByteWriteChannel
+import io.ktor.utils.io.ByteWriteChannel
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URLEncoder

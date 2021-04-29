@@ -2,8 +2,8 @@ package org.ove.am.proxy
 
 import com.google.gson.Gson
 import io.minio.MinioClient
-import kotlinx.coroutines.io.ByteWriteChannel
-import kotlinx.coroutines.io.close
+import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.close
 import okhttp3.HttpUrl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
