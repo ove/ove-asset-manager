@@ -3,4 +3,4 @@ gunicorn==19.9.0
 Jinja2==2.11.1
 six==1.14.0
 urllib3==1.25.8
-markdown2==2.3.8
+markdown2==2.4.0
