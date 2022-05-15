@@ -4,7 +4,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.12.1",
     "alpaca": "1.5.27",
-    "bootbox": "5.4.0",
+    "bootbox": "5.5.3",
     "bootstrap": "4.4.1",
     "datatables.net": "1.10.20",
     "datatables.net-bs4": "1.10.20",
