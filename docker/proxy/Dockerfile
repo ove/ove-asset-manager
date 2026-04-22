@@ -9,7 +9,7 @@ COPY proxy/pom.xml .
 RUN rm -rf target/ && mvn clean compile package
 
 # The optimized docker image
-FROM azul/zulu-openjdk-alpine:11-jre
+FROM azul/zulu-openjdk-alpine:11.0.31-jre
 
 RUN apk add --no-cache bash
 
