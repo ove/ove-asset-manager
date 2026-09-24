@@ -1,3 +1,10 @@
+🚨 This repository has been replaced and is no longer actively maintained.
+
+Please use the new repository instead:
+https://github.com/dsi-icl/vizzy-studio/
+
+Please direct all future development, issues, and contributions there.
+
 # Open Visualisation Environment - Asset Manager and Proxy
 
 This repository contains an Asset Manager (AM) to manage data sets for access to an installation of [Open Visualisation Environment (OVE)](https://github.com/ove/ove), as well as a high speed proxy to provide authenticated access to data from a range of sources.
