@@ -1,6 +1,6 @@
 asn1crypto==0.24.0
 cryptography==2.7
-PyJWT==1.7.1
+PyJWT==2.13.0
 argon2-cffi==19.1.0
 cffi==1.12.3
 pycparser==2.19
